@@ -2,55 +2,34 @@
   "brawlers": [
     {
       "id": "shelly",
-      "name": "Шелли",
-      "rarity": "Начальный",
-      "description": "Стреляет дробью из ружья.",
-      "stats": {
-        "hp_lv1": 3200,
-        "hp_per_lv": 150,
-        "speed": 3.5,
-        "size": 30
-      },
-      "attack": {
-        "type": "projectile",
-        "damage_lv1": 400,
-        "damage_per_lv": 40,
-        "range": 250,
-        "reload_speed": 1500,
-        "max_ammo": 3,
-        "projectile_speed": 10,
-        "effect": "normal",
-        "shape": "cone"
-      }
+      "name": "ШЕЛЛИ",
+      "rarity": "Common",
+      "hp_base": 3200,
+      "hp_step": 160,
+      "damage_base": 1000,
+      "damage_step": 50,
+      "speed": 3.5,
+      "reload": 1500,
+      "range": 300,
+      "ammo_max": 3,
+      "attack_type": "projectile",
+      "effect": "none"
     },
     {
       "id": "crow",
-      "name": "Кроу",
-      "rarity": "Легендарный",
-      "description": "Отравляет врагов кинжалами.",
-      "stats": { "hp_lv1": 2400, "hp_per_lv": 100, "speed": 4.2, "size": 25 },
-      "attack": {
-        "type": "projectile",
-        "damage_lv1": 300,
-        "damage_per_lv": 30,
-        "effect": "poison",
-        "poison_duration": 4, 
-        "poison_damage_reduction": 0.2,
-        "max_ammo": 3
-      }
-    },
-    {
-      "id": "lou",
-      "name": "Лу",
-      "rarity": "Хроматический",
-      "description": "Замораживает противников.",
-      "stats": { "hp_lv1": 3000, "hp_per_lv": 120, "speed": 3.8, "size": 28 },
-      "attack": {
-        "type": "projectile",
-        "effect": "freeze",
-        "freeze_duration": 2,
-        "max_ammo": 3
-      }
+      "name": "КРОУ",
+      "rarity": "Legendary",
+      "hp_base": 2400,
+      "hp_step": 100,
+      "damage_base": 320,
+      "damage_step": 20,
+      "speed": 4.5,
+      "reload": 1400,
+      "range": 350,
+      "ammo_max": 3,
+      "attack_type": "projectile",
+      "effect": "poison",
+      "poison_duration": 4
     }
   ]
 }
