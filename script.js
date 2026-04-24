@@ -24,41 +24,60 @@ let isGameOver = false;
 const moveJoy = { active: false, dx: 0, dy: 0, id: null };
 const attackJoy = { active: false, dx: 0, dy: 0, id: null };
 
-// --- 1. Loading ---
+// --- 1. Loading (ИСПРАВЛЕНО) ---
+async function loadBrawlerData() {
+  try {
+    const res = await fetch('data/brawlers.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    brawlersConfig = data.brawlers || [];
+    console.log('✅ Бойцы загружены:', brawlersConfig.length);
+  } catch (e) {
+    console.warn('⚠️ JSON не найден/ошибка сети, используем встроенного Шелли:', e);
+    brawlersConfig = [{
+      id: "shelly", name: "Shelly", rarity: "Trophy Road", description: "Стартовый боец",
+      baseHP: 3600, hpPerLevel: 300, baseDamage: 400, damagePerLevel: 50,
+      speed: 3.5, size: 22, image: "data/shelly.png",
+      attack: { name: "Buckshot", speed: 8, size: 8, range: 280, shape: "projectile", type: "aimed", maxCharges: 3, reloadSpeed: 1.2, damageType: "normal", freezeDuration: 0, poisonDuration: 0 }
+    }];
+  }
+}
+
 async function initLoading() {
+  if (!loadingBar || !loadingText) return;
+  
   let progress = 0;
-  const interval = setInterval(() => {
-    progress += Math.random() * 8 + 2;
+  // Плавная анимация без setInterval
+  const animate = () => {
+    progress += 3;
+    if (progress > 100) progress = 100;
+    loadingBar.style.width = `${progress}%`;
+    loadingText.textContent = `Загрузка: ${progress}%`;
+    if (progress < 100) requestAnimationFrame(animate);
+  };
+  requestAnimationFrame(animate);
+
+  // Грузим данные параллельно
+  await loadBrawlerData();
+
+  // Ждем, пока анимация дойдет до 100%
+  const waitEnd = setInterval(() => {
     if (progress >= 100) {
-      progress = 100; clearInterval(interval);
-      loadingBar.style.width = '100%';
-      loadingText.textContent = 'Загрузка: 100%';
-      await loadBrawlerData();
+      clearInterval(waitEnd);
+      loadingText.textContent = 'Готово!';
       setTimeout(() => {
         loadingScreen.classList.add('hidden');
         mainMenu.classList.remove('hidden');
         gameState = 'menu';
         updateMenuUI();
-      }, 400);
+      }, 200);
     }
-    loadingBar.style.width = `${progress}%`;
-    loadingText.textContent = `Загрузка: ${Math.floor(progress)}%`;
   }, 50);
-}
-
-async function loadBrawlerData() {
-  try {
-    const res = await fetch('data/brawlers.json');
-    brawlersConfig = await res.json();
-  } catch (e) {
-    console.warn('JSON не найден, используется дефолт:', e);
-    brawlersConfig = [{ id: 'shelly', name: 'Shelly', baseHP: 3600, hpPerLevel: 300, baseDamage: 400, damagePerLevel: 50, speed: 3.5, size: 22, image: 'data/shelly.png', attack: { speed: 8, size: 8, range: 280, shape: 'projectile', type: 'aimed', maxCharges: 3, reloadSpeed: 1.2, damageType: 'normal', freezeDuration: 0, poisonDuration: 0 } }];
-  }
 }
 
 // --- 2. Menu ---
 function updateMenuUI() {
-  const b = brawlersConfig[currentBrawlerIndex];
+  const b = brawlersConfig[currentBrawlerIndex] || brawlersConfig[0];
   document.getElementById('brawler-name').textContent = b.name;
   document.getElementById('brawler-level').textContent = `Уровень: ${playerLevel}`;
   document.getElementById('menu-brawler-img').src = b.image || '';
@@ -80,7 +99,7 @@ function startGame() {
 }
 
 function setupPlayer() {
-  const conf = brawlersConfig[currentBrawlerIndex];
+  const conf = brawlersConfig[currentBrawlerIndex] || brawlersConfig[0];
   player = {
     team: 'blue', x: canvasW * 0.2, y: canvasH * 0.5,
     maxHP: conf.baseHP + (conf.hpPerLevel * playerLevel), hp: conf.baseHP + (conf.hpPerLevel * playerLevel),
@@ -92,17 +111,16 @@ function setupPlayer() {
 }
 
 function spawnBots() {
-  const conf = brawlersConfig[0];
   for (let i = 0; i < 2; i++) bots.push(createBot('blue', canvasW * 0.15, canvasH * (0.3 + i * 0.4)));
   for (let i = 0; i < 3; i++) bots.push(createBot('red', canvasW * 0.85, canvasH * (0.2 + i * 0.3)));
 }
 
 function createBot(team, x, y) {
-  const conf = brawlersConfig[0];
+  const conf = brawlersConfig[0] || { attack: { speed: 6, range: 250, maxCharges: 3, reloadSpeed: 1.4 } };
   return {
     team, x, y, spawnX: x, spawnY: y,
     maxHP: 3000, hp: 3000, speed: 2.5 + Math.random() * 0.8, size: 20,
-    damage: 350, attackConf: { ...conf.attack, speed: 6, range: 250, maxCharges: 3, reloadSpeed: 1.4 },
+    damage: 350, attackConf: { ...conf.attack },
     charges: 3, maxCharges: 3, reloadTimer: 0,
     gems: 0, frozen: 0, poison: { active: false },
     dir: Math.random() * Math.PI * 2, dirTimer: 0,
@@ -162,8 +180,8 @@ function update(dt) {
 
       if (bot.charges < bot.maxCharges) { bot.reloadTimer += dt; if(bot.reloadTimer >= bot.attackConf.reloadSpeed){bot.reloadTimer=0;bot.charges++;}}
       
-      // 🤖 ИСПРАВЛЕНО: боты стреляют в случайных направлениях, а не в игрока
-      if (Math.random() < 0.02 && bot.charges > 0) {
+      // 🤖 Боты стреляют в случайных направлениях
+      if (Math.random() < 0.015 && bot.charges > 0) {
         const angle = Math.random() * Math.PI * 2;
         spawnProjectile(bot, Math.cos(angle), Math.sin(angle));
         bot.charges--;
@@ -178,7 +196,7 @@ function update(dt) {
     p.x += p.vx; p.y += p.vy; p.life -= dt;
     if (p.life <= 0 || p.x < -20 || p.x > canvasW+20 || p.y < -20 || p.y > canvasH+20) p.dead = true;
 
-    // 🛡️ ИСПРАВЛЕНО: убран дружественный огонь
+    // 🛡️ Только враги получают урон
     const targets = p.team === 'blue' 
       ? bots.filter(b => b.team === 'red') 
       : [player, ...bots.filter(b => b.team === 'blue')];
@@ -273,25 +291,20 @@ function draw() {
   const entities = [player, ...bots];
   entities.forEach(e => {
     if (!e.alive) return;
-    // Body
     ctx.fillStyle = e.team === 'blue' ? '#4d9eff' : '#ff4d4d';
     ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.stroke();
 
-    // HP Bar
     const barW = 40, barH = 6, barX = e.x - barW/2, barY = e.y - e.size - 16;
     ctx.fillStyle = '#222'; ctx.fillRect(barX, barY, barW, barH);
     ctx.fillStyle = e.hp/e.maxHP > 0.3 ? '#4caf50' : '#f44336';
     ctx.fillRect(barX, barY, barW * Math.max(0, e.hp/e.maxHP), barH);
 
-    // 🔢 ИСПРАВЛЕНО: цифры ХП
+    // 🔢 Цифры ХП
     ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(Math.ceil(e.hp), e.x, barY - 4);
 
-    // Gems
     if (e.gems > 0) { ctx.fillStyle = '#fff'; ctx.font = '13px sans-serif'; ctx.fillText(`💎${e.gems}`, e.x, barY - 18); }
-
-    // Freeze
     if (e.frozen > 0) { ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 6, 0, Math.PI*2); ctx.stroke(); }
   });
 }
@@ -337,4 +350,5 @@ function setupJoystick(el, joyState) {
 setupJoystick(document.getElementById('move-joystick'), moveJoy);
 setupJoystick(document.getElementById('attack-joystick'), attackJoy);
 
+// 🚀 Запуск
 initLoading();
