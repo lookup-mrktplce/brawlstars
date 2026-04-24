@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl HTML Engine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>BRAWL STARS HTML</h1>
+            <div class="progress-bar"><div id="progress-fill"></div></div>
+            <p id="loading-text">Загрузка данных... 0%</p>
+        </div>
+    </div>
+
+    <div id="main-menu" style="display: none;">
+        <div class="animated-bg"></div>
+        <div class="top-bar">
+            <div class="currency gold">🟡 <span id="gold-val">9999</span></div>
+            <div class="currency gems">💎 <span id="gems-val">50</span></div>
+        </div>
+        
+        <div class="side-buttons">
+            <button class="menu-btn">МАГАЗИН</button>
+            <button class="menu-btn">БОЙЦЫ</button>
+        </div>
+
+        <div class="center-ui">
+            <div id="brawler-name">ШЕЛЛИ</div>
+            <div class="brawler-display" id="brawler-preview">
+                </div>
+        </div>
+
+        <button class="play-btn" onclick="game.startBattle()">ИГРАТЬ</button>
+    </div>
+
+    <div id="battle-screen" style="display: none;">
+        <div class="battle-ui">
+            <div class="score-board">
+                <div class="team-score blue">СИНИЕ: <span id="blue-gems">0</span></div>
+                <div class="team-score red">КРАСНЫЕ: <span id="red-gems">0</span></div>
+            </div>
+            <div id="gem-timer">Кристалл через: 8с</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
