@@ -3,33 +3,37 @@
     {
       "id": "shelly",
       "name": "ШЕЛЛИ",
-      "rarity": "Common",
+      "rarity": "Начальный",
       "hp_base": 3200,
       "hp_step": 160,
-      "damage_base": 1000,
-      "damage_step": 50,
       "speed": 3.5,
-      "reload": 1500,
-      "range": 300,
       "ammo_max": 3,
-      "attack_type": "projectile",
-      "effect": "none"
+      "reload_time": 1500,
+      "attack": {
+        "type": "projectile",
+        "damage_base": 1000,
+        "damage_step": 100,
+        "range": 350,
+        "effect": "normal"
+      }
     },
     {
       "id": "crow",
       "name": "КРОУ",
-      "rarity": "Legendary",
+      "rarity": "Легендарный",
       "hp_base": 2400,
       "hp_step": 100,
-      "damage_base": 320,
-      "damage_step": 20,
       "speed": 4.5,
-      "reload": 1400,
-      "range": 350,
       "ammo_max": 3,
-      "attack_type": "projectile",
-      "effect": "poison",
-      "poison_duration": 4
+      "reload_time": 1200,
+      "attack": {
+        "type": "projectile",
+        "damage_base": 320,
+        "damage_step": 30,
+        "range": 400,
+        "effect": "poison",
+        "poison_duration": 4
+      }
     }
   ]
 }
