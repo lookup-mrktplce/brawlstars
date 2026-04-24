@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // --- КОНФИГУРАЦИЯ ---
-  const DEFAULT_BRAWLER = {
+document.addEventListener('DOMContentLoaded', async () => {
+  // --- ШАБЛОН (только для структуры, НЕ для значений!) ---
+  const BRAWLER_TEMPLATE = {
     id: "shelly", name: "Shelly", rarity: "Trophy Road", description: "Стартовый боец",
-    baseHP: 3600, hpPerLevel: 300, baseDamage: 220, damagePerLevel: 25, // 📉 Урон снижен
+    baseHP: 3600, hpPerLevel: 300, baseDamage: 220, damagePerLevel: 25,
     speed: 3.2, size: 22, image: "data/shelly.png",
     attack: {
       name: "Buckshot", speed: 7, size: 8, range: 260, shape: "projectile", type: "aimed",
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  let brawlersConfig = [DEFAULT_BRAWLER];
+  let brawlersConfig = []; // ← ПУСТОЙ! Никаких дефолтов
   let playerLevel = 0;
   let currentBrawlerIndex = 0;
   let gameState = 'loading';
@@ -26,16 +26,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const winText = document.getElementById('win-text');
   const ctx = gameCanvas.getContext('2d');
 
-  // --- ЗАГРУЗКА ---
+  // --- ЗАГРУЗКА (async/await — ждём JSON перед стартом) ---
   let progress = 0;
   const loadInterval = setInterval(() => {
     progress += Math.random() * 12 + 5;
     if (progress >= 100) progress = 100;
     loadingBar.style.width = `${progress}%`;
     loadingText.textContent = `Загрузка: ${Math.floor(progress)}%`;
+  }, 80);
+
+  try {
+    const res = await fetch('data/brawlers.json?v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
     
-    if (progress === 100) {
-      clearInterval(loadInterval);
+    if (data.brawlers?.length > 0) {
+      brawlersConfig = data.brawlers;
+      console.log('✅ JSON загружен:', brawlersConfig[0].name);
+      console.log(`❤️ HP: ${brawlersConfig[0].baseHP} | ⚔️ DMG: ${brawlersConfig[0].baseDamage}`);
+    } else {
+      throw new Error('Массив brawlers пуст');
+    }
+  } catch (e) {
+    console.error('❌ Ошибка JSON, используем шаблон:', e);
+    brawlersConfig = [{ ...BRAWLER_TEMPLATE }]; // Только экстренный случай
+  }
+
+  // Ждём, пока прогресс дойдёт до 100%
+  const waitEnd = setInterval(() => {
+    if (progress >= 100) {
+      clearInterval(waitEnd);
       loadingText.textContent = 'Готово!';
       setTimeout(() => {
         loadingScreen.classList.add('hidden');
@@ -44,28 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMenuUI();
       }, 250);
     }
-  }, 80);
-
-  // Загрузчик JSON с принудительным отключением кэша и проверкой ключей
-  fetch('data/brawlers.json?v=' + Date.now(), { cache: 'no-store' })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
-    .then(data => {
-      if (data.brawlers && data.brawlers.length > 0) {
-        brawlersConfig = data.brawlers;
-        console.log('✅ Боец из JSON:', data.brawlers[0].name);
-        console.log(`❤️ HP: ${data.brawlers[0].baseHP} | ⚔️ DMG: ${data.brawlers[0].baseDamage}`);
-      } else {
-        console.warn('⚠️ Массив "brawlers" пуст или отсутствует в JSON');
-      }
-    })
-    .catch(e => console.error('❌ Ошибка загрузки JSON:', e));
+  }, 50);
 
   // --- МЕНЮ ---
   function updateMenuUI() {
-    const b = brawlersConfig[currentBrawlerIndex] || DEFAULT_BRAWLER;
+    const b = brawlersConfig[currentBrawlerIndex] || BRAWLER_TEMPLATE;
     document.getElementById('brawler-name').textContent = b.name;
     document.getElementById('brawler-level').textContent = `Уровень: ${playerLevel}`;
     document.getElementById('menu-brawler-img').src = b.image || '';
@@ -73,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-play').addEventListener('click', startGame);
   document.getElementById('btn-menu').addEventListener('click', () => {
     gameUI.classList.add('hidden'); mainMenu.classList.remove('hidden');
-    gameState = 'menu'; cancelAnimationFrame(gameLoopId);
+    gameState = 'menu'; if (gameLoopId) cancelAnimationFrame(gameLoopId);
   });
 
   // --- ИГРОВАЯ ЛОГИКА ---
   let canvasW, canvasH;
-  const MAP_MARGIN = 50; // 🗺️ Отступ для карты (делает её меньше)
+  const MAP_MARGIN = 50;
   let map = { x: 0, y: 0, w: 0, h: 0 };
   
   let player, bots = [], projectiles = [], gems = [];
@@ -109,7 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupPlayer() {
-    const conf = brawlersConfig[currentBrawlerIndex] || DEFAULT_BRAWLER;
+    // 🔒 БЕЗ ФОНЛБЭКА — только из brawlersConfig
+    const conf = brawlersConfig[currentBrawlerIndex];
     player = {
       team: 'blue', x: map.x + map.w * 0.2, y: map.y + map.h * 0.5,
       maxHP: conf.baseHP + (conf.hpPerLevel * playerLevel),
@@ -128,12 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createBot(team, x, y) {
-    const conf = brawlersConfig[0] || DEFAULT_BRAWLER;
+    const conf = brawlersConfig[0];
     return {
       team, x, y, spawnX: x, spawnY: y,
       maxHP: 3000, hp: 3000, 
       speed: 1.2 + Math.random() * 0.4, 
-      size: 20, damage: 220, // 📉 Урон ботов снижен
+      size: 20, damage: conf.baseDamage, // 📉 Урон ботов из JSON
       attackConf: { ...conf.attack, speed: 6, range: 120, maxCharges: 3, reloadSpeed: 1.7 },
       charges: 3, maxCharges: 3, reloadTimer: 0,
       gems: 0, frozen: 0, poison: { active: false },
@@ -177,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         player.reloadTimer += dt;
         if (player.reloadTimer >= player.attackConf.reloadSpeed) { player.reloadTimer -= player.attackConf.reloadSpeed; player.charges++; }
       }
-      // 🚫 СТРОГАЯ ПРОВЕРКА: если 0 зарядов → атака блокируется полностью
+      // 🚫 СТРОГАЯ ПРОВЕРКА: если 0 зарядов → атака блокируется
       const attackLen = Math.hypot(attackJoy.dx, attackJoy.dy);
       if (player.charges > 0 && attackJoy.active && !attackJoy.fired && attackLen > 0.4 && player.frozen <= 0) {
         spawnProjectile(player, attackJoy.dx/attackLen, attackJoy.dy/attackLen);
@@ -289,23 +293,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- ОТРИСОВКА ---
   function draw() {
-    // 🎨 Бежевый фон
     ctx.fillStyle = '#e8e4d9';
     ctx.fillRect(0, 0, canvasW, canvasH);
 
-    // 🗺️ Границы карты
     ctx.fillStyle = '#d4c9b5';
     ctx.fillRect(0, 0, canvasW, map.y);
     ctx.fillRect(0, map.y + map.h, canvasW, canvasH - (map.y + map.h));
     ctx.fillRect(0, map.y, map.x, map.h);
     ctx.fillRect(map.x + map.w, map.y, canvasW - (map.x + map.w), map.h);
 
-    // Сетка внутри карты
     ctx.strokeStyle = '#cbbfae'; ctx.lineWidth = 1;
     for (let x = map.x; x <= map.x + map.w; x += 50) { ctx.beginPath(); ctx.moveTo(x, map.y); ctx.lineTo(x, map.y + map.h); ctx.stroke(); }
     for (let y = map.y; y <= map.y + map.h; y += 50) { ctx.beginPath(); ctx.moveTo(map.x, y); ctx.lineTo(map.x + map.w, y); ctx.stroke(); }
 
-    // Центральная линия
     ctx.strokeStyle = '#b0a591'; ctx.lineWidth = 3; ctx.setLineDash([10, 10]);
     ctx.beginPath(); ctx.moveTo(map.x + map.w/2, map.y); ctx.lineTo(map.x + map.w/2, map.y + map.h); ctx.stroke();
     ctx.setLineDash([]);
