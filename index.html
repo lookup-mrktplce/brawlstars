@@ -1,53 +1,35 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl HTML Engine</title>
+    <title>Brawl Stars HTML</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="loading-screen">
-        <div class="loading-content">
-            <h1>BRAWL STARS HTML</h1>
-            <div class="progress-bar"><div id="progress-fill"></div></div>
-            <p id="loading-text">Загрузка данных... 0%</p>
-        </div>
+        <h1>BRAWL CLONE</h1>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+        <p id="loading-text">0%</p>
     </div>
 
-    <div id="main-menu" style="display: none;">
-        <div class="animated-bg"></div>
+    <div id="main-menu">
         <div class="top-bar">
-            <div class="currency gold">🟡 <span id="gold-val">9999</span></div>
-            <div class="currency gems">💎 <span id="gems-val">50</span></div>
+            <div class="currency">🟡 9999</div>
+            <div class="currency">💎 50</div>
         </div>
-        
-        <div class="side-buttons">
-            <button class="menu-btn">МАГАЗИН</button>
-            <button class="menu-btn">БОЙЦЫ</button>
-        </div>
-
-        <div class="center-ui">
-            <div id="brawler-name">ШЕЛЛИ</div>
-            <div class="brawler-display" id="brawler-preview">
-                </div>
-        </div>
-
-        <button class="play-btn" onclick="game.startBattle()">ИГРАТЬ</button>
+        <button style="position:absolute; bottom:50px; right:50px; padding:20px 60px; font-size:30px; background:#ffcc00; border-radius:15px; border:none; cursor:pointer;" onclick="startBattle()">ИГРАТЬ</button>
     </div>
 
-    <div id="battle-screen" style="display: none;">
-        <div class="battle-ui">
-            <div class="score-board">
-                <div class="team-score blue">СИНИЕ: <span id="blue-gems">0</span></div>
-                <div class="team-score red">КРАСНЫЕ: <span id="red-gems">0</span></div>
-            </div>
-            <div id="gem-timer">Кристалл через: 8с</div>
+    <div id="battle-screen" style="display:none;">
+        <div id="battle-ui">
+            <div style="color:#3498db">СИНИЕ: <span id="blue-gems">0</span></div>
+            <div style="color:#e74c3c">КРАСНЫЕ: <span id="red-gems">0</span></div>
         </div>
         <canvas id="gameCanvas"></canvas>
+        <div id="controls">
+            <div id="move-zone" class="joystick-zone"><div class="joystick-base"><div id="move-stick" class="stick"></div></div></div>
+            <div id="attack-zone" class="joystick-zone"><div class="joystick-base"><div id="attack-stick" class="stick"></div></div></div>
+        </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
