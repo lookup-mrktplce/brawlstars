@@ -2,11 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- КОНФИГУРАЦИЯ ---
   const DEFAULT_BRAWLER = {
     id: "shelly", name: "Shelly", rarity: "Trophy Road", description: "Стартовый боец",
-    baseHP: 3600, hpPerLevel: 300, baseDamage: 400, damagePerLevel: 50,
-    speed: 3.5, size: 22, image: "data/shelly.png",
+    baseHP: 3600, hpPerLevel: 300, baseDamage: 220, damagePerLevel: 25, // 📉 Урон снижен
+    speed: 3.2, size: 22, image: "data/shelly.png",
     attack: {
-      name: "Buckshot", speed: 8, size: 8, range: 280, shape: "projectile", type: "aimed",
-      maxCharges: 3, reloadSpeed: 1.2, damageType: "normal", freezeDuration: 0, poisonDuration: 0
+      name: "Buckshot", speed: 7, size: 8, range: 260, shape: "projectile", type: "aimed",
+      maxCharges: 3, reloadSpeed: 1.3, damageType: "normal", freezeDuration: 0, poisonDuration: 0
     }
   };
 
@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- ИГРОВАЯ ЛОГИКА ---
   let canvasW, canvasH;
+  const MAP_MARGIN = 50; // 🗺️ Отступ для карты (делает её меньше)
+  let map = { x: 0, y: 0, w: 0, h: 0 };
+  
   let player, bots = [], projectiles = [], gems = [];
   let blueScore = 0, redScore = 0;
   let gameLoopId, gemSpawnTimer = 0, isGameOver = false;
@@ -84,13 +87,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function resizeCanvas() {
     canvasW = window.innerWidth; canvasH = window.innerHeight;
     gameCanvas.width = canvasW; gameCanvas.height = canvasH;
+    map.x = MAP_MARGIN; map.y = MAP_MARGIN;
+    map.w = canvasW - MAP_MARGIN * 2; map.h = canvasH - MAP_MARGIN * 2;
   }
   window.addEventListener('resize', resizeCanvas);
+
+  function clampToMap(pos, size) {
+    return Math.max(map.x + size, Math.min(map.x + map.w - size, pos));
+  }
 
   function setupPlayer() {
     const conf = brawlersConfig[currentBrawlerIndex] || DEFAULT_BRAWLER;
     player = {
-      team: 'blue', x: canvasW * 0.2, y: canvasH * 0.5,
+      team: 'blue', x: map.x + map.w * 0.2, y: map.y + map.h * 0.5,
       maxHP: conf.baseHP + (conf.hpPerLevel * playerLevel),
       hp: conf.baseHP + (conf.hpPerLevel * playerLevel),
       speed: conf.speed, size: conf.size,
@@ -102,8 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spawnBots() {
-    for (let i = 0; i < 2; i++) bots.push(createBot('blue', canvasW * 0.15, canvasH * (0.3 + i * 0.4)));
-    for (let i = 0; i < 3; i++) bots.push(createBot('red', canvasW * 0.85, canvasH * (0.2 + i * 0.3)));
+    for (let i = 0; i < 2; i++) bots.push(createBot('blue', map.x + map.w * 0.2, map.y + map.h * (0.3 + i * 0.4)));
+    for (let i = 0; i < 3; i++) bots.push(createBot('red', map.x + map.w * 0.8, map.y + map.h * (0.2 + i * 0.3)));
   }
 
   function createBot(team, x, y) {
@@ -111,14 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return {
       team, x, y, spawnX: x, spawnY: y,
       maxHP: 3000, hp: 3000, 
-      speed: 1.3 + Math.random() * 0.5, // 🐌 ЗАМЕДЛЕН
-      size: 20, damage: 350,
-      attackConf: { ...conf.attack, speed: 6, range: 130, maxCharges: 3, reloadSpeed: 1.6 }, // 📏 ДАЛЬНОСТЬ УМЕНЬШЕНА
+      speed: 1.2 + Math.random() * 0.4, 
+      size: 20, damage: 220, // 📉 Урон ботов снижен
+      attackConf: { ...conf.attack, speed: 6, range: 120, maxCharges: 3, reloadSpeed: 1.7 },
       charges: 3, maxCharges: 3, reloadTimer: 0,
       gems: 0, frozen: 0, poison: { active: false },
       dir: Math.random() * Math.PI * 2, dirTimer: 0,
       alive: true, respawnTimer: 0,
-      attackCooldown: 1.5 // ⏱️ ЗАДЕРЖКА АТАКИ
+      attackCooldown: 1.6
     };
   }
 
@@ -131,20 +140,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isGameOver) return;
 
     gemSpawnTimer += dt;
-    if (gemSpawnTimer >= 5) { gemSpawnTimer = 0; gems.push({ x: canvasW/2, y: canvasH/2, picked: false }); }
+    if (gemSpawnTimer >= 5) { 
+      gemSpawnTimer = 0; 
+      gems.push({ x: map.x + map.w/2, y: map.y + map.h/2, picked: false }); 
+    }
 
     // Игрок
     if (player.alive && player.frozen <= 0) {
-      player.x += moveJoy.dx * player.speed; player.y += moveJoy.dy * player.speed;
+      player.x += moveJoy.dx * player.speed; 
+      player.y += moveJoy.dy * player.speed;
     }
-    player.x = Math.max(player.size, Math.min(canvasW - player.size, player.x));
-    player.y = Math.max(player.size, Math.min(canvasH - player.size, player.y));
+    player.x = clampToMap(player.x, player.size);
+    player.y = clampToMap(player.y, player.size);
 
     if (!player.alive) {
       player.respawnTimer += dt;
       if (player.respawnTimer >= 3) {
         player.alive = true; player.hp = player.maxHP;
-        player.x = canvasW * 0.2; player.y = canvasH * 0.5;
+        player.x = map.x + map.w * 0.2; player.y = map.y + map.h * 0.5;
         player.respawnTimer = 0; player.gems = 0;
       }
     } else {
@@ -152,12 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
         player.reloadTimer += dt;
         if (player.reloadTimer >= player.attackConf.reloadSpeed) { player.reloadTimer -= player.attackConf.reloadSpeed; player.charges++; }
       }
-      // 🔥 Атака только при оттягивании джойстика > 40%. Патрон тратится 1 раз за нажатие.
+      // 🚫 СТРОГАЯ ПРОВЕРКА: если 0 зарядов → атака блокируется полностью
       const attackLen = Math.hypot(attackJoy.dx, attackJoy.dy);
-      if (attackJoy.active && !attackJoy.fired && attackLen > 0.4 && player.charges > 0 && player.frozen <= 0) {
+      if (player.charges > 0 && attackJoy.active && !attackJoy.fired && attackLen > 0.4 && player.frozen <= 0) {
         spawnProjectile(player, attackJoy.dx/attackLen, attackJoy.dy/attackLen);
         player.charges--;
-        attackJoy.fired = true; // Защита от многократной траты за одно удержание
+        attackJoy.fired = true;
       }
       if (player.frozen > 0) player.frozen -= dt;
       applyDoT(player, dt);
@@ -170,18 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
         bot.dirTimer -= dt;
         if (bot.dirTimer <= 0) { bot.dir = Math.random() * Math.PI * 2; bot.dirTimer = 1 + Math.random(); }
         bot.x += Math.cos(bot.dir) * bot.speed; bot.y += Math.sin(bot.dir) * bot.speed;
-        bot.x = Math.max(bot.size, Math.min(canvasW - bot.size, bot.x));
-        bot.y = Math.max(bot.size, Math.min(canvasH - bot.size, bot.y));
+        bot.x = clampToMap(bot.x, bot.size);
+        bot.y = clampToMap(bot.y, bot.size);
 
         if (bot.charges < bot.maxCharges) { bot.reloadTimer += dt; if(bot.reloadTimer >= bot.attackConf.reloadSpeed){bot.reloadTimer=0;bot.charges++;}}
         
-        // 🤖 Атака ботов с задержкой
         bot.attackCooldown -= dt;
         if (bot.attackCooldown <= 0 && bot.charges > 0) {
           const angle = Math.random() * Math.PI * 2;
           spawnProjectile(bot, Math.cos(angle), Math.sin(angle));
           bot.charges--;
-          bot.attackCooldown = 1.4 + Math.random() * 0.8; // 1.4 - 2.2 сек между выстрелами
+          bot.attackCooldown = 1.5 + Math.random() * 0.7;
         }
       }
       if (bot.frozen > 0) bot.frozen -= dt;
@@ -191,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Снаряды
     projectiles.forEach(p => {
       p.x += p.vx; p.y += p.vy; p.life -= dt;
-      if (p.life <= 0 || p.x < -20 || p.x > canvasW+20 || p.y < -20 || p.y > canvasH+20) p.dead = true;
+      if (p.life <= 0 || p.x < map.x || p.x > map.x + map.w || p.y < map.y || p.y > map.y + map.h) p.dead = true;
 
       const targets = p.team === 'blue' 
         ? bots.filter(b => b.team === 'red') 
@@ -238,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyStatus(target, type, freezeDur, poisonDur) {
     if (type === 'freeze') target.frozen = freezeDur;
-    if (type === 'poison') target.poison = { active: true, timer: poisonDur, damage: 60, step: 0 };
+    if (type === 'poison') target.poison = { active: true, timer: poisonDur, damage: 50, step: 0 };
   }
   function applyDoT(target, dt) {
     if (!target.poison.active) return;
@@ -265,26 +277,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- ОТРИСОВКА ---
   function draw() {
-    ctx.clearRect(0, 0, canvasW, canvasH);
-    ctx.strokeStyle = '#3a4a3a'; ctx.lineWidth = 1;
-    for (let x=0; x<canvasW; x+=50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvasH); ctx.stroke(); }
-    for (let y=0; y<canvasH; y+=50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvasW,y); ctx.stroke(); }
+    // 🎨 Бежевый фон
+    ctx.fillStyle = '#e8e4d9';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    // 🗺️ Границы карты
+    ctx.fillStyle = '#d4c9b5';
+    ctx.fillRect(0, 0, canvasW, map.y);
+    ctx.fillRect(0, map.y + map.h, canvasW, canvasH - (map.y + map.h));
+    ctx.fillRect(0, map.y, map.x, map.h);
+    ctx.fillRect(map.x + map.w, map.y, canvasW - (map.x + map.w), map.h);
+
+    // Сетка внутри карты
+    ctx.strokeStyle = '#cbbfae'; ctx.lineWidth = 1;
+    for (let x = map.x; x <= map.x + map.w; x += 50) { ctx.beginPath(); ctx.moveTo(x, map.y); ctx.lineTo(x, map.y + map.h); ctx.stroke(); }
+    for (let y = map.y; y <= map.y + map.h; y += 50) { ctx.beginPath(); ctx.moveTo(map.x, y); ctx.lineTo(map.x + map.w, y); ctx.stroke(); }
+
+    // Центральная линия
+    ctx.strokeStyle = '#b0a591'; ctx.lineWidth = 3; ctx.setLineDash([10, 10]);
+    ctx.beginPath(); ctx.moveTo(map.x + map.w/2, map.y); ctx.lineTo(map.x + map.w/2, map.y + map.h); ctx.stroke();
+    ctx.setLineDash([]);
 
     gems.forEach(g => {
-      ctx.fillStyle = '#00ffff'; ctx.beginPath(); ctx.arc(g.x, g.y, 10, 0, Math.PI*2); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+      ctx.fillStyle = '#00e5ff'; ctx.beginPath(); ctx.arc(g.x, g.y, 10, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(g.x-4, g.y); ctx.lineTo(g.x+4, g.y); ctx.moveTo(g.x, g.y-4); ctx.lineTo(g.x, g.y+4); ctx.stroke();
     });
 
     projectiles.forEach(p => {
-      ctx.fillStyle = p.team === 'blue' ? '#4d9eff' : '#ff4d4d';
+      ctx.fillStyle = p.team === 'blue' ? '#3a8dff' : '#ff3a3a';
       ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
     });
 
     const entities = [player, ...bots];
     entities.forEach(e => {
       if (!e.alive) return;
-      ctx.fillStyle = e.team === 'blue' ? '#4d9eff' : '#ff4d4d';
+      ctx.fillStyle = e.team === 'blue' ? '#3a8dff' : '#ff3a3a';
       ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
       ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.stroke();
 
@@ -293,10 +321,10 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillStyle = e.hp/e.maxHP > 0.3 ? '#4caf50' : '#f44336';
       ctx.fillRect(barX, barY, barW * Math.max(0, e.hp/e.maxHP), barH);
 
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#111'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(Math.ceil(e.hp), e.x, barY - 4);
 
-      if (e.gems > 0) { ctx.fillStyle = '#fff'; ctx.font = '13px sans-serif'; ctx.fillText(`💎${e.gems}`, e.x, barY - 18); }
+      if (e.gems > 0) { ctx.fillStyle = '#111'; ctx.font = '13px sans-serif'; ctx.fillText(`💎${e.gems}`, e.x, barY - 18); }
       if (e.frozen > 0) { ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 6, 0, Math.PI*2); ctx.stroke(); }
     });
   }
@@ -325,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
       joyState.id = e.pointerId; joyState.active = true; joyState.fired = false;
       startX = e.clientX; startY = e.clientY;
       el.setPointerCapture(e.pointerId);
-      // Мгновенный сброс в центр при касании
       el.querySelector('.knob').style.transform = `translate(0px, 0px)`;
       el.style.opacity = '1';
     });
@@ -342,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('pointerup pointercancel', e => {
       if (e.pointerId !== joyState.id) return;
       joyState.active = false; joyState.dx = 0; joyState.dy = 0; joyState.id = null; joyState.fired = false;
-      // Мгновенный возврат в центр при отпускании
       el.querySelector('.knob').style.transform = `translate(0,0)`;
       el.releasePointerCapture(e.pointerId);
     });
