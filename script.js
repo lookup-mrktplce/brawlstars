@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const winText = document.getElementById('win-text');
   const ctx = gameCanvas.getContext('2d');
 
-  // --- ЗАГРУЗКА (Гарантированно работает) ---
+  // --- ЗАГРУЗКА ---
   let progress = 0;
   const loadInterval = setInterval(() => {
     progress += Math.random() * 12 + 5;
@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 80);
 
-  // Загружаем JSON в фоне (НЕ блокирует загрузку)
   fetch('data/brawlers.json')
     .then(r => r.json())
     .then(data => { if (data.brawlers) brawlersConfig = data.brawlers; })
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('brawler-level').textContent = `Уровень: ${playerLevel}`;
     document.getElementById('menu-brawler-img').src = b.image || '';
   }
-
   document.getElementById('btn-play').addEventListener('click', startGame);
   document.getElementById('btn-menu').addEventListener('click', () => {
     gameUI.classList.add('hidden'); mainMenu.classList.remove('hidden');
@@ -72,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let blueScore = 0, redScore = 0;
   let gameLoopId, gemSpawnTimer = 0, isGameOver = false;
   const moveJoy = { active: false, dx: 0, dy: 0, id: null };
-  const attackJoy = { active: false, dx: 0, dy: 0, id: null };
+  const attackJoy = { active: false, dx: 0, dy: 0, id: null, fired: false };
 
   function startGame() {
     gameState = 'playing'; mainMenu.classList.add('hidden'); gameUI.classList.remove('hidden');
@@ -104,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spawnBots() {
-    const conf = brawlersConfig[0] || DEFAULT_BRAWLER;
     for (let i = 0; i < 2; i++) bots.push(createBot('blue', canvasW * 0.15, canvasH * (0.3 + i * 0.4)));
     for (let i = 0; i < 3; i++) bots.push(createBot('red', canvasW * 0.85, canvasH * (0.2 + i * 0.3)));
   }
@@ -113,12 +110,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const conf = brawlersConfig[0] || DEFAULT_BRAWLER;
     return {
       team, x, y, spawnX: x, spawnY: y,
-      maxHP: 3000, hp: 3000, speed: 2.5 + Math.random() * 0.8, size: 20,
-      damage: 350, attackConf: { ...conf.attack, speed: 6, range: 250 },
+      maxHP: 3000, hp: 3000, 
+      speed: 1.3 + Math.random() * 0.5, // 🐌 ЗАМЕДЛЕН
+      size: 20, damage: 350,
+      attackConf: { ...conf.attack, speed: 6, range: 130, maxCharges: 3, reloadSpeed: 1.6 }, // 📏 ДАЛЬНОСТЬ УМЕНЬШЕНА
       charges: 3, maxCharges: 3, reloadTimer: 0,
       gems: 0, frozen: 0, poison: { active: false },
       dir: Math.random() * Math.PI * 2, dirTimer: 0,
-      alive: true, respawnTimer: 0
+      alive: true, respawnTimer: 0,
+      attackCooldown: 1.5 // ⏱️ ЗАДЕРЖКА АТАКИ
     };
   }
 
@@ -152,9 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
         player.reloadTimer += dt;
         if (player.reloadTimer >= player.attackConf.reloadSpeed) { player.reloadTimer -= player.attackConf.reloadSpeed; player.charges++; }
       }
-      if (attackJoy.active && player.charges > 0 && player.frozen <= 0) {
-        const len = Math.hypot(attackJoy.dx, attackJoy.dy);
-        if (len > 0.3) { spawnProjectile(player, attackJoy.dx/len, attackJoy.dy/len); player.charges--; attackJoy.active = false; }
+      // 🔥 Атака только при оттягивании джойстика > 40%. Патрон тратится 1 раз за нажатие.
+      const attackLen = Math.hypot(attackJoy.dx, attackJoy.dy);
+      if (attackJoy.active && !attackJoy.fired && attackLen > 0.4 && player.charges > 0 && player.frozen <= 0) {
+        spawnProjectile(player, attackJoy.dx/attackLen, attackJoy.dy/attackLen);
+        player.charges--;
+        attackJoy.fired = true; // Защита от многократной траты за одно удержание
       }
       if (player.frozen > 0) player.frozen -= dt;
       applyDoT(player, dt);
@@ -172,10 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (bot.charges < bot.maxCharges) { bot.reloadTimer += dt; if(bot.reloadTimer >= bot.attackConf.reloadSpeed){bot.reloadTimer=0;bot.charges++;}}
         
-        // 🤖 Стреляют в случайных направлениях
-        if (Math.random() < 0.015 && bot.charges > 0) {
-          spawnProjectile(bot, Math.cos(bot.dir), Math.sin(bot.dir));
+        // 🤖 Атака ботов с задержкой
+        bot.attackCooldown -= dt;
+        if (bot.attackCooldown <= 0 && bot.charges > 0) {
+          const angle = Math.random() * Math.PI * 2;
+          spawnProjectile(bot, Math.cos(angle), Math.sin(angle));
           bot.charges--;
+          bot.attackCooldown = 1.4 + Math.random() * 0.8; // 1.4 - 2.2 сек между выстрелами
         }
       }
       if (bot.frozen > 0) bot.frozen -= dt;
@@ -187,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
       p.x += p.vx; p.y += p.vy; p.life -= dt;
       if (p.life <= 0 || p.x < -20 || p.x > canvasW+20 || p.y < -20 || p.y > canvasH+20) p.dead = true;
 
-      // 🛡️ Нет дружественного огня
       const targets = p.team === 'blue' 
         ? bots.filter(b => b.team === 'red') 
         : [player, ...bots.filter(b => b.team === 'blue')];
@@ -288,7 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillStyle = e.hp/e.maxHP > 0.3 ? '#4caf50' : '#f44336';
       ctx.fillRect(barX, barY, barW * Math.max(0, e.hp/e.maxHP), barH);
 
-      // 🔢 Цифры ХП
       ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(Math.ceil(e.hp), e.x, barY - 4);
 
@@ -317,17 +321,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupJoystick(el, joyState) {
     let startX, startY; const maxDist = 35;
-    el.addEventListener('pointerdown', e => { joyState.id = e.pointerId; joyState.active = true; startX = e.clientX; startY = e.clientY; el.setPointerCapture(e.pointerId); });
+    el.addEventListener('pointerdown', e => {
+      joyState.id = e.pointerId; joyState.active = true; joyState.fired = false;
+      startX = e.clientX; startY = e.clientY;
+      el.setPointerCapture(e.pointerId);
+      // Мгновенный сброс в центр при касании
+      el.querySelector('.knob').style.transform = `translate(0px, 0px)`;
+      el.style.opacity = '1';
+    });
     el.addEventListener('pointermove', e => {
       if (e.pointerId !== joyState.id) return;
-      const dx = e.clientX - startX, dy = e.clientY - startY, dist = Math.hypot(dx, dy), clamped = Math.min(dist, maxDist);
-      const angle = Math.atan2(dy, dx); joyState.dx = Math.cos(angle) * (clamped / maxDist); joyState.dy = Math.sin(angle) * (clamped / maxDist);
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      const dist = Math.hypot(dx, dy);
+      const clamped = Math.min(dist, maxDist);
+      const angle = Math.atan2(dy, dx);
+      joyState.dx = Math.cos(angle) * (clamped / maxDist);
+      joyState.dy = Math.sin(angle) * (clamped / maxDist);
       el.querySelector('.knob').style.transform = `translate(${joyState.dx * 35}px, ${joyState.dy * 35}px)`;
     });
     el.addEventListener('pointerup pointercancel', e => {
       if (e.pointerId !== joyState.id) return;
-      joyState.active = false; joyState.dx = 0; joyState.dy = 0; joyState.id = null;
-      el.querySelector('.knob').style.transform = `translate(0,0)`; el.releasePointerCapture(e.pointerId);
+      joyState.active = false; joyState.dx = 0; joyState.dy = 0; joyState.id = null; joyState.fired = false;
+      // Мгновенный возврат в центр при отпускании
+      el.querySelector('.knob').style.transform = `translate(0,0)`;
+      el.releasePointerCapture(e.pointerId);
     });
   }
   setupJoystick(document.getElementById('move-joystick'), moveJoy);
