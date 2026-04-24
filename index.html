@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Brawl Stars 2D Clone</title>
+  <title>Brawl Stars 2D</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Загрузка -->
   <div id="loading-screen">
     <div id="loading-bar-container"><div id="loading-bar"></div></div>
     <div id="loading-text">Загрузка: 0%</div>
   </div>
 
+  <!-- Главное меню -->
   <div id="main-menu" class="hidden">
     <div class="menu-left">
       <button id="btn-shop">🛒 Магазин</button>
       <button id="btn-brawlers">🥊 Бойцы</button>
     </div>
     <div class="menu-center">
-      <img id="menu-brawler-img" src="data/shelly.png" alt="Brawler" onerror="this.style.background='#555'">
+      <img id="menu-brawler-img" alt="Brawler">
       <div id="brawler-level">Уровень: 0</div>
       <div id="brawler-name">Shelly</div>
     </div>
@@ -27,8 +29,10 @@
     </div>
   </div>
 
+  <!-- Игровой холст -->
   <canvas id="game-canvas"></canvas>
-  
+
+  <!-- Интерфейс игры -->
   <div id="game-ui" class="hidden">
     <div id="ui-top">
       <div id="hp-bar-container"><div id="hp-bar"></div></div>
@@ -45,6 +49,6 @@
     </div>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
