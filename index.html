@@ -1,35 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Brawl Stars HTML</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Brawl Stars 2D Clone</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="loading-screen">
-        <h1>BRAWL CLONE</h1>
-        <div class="progress-bar"><div id="progress-fill"></div></div>
-        <p id="loading-text">0%</p>
-    </div>
+  <div id="loading-screen">
+    <div id="loading-bar-container"><div id="loading-bar"></div></div>
+    <div id="loading-text">Загрузка: 0%</div>
+  </div>
 
-    <div id="main-menu">
-        <div class="top-bar">
-            <div class="currency">🟡 9999</div>
-            <div class="currency">💎 50</div>
-        </div>
-        <button style="position:absolute; bottom:50px; right:50px; padding:20px 60px; font-size:30px; background:#ffcc00; border-radius:15px; border:none; cursor:pointer;" onclick="startBattle()">ИГРАТЬ</button>
+  <div id="main-menu" class="hidden">
+    <div class="menu-left">
+      <button id="btn-shop">🛒 Магазин</button>
+      <button id="btn-brawlers">🥊 Бойцы</button>
     </div>
+    <div class="menu-center">
+      <img id="menu-brawler-img" src="data/shelly.png" alt="Brawler" onerror="this.style.background='#555'">
+      <div id="brawler-level">Уровень: 0</div>
+      <div id="brawler-name">Shelly</div>
+    </div>
+    <div class="menu-right">
+      <button id="btn-play">▶ Играть</button>
+    </div>
+  </div>
 
-    <div id="battle-screen" style="display:none;">
-        <div id="battle-ui">
-            <div style="color:#3498db">СИНИЕ: <span id="blue-gems">0</span></div>
-            <div style="color:#e74c3c">КРАСНЫЕ: <span id="red-gems">0</span></div>
-        </div>
-        <canvas id="gameCanvas"></canvas>
-        <div id="controls">
-            <div id="move-zone" class="joystick-zone"><div class="joystick-base"><div id="move-stick" class="stick"></div></div></div>
-            <div id="attack-zone" class="joystick-zone"><div class="joystick-base"><div id="attack-stick" class="stick"></div></div></div>
-        </div>
+  <canvas id="game-canvas"></canvas>
+  
+  <div id="game-ui" class="hidden">
+    <div id="ui-top">
+      <div id="hp-bar-container"><div id="hp-bar"></div></div>
+      <div id="ammo-container"></div>
     </div>
-    <script src="script.js"></script>
+    <div id="score-display">🔵 Синие: 0 | 🔴 Красные: 0</div>
+    <div id="win-screen" class="hidden">
+      <h1 id="win-text">ПОБЕДА!</h1>
+      <button id="btn-menu">В главное меню</button>
+    </div>
+    <div id="joysticks">
+      <div id="move-joystick" class="joystick"><div class="knob"></div></div>
+      <div id="attack-joystick" class="joystick"><div class="knob"></div></div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>
