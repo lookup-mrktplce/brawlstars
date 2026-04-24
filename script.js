@@ -46,10 +46,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 80);
 
-  fetch('data/brawlers.json')
-    .then(r => r.json())
-    .then(data => { if (data.brawlers) brawlersConfig = data.brawlers; })
-    .catch(() => console.log('JSON не найден, используется стандартный боец'));
+  // Загрузчик JSON с принудительным отключением кэша и проверкой ключей
+  fetch('data/brawlers.json?v=' + Date.now(), { cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then(data => {
+      if (data.brawlers && data.brawlers.length > 0) {
+        brawlersConfig = data.brawlers;
+        console.log('✅ Боец из JSON:', data.brawlers[0].name);
+        console.log(`❤️ HP: ${data.brawlers[0].baseHP} | ⚔️ DMG: ${data.brawlers[0].baseDamage}`);
+      } else {
+        console.warn('⚠️ Массив "brawlers" пуст или отсутствует в JSON');
+      }
+    })
+    .catch(e => console.error('❌ Ошибка загрузки JSON:', e));
 
   // --- МЕНЮ ---
   function updateMenuUI() {
