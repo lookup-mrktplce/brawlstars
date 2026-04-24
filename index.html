@@ -17,6 +17,7 @@
     .btn-secondary { background: #e2e8f0; color: var(--text); }
     .btn-secondary:hover { background: #cbd5e1; }
     .btn-google { background: #fff; color: #333; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-small { padding: 0.5rem; font-size: 0.85rem; margin-top: 0.5rem; }
     .hidden { display: none !important; }
     .status { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.9rem; animation: fadeIn 0.3s; }
     .status.success { background: #dcfce7; color: #15803d; }
@@ -52,7 +53,13 @@
     <!-- ЛИЧНЫЙ КАБИНЕТ (после входа) -->
     <div id="dashboard-section" class="hidden">
       <p style="text-align:center; margin-bottom:1rem;">✅ Вы вошли как: <b id="user-email"></b></p>
-      <p id="verify-warning" style="color:#b91c1c; font-size:0.9rem; text-align:center; margin-bottom:1rem;" class="hidden">⚠️ Подтвердите почту в письме, чтобы создать объявления.</p>
+      
+      <!-- Предупреждение о неподтверждённой почте + кнопка повторной отправки -->
+      <div id="verify-block" class="hidden" style="background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:0.8rem; margin-bottom:1rem;">
+        <p style="color:#c2410c; font-size:0.9rem; margin:0 0 0.5rem;">⚠️ Подтвердите почту, чтобы получить полный доступ.</p>
+        <button id="btn-resend" class="btn-secondary btn-small">Отправить письмо ещё раз</button>
+      </div>
+
       <button id="btn-logout" class="btn-secondary">Выйти</button>
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:1.2rem 0;">
       <p style="color:#64748b; text-align:center;">📦 Раздел создания объявлений подключим следующим шагом.</p>
@@ -63,7 +70,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // 🔽 ВСТАВЬ СЮДА КОНФИГ ИЗ FIREBASE CONSOLE (⚙️ Project settings -> Your apps -> Web)
     const firebaseConfig = {
       apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
       authDomain: "exzzy1-84d88.firebaseapp.com",
@@ -82,7 +88,7 @@
     const statusEl = document.getElementById('auth-status');
     const emailInput = document.getElementById('email');
     const passInput = document.getElementById('password');
-    const verifyWarning = document.getElementById('verify-warning');
+    const verifyBlock = document.getElementById('verify-block');
 
     function showStatus(msg, type = 'error') {
       statusEl.textContent = msg;
@@ -91,17 +97,53 @@
       setTimeout(() => statusEl.classList.add('hidden'), 5000);
     }
 
-    // Регистрация
+    // 🔁 Функция отправки письма подтверждения
+    async function resendVerificationEmail() {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        await sendEmailVerification(user);
+        showStatus('📧 Письмо отправлено! Проверь почту и спам.', 'success');
+      } catch (e) {
+        console.error('Resend error:', e);
+        // Частые ошибки и подсказки
+        if (e.code === 'auth/too-many-requests') {
+          showStatus('⏳ Слишком много запросов. Подожди 1-2 минуты.', 'error');
+        } else {
+          showStatus('❌ Не удалось отправить письмо. Попробуй позже.', 'error');
+        }
+      }
+    }
+
+    // Регистрация с улучшенной обработкой
     document.getElementById('btn-register').onclick = async () => {
       const email = emailInput.value.trim();
       const pass = passInput.value;
       if (!email || pass.length < 6) return showStatus('Введите email и пароль (мин. 6 символов)');
+      
+      statusEl.textContent = '⏳ Создаём аккаунт...';
+      statusEl.className = 'status';
+      statusEl.classList.remove('hidden');
+
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await sendEmailVerification(cred.user);
-        showStatus('📧 Письмо отправлено! Подтвердите адрес в почте.', 'success');
+        
+        // Пытаемся отправить письмо, но НЕ блокируем, если не вышло
+        try {
+          await sendEmailVerification(cred.user);
+          showStatus('📧 Письмо отправлено! Проверь почту (и спам).', 'success');
+        } catch (emailErr) {
+          console.warn('Письмо не отправлено:', emailErr.code);
+          showStatus('✅ Аккаунт создан! Письмо может задержаться — проверь спам или нажми "Отправить ещё раз" в личном кабинете.', 'success');
+        }
         emailInput.value = passInput.value = '';
-      } catch (e) { showStatus(e.code.replace('auth/', '').replace(/-/g, ' ')); }
+      } catch (e) {
+        const msg = e.code?.includes('email-already-in-use') ? 'Email уже зарегистрирован' :
+                    e.code?.includes('weak-password') ? 'Пароль должен быть длиннее 6 символов' :
+                    e.code?.includes('invalid-email') ? 'Некорректный email' :
+                    e.code?.replace('auth/', '').replace(/-/g, ' ') || 'Ошибка регистрации';
+        showStatus('❌ ' + msg);
+      }
     };
 
     // Вход
@@ -111,30 +153,42 @@
       if (!email || !pass) return showStatus('Заполните все поля');
       try {
         await signInWithEmailAndPassword(auth, email, pass);
-      } catch (e) { showStatus(e.code.replace('auth/', '').replace(/-/g, ' ')); }
+      } catch (e) {
+        const msg = e.code?.includes('user-not-found') ? 'Аккаунт не найден' :
+                    e.code?.includes('wrong-password') ? 'Неверный пароль' :
+                    e.code?.replace('auth/', '').replace(/-/g, ' ') || 'Ошибка входа';
+        showStatus('❌ ' + msg);
+      }
     };
 
-    // Google
+    // Google вход
     document.getElementById('btn-google').onclick = async () => {
       try {
         await signInWithPopup(auth, new GoogleAuthProvider());
-      } catch (e) { showStatus(e.code.replace('auth/', '').replace(/-/g, ' ')); }
+      } catch (e) {
+        showStatus('❌ ' + (e.code?.replace('auth/', '').replace(/-/g, ' ') || 'Ошибка Google входа'));
+      }
     };
 
     // Выход
     document.getElementById('btn-logout').onclick = () => signOut(auth);
+    
+    // Повторная отправка письма
+    document.getElementById('btn-resend').onclick = resendVerificationEmail;
 
-    // Отслеживание состояния
+    // Отслеживание состояния авторизации
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById('user-email').textContent = user.email;
         authSection.classList.add('hidden');
         dashboardSection.classList.remove('hidden');
-        if (!user.emailVerified) verifyWarning.classList.remove('hidden');
-        else verifyWarning.classList.add('hidden');
+        
+        // Показываем блок с предупреждением ТОЛЬКО если почта не подтверждена
+        verifyBlock.classList.toggle('hidden', user.emailVerified);
       } else {
         authSection.classList.remove('hidden');
         dashboardSection.classList.add('hidden');
+        verifyBlock.classList.add('hidden');
       }
     });
   </script>
