@@ -1,254 +1,388 @@
-class Game {
-    constructor() {
-        this.canvas = document.getElementById('gameCanvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.brawlersData = [];
-        this.entities = [];
-        this.bullets = [];
-        this.crystals = [];
-        this.scores = { blue: 0, red: 0 };
-        this.inputs = { move: {x:0, y:0}, attack: {x:0, y:0, active: false} };
-        
-        this.init();
+// script.js
+let gameState = 'loading';
+let brawlersConfig = [];
+let currentBrawlerIndex = 0;
+let playerLevel = 0;
+
+// DOM
+const loadingScreen = document.getElementById('loading-screen');
+const loadingBar = document.getElementById('loading-bar');
+const loadingText = document.getElementById('loading-text');
+const mainMenu = document.getElementById('main-menu');
+const gameCanvas = document.getElementById('game-canvas');
+const gameUI = document.getElementById('game-ui');
+const winScreen = document.getElementById('win-screen');
+const winText = document.getElementById('win-text');
+
+const ctx = gameCanvas.getContext('2d');
+
+// Game State
+let canvasW, canvasH;
+let player, bots = [], projectiles = [], gems = [];
+let blueScore = 0, redScore = 0;
+let gameLoopId;
+let gemSpawnTimer = 0;
+let isGameOver = false;
+
+// Joystick State
+const moveJoy = { active: false, dx: 0, dy: 0, id: null };
+const attackJoy = { active: false, dx: 0, dy: 0, id: null };
+
+// --- 1. Loading ---
+async function initLoading() {
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += Math.random() * 8 + 2;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(interval);
+      loadingBar.style.width = '100%';
+      loadingText.textContent = 'Загрузка: 100%';
+      await loadBrawlerData();
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+        mainMenu.classList.remove('hidden');
+        gameState = 'menu';
+        updateMenuUI();
+      }, 400);
     }
-
-    async init() {
-        // Симуляция прогресса загрузки
-        let progress = 0;
-        const loader = setInterval(() => {
-            progress += 2;
-            document.getElementById('progress-fill').style.width = progress + '%';
-            document.getElementById('loading-text').innerText = `Загрузка... ${progress}%`;
-            if (progress >= 100) { clearInterval(loader); this.setupMenu(); }
-        }, 30);
-    }
-
-    setupMenu() {
-        // В продакшене тут fetch('./data/brawlers.json')
-        // Для примера используем встроенный конфиг (Шелли)
-        this.brawlersData = [{
-            id: 'shelly', name: 'ШЕЛЛИ', hp_base: 3200, hp_step: 160, speed: 3.8,
-            ammo_max: 3, reload_time: 1500,
-            attack: { damage_base: 1000, damage_step: 100, range: 350, effect: 'normal' }
-        }];
-
-        document.getElementById('loading-screen').style.display = 'none';
-        document.getElementById('main-menu').style.display = 'block';
-        this.initJoysticks();
-    }
-
-    initJoysticks() {
-        const setup = (zoneId, stickId, isAttack) => {
-            const zone = document.getElementById(zoneId);
-            const stick = document.getElementById(stickId);
-            let active = false;
-
-            const move = (e) => {
-                if (!active) return;
-                const touch = e.touches ? e.touches[0] : e;
-                const rect = zone.getBoundingClientRect();
-                const center = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
-                let dx = touch.clientX - center.x;
-                let dy = touch.clientY - center.y;
-                const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
-                const angle = Math.atan2(dy, dx);
-                
-                const valX = Math.cos(angle) * (dist/50);
-                const valY = Math.sin(angle) * (dist/50);
-                stick.style.transform = `translate(${valX*30}px, ${valY*30}px)`;
-                
-                if (isAttack) {
-                    this.inputs.attack = { x: valX, y: valY, active: true };
-                } else {
-                    this.inputs.move = { x: valX, y: valY };
-                }
-            };
-
-            zone.onmousedown = (e) => { active = true; move(e); };
-            window.addEventListener('mouseup', () => { 
-                if (isAttack && this.inputs.attack.active) this.playerShoot();
-                active = false; 
-                stick.style.transform = 'translate(0,0)'; 
-                if (isAttack) this.inputs.attack.active = false; else this.inputs.move = {x:0, y:0};
-            });
-            zone.ontouchstart = (e) => { active = true; move(e); };
-            window.addEventListener('mousemove', move);
-            window.addEventListener('touchmove', move);
-        };
-
-        setup('move-zone', 'move-stick', false);
-        setup('attack-zone', 'attack-stick', true);
-    }
-
-    startBattle() {
-        document.getElementById('main-menu').style.display = 'none';
-        document.getElementById('battle-screen').style.display = 'block';
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-
-        const config = this.brawlersData[0]; // Шелли
-        // Наша команда (Синие)
-        this.entities.push(new Entity(150, 300, 'blue', config, 5, true)); // Игрок 5 лвл
-        this.entities.push(new Entity(150, 150, 'blue', config, 3));
-        this.entities.push(new Entity(150, 450, 'blue', config, 3));
-        // Враги (Красные)
-        this.entities.push(new Entity(this.canvas.width-150, 150, 'red', config, 3));
-        this.entities.push(new Entity(this.canvas.width-150, 300, 'red', config, 3));
-        this.entities.push(new Entity(this.canvas.width-150, 450, 'red', config, 3));
-
-        setInterval(() => this.spawnCrystal(), 8000);
-        this.gameLoop();
-    }
-
-    spawnCrystal() {
-        this.crystals.push({ x: this.canvas.width/2, y: this.canvas.height/2 });
-    }
-
-    playerShoot() {
-        const p = this.entities.find(e => e.isPlayer);
-        if (p && p.ammo >= 1) {
-            const angle = Math.atan2(this.inputs.attack.y, this.inputs.attack.x);
-            this.fire(p, angle);
-            p.ammo--;
-        }
-    }
-
-    fire(owner, angle) {
-        this.bullets.push({
-            x: owner.x, y: owner.y,
-            vx: Math.cos(angle) * 12, vy: Math.sin(angle) * 12,
-            damage: owner.damage, team: owner.team,
-            range: owner.config.attack.range, traveled: 0,
-            effect: owner.config.attack.effect
-        });
-    }
-
-    gameLoop() {
-        this.update();
-        this.draw();
-        requestAnimationFrame(() => this.gameLoop());
-    }
-
-    update() {
-        this.entities.forEach(ent => ent.update(this));
-        
-        this.bullets.forEach((b, i) => {
-            b.x += b.vx; b.y += b.vy; b.traveled += 12;
-            if (b.traveled > b.range) return this.bullets.splice(i, 1);
-
-            this.entities.forEach(target => {
-                if (target.team !== b.team && Math.hypot(target.x - b.x, target.y - b.y) < 30) {
-                    target.takeDamage(b.damage, b.effect);
-                    this.bullets.splice(i, 1);
-                }
-            });
-        });
-    }
-
-    draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        // Центр
-        this.ctx.fillStyle = 'rgba(204, 0, 255, 0.2)';
-        this.ctx.beginPath(); this.ctx.arc(this.canvas.width/2, this.canvas.height/2, 50, 0, Math.PI*2); this.ctx.fill();
-        
-        this.crystals.forEach(c => {
-            this.ctx.fillStyle = '#cc00ff';
-            this.ctx.beginPath(); this.ctx.arc(c.x, c.y, 12, 0, Math.PI*2); this.ctx.fill();
-        });
-
-        this.entities.forEach(e => e.draw(this.ctx));
-        this.bullets.forEach(b => {
-            this.ctx.fillStyle = '#f1c40f';
-            this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 7, 0, Math.PI*2); this.ctx.fill();
-        });
-    }
+    loadingBar.style.width = `${progress}%`;
+    loadingText.textContent = `Загрузка: ${Math.floor(progress)}%`;
+  }, 50);
 }
 
-class Entity {
-    constructor(x, y, team, config, level, isPlayer = false) {
-        this.x = x; this.y = y; this.team = team; this.config = config; this.isPlayer = isPlayer;
-        this.maxHp = config.hp_base + (config.hp_step * (level - 1));
-        this.hp = this.maxHp;
-        this.damage = config.attack.damage_base + (config.attack.damage_step * (level - 1));
-        this.ammo = config.ammo_max;
-        this.gems = 0;
-        this.isFrozen = false;
-        this.poisonTicks = 0;
-        this.lastAi = 0;
-        this.target = {x: x, y: y};
-    }
-
-    takeDamage(amt, effect) {
-        this.hp -= amt;
-        if (effect === 'freeze') {
-            this.isFrozen = true;
-            setTimeout(() => this.isFrozen = false, 2000);
-        }
-        if (effect === 'poison') this.poisonTicks = 4;
-    }
-
-    update(game) {
-        if (this.hp <= 0) {
-            // Drop Gems
-            for(let i=0; i<this.gems; i++) game.crystals.push({x: this.x + Math.random()*60-30, y: this.y + Math.random()*60-30});
-            if (this.team === 'blue') game.scores.blue -= this.gems; else game.scores.red -= this.gems;
-            this.gems = 0; this.hp = this.maxHp; this.x = this.team === 'blue' ? 100 : game.canvas.width-100;
-            return;
-        }
-
-        if (this.isFrozen) return;
-
-        // Яд
-        if (this.poisonTicks > 0) {
-            this.hp -= 100; // Урон от яда
-            this.poisonTicks -= 0.01;
-        }
-
-        if (this.isPlayer) {
-            this.x += game.inputs.move.x * this.config.speed;
-            this.y += game.inputs.move.y * this.config.speed;
-        } else {
-            // ИИ ботов
-            if (Date.now() - this.lastAi > 3000) {
-                this.target = { x: Math.random()*game.canvas.width, y: Math.random()*game.canvas.height };
-                this.lastAi = Date.now();
-                // Бот стреляет в игрока
-                const p = game.entities[0];
-                game.fire(this, Math.atan2(p.y - this.y, p.x - this.x));
-            }
-            let dx = this.target.x - this.x;
-            let dy = this.target.y - this.y;
-            let d = Math.hypot(dx, dy);
-            if (d > 20) { this.x += (dx/d)*2; this.y += (dy/d)*2; }
-        }
-
-        // Подбор кристаллов
-        game.crystals.forEach((c, i) => {
-            if (Math.hypot(this.x - c.x, this.y - c.y) < 40) {
-                game.crystals.splice(i, 1);
-                this.gems++;
-                if(this.team === 'blue') game.scores.blue++; else game.scores.red++;
-                document.getElementById('blue-gems').innerText = game.scores.blue;
-                document.getElementById('red-gems').innerText = game.scores.red;
-            }
-        });
-    }
-
-    draw(ctx) {
-        ctx.fillStyle = this.team === 'blue' ? '#3498db' : '#e74c3c';
-        if (this.isFrozen) ctx.fillStyle = '#81ecec';
-        ctx.beginPath(); ctx.arc(this.x, this.y, 25, 0, Math.PI*2); ctx.fill();
-        if (this.isPlayer) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.stroke(); }
-        
-        // HP Bar
-        ctx.fillStyle = '#000'; ctx.fillRect(this.x-30, this.y-45, 60, 8);
-        ctx.fillStyle = '#2ecc71'; ctx.fillRect(this.x-30, this.y-45, (this.hp/this.maxHp)*60, 8);
-        
-        if (this.gems > 0) {
-            ctx.fillStyle = '#fff'; ctx.fillText("💎 " + this.gems, this.x - 15, this.y - 55);
-        }
-    }
+async function loadBrawlerData() {
+  try {
+    const res = await fetch('data/brawlers.json');
+    brawlersConfig = await res.json();
+    console.log('Brawlers loaded:', brawlersConfig);
+  } catch (e) {
+    console.error('Ошибка загрузки JSON:', e);
+    brawlersConfig = [{ id: 'shelly', name: 'Shelly', baseHP: 3600, hpPerLevel: 300, baseDamage: 400, damagePerLevel: 50, speed: 3.5, size: 22, attack: { speed: 8, size: 8, range: 280, shape: 'projectile', type: 'aimed', maxCharges: 3, reloadSpeed: 1.2 } }];
+  }
 }
 
-const game = new Game();
-function startBattle() { game.startBattle(); }
+// --- 2. Menu ---
+function updateMenuUI() {
+  const b = brawlersConfig[currentBrawlerIndex];
+  document.getElementById('brawler-name').textContent = b.name;
+  document.getElementById('brawler-level').textContent = `Уровень: ${playerLevel}`;
+  document.getElementById('menu-brawler-img').src = b.image || '';
+}
+
+document.getElementById('btn-play').addEventListener('click', startGame);
+document.getElementById('btn-menu').addEventListener('click', () => {
+  gameUI.classList.add('hidden');
+  mainMenu.classList.remove('hidden');
+  gameState = 'menu';
+});
+
+// --- 3. Game Setup ---
+function startGame() {
+  gameState = 'playing';
+  mainMenu.classList.add('hidden');
+  gameUI.classList.remove('hidden');
+  winScreen.classList.add('hidden');
+  isGameOver = false;
+  blueScore = 0; redScore = 0;
+  gems = []; projectiles = []; bots = [];
+  gemSpawnTimer = 0;
+
+  resizeCanvas();
+  setupPlayer();
+  spawnBots();
+  updateUI();
+  
+  if (gameLoopId) cancelAnimationFrame(gameLoopId);
+  gameLoop();
+}
+
+function setupPlayer() {
+  const conf = brawlersConfig[currentBrawlerIndex];
+  player = {
+    team: 'blue',
+    x: canvasW * 0.2, y: canvasH * 0.5,
+    maxHP: conf.baseHP + (conf.hpPerLevel * playerLevel),
+    hp: conf.baseHP + (conf.hpPerLevel * playerLevel),
+    speed: conf.speed,
+    size: conf.size,
+    damage: conf.baseDamage + (conf.damagePerLevel * playerLevel),
+    attackConf: conf.attack,
+    charges: conf.attack.maxCharges,
+    maxCharges: conf.attack.maxCharges,
+    reloadTimer: 0,
+    gems: 0,
+    frozen: 0,
+    poison: { active: false, timer: 0, damage: 0, step: 0 }
+  };
+}
+
+function spawnBots() {
+  const conf = brawlersConfig[currentBrawlerIndex]; // Bots use same stats for simplicity
+  for (let i = 0; i < 2; i++) {
+    bots.push(createBot('blue', canvasW * 0.15, canvasH * (0.3 + i * 0.4)));
+  }
+  for (let i = 0; i < 3; i++) {
+    bots.push(createBot('red', canvasW * 0.85, canvasH * (0.2 + i * 0.3)));
+  }
+}
+
+function createBot(team, x, y) {
+  const conf = brawlersConfig[0];
+  return {
+    team, x, y, spawnX: x, spawnY: y,
+    maxHP: 3000, hp: 3000, speed: 2.8 + Math.random(), size: 20,
+    damage: 350, attackConf: { ...conf.attack, speed: 6, range: 250 },
+    charges: 3, maxCharges: 3, reloadTimer: 0,
+    gems: 0, frozen: 0, poison: { active: false },
+    dir: Math.random() * Math.PI * 2, dirTimer: 0,
+    alive: true, respawnTimer: 0
+  };
+}
+
+// --- 4. Game Loop ---
+function resizeCanvas() {
+  canvasW = window.innerWidth;
+  canvasH = window.innerHeight;
+  gameCanvas.width = canvasW;
+  gameCanvas.height = canvasH;
+}
+window.addEventListener('resize', resizeCanvas);
+
+function gameLoop() {
+  if (gameState !== 'playing') return;
+  const dt = 1/60;
+  update(dt);
+  draw();
+  gameLoopId = requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+  if (isGameOver) return;
+
+  // Gem Spawn
+  gemSpawnTimer += dt;
+  if (gemSpawnTimer >= 5) {
+    gemSpawnTimer = 0;
+    gems.push({ x: canvasW/2, y: canvasH/2, picked: false });
+  }
+
+  // Player Movement & Joystick
+  if (player.alive !== false && player.frozen <= 0) {
+    player.x += moveJoy.dx * player.speed;
+    player.y += moveJoy.dy * player.speed;
+  }
+  player.x = Math.max(player.size, Math.min(canvasW - player.size, player.x));
+  player.y = Math.max(player.size, Math.min(canvasH - player.size, player.y));
+
+  // Player Reload
+  if (player.charges < player.maxCharges) {
+    player.reloadTimer += dt;
+    if (player.reloadTimer >= player.attackConf.reloadSpeed) {
+      player.reloadTimer -= player.attackConf.reloadSpeed;
+      player.charges++;
+    }
+  }
+
+  // Player Attack
+  if (attackJoy.active && player.charges > 0 && player.frozen <= 0) {
+    const len = Math.hypot(attackJoy.dx, attackJoy.dy);
+    if (len > 0.3) {
+      spawnProjectile(player, attackJoy.dx/len, attackJoy.dy/len);
+      player.charges--;
+      attackJoy.active = false; // Tap to shoot
+    }
+  }
+
+  // Player Status Effects
+  if (player.frozen > 0) player.frozen -= dt;
+  applyDoT(player, dt);
+
+  // Bots Update
+  bots.forEach(bot => {
+    if (!bot.alive) {
+      bot.respawnTimer += dt;
+      if (bot.respawnTimer >= 3) {
+        bot.alive = true; bot.hp = bot.maxHP; bot.x = bot.spawnX; bot.y = bot.spawnY; bot.respawnTimer = 0;
+      }
+      return;
+    }
+
+    if (bot.frozen <= 0) {
+      bot.dirTimer -= dt;
+      if (bot.dirTimer <= 0) { bot.dir = Math.random() * Math.PI * 2; bot.dirTimer = 1 + Math.random(); }
+      bot.x += Math.cos(bot.dir) * bot.speed;
+      bot.y += Math.sin(bot.dir) * bot.speed;
+      bot.x = Math.max(bot.size, Math.min(canvasW - bot.size, bot.x));
+      bot.y = Math.max(bot.size, Math.min(canvasH - bot.size, bot.y));
+
+      // Bot Attack
+      if (bot.charges < bot.maxCharges) { bot.reloadTimer += dt; if(bot.reloadTimer >= bot.attackConf.reloadSpeed){bot.reloadTimer=0;bot.charges++;}}
+      if (Math.random() < 0.015 && bot.charges > 0) {
+        const target = bot.team === 'blue' ? (Math.random() > 0.5 ? player : bots.find(b=>b.team==='red')) : (player || bots.find(b=>b.team==='blue'));
+        if (target && target.alive) {
+          const dx = target.x - bot.x, dy = target.y - bot.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < bot.attackConf.range) {
+            spawnProjectile(bot, dx/dist, dy/dist);
+            bot.charges--;
+          }
+        }
+      }
+    }
+    if (bot.frozen > 0) bot.frozen -= dt;
+    applyDoT(bot, dt);
+  });
+
+  // Projectiles Update
+  projectiles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.life -= dt;
+    if (p.life <= 0 || p.x < 0 || p.x > canvasW || p.y < 0 || p.y > canvasH) p.dead = true;
+
+    // Collision
+    const targets = p.team === 'blue' ? [player, ...bots.filter(b=>b.team==='red')] : [player, ...bots.filter(b=>b.team==='blue')];
+    for (let t of targets) {
+      if (!t.alive) continue;
+      if (Math.hypot(p.x - t.x, p.y - t.y) < t.size + p.size) {
+        t.hp -= p.damage;
+        applyStatus(t, p.damageType, p.freezeDur, p.poisonDur);
+        p.dead = true;
+        break;
+      }
+    }
+  });
+  projectiles = projectiles.filter(p => !p.dead);
+
+  // Gems Logic
+  gems.forEach(g => {
+    if (g.picked) return;
+    const entities = [player, ...bots];
+    for (let e of entities) {
+      if (e.alive && Math.hypot(g.x - e.x, g.y - e.y) < e.size + 10) {
+        g.picked = true;
+        e.gems++;
+        if (e.team === 'blue') blueScore++; else redScore++;
+        if (blueScore >= 10) endGame('blue');
+        if (redScore >= 10) endGame('red');
+        break;
+      }
+    }
+  });
+  gems = gems.filter(g => !g.picked || g.dropped);
+
+  // Check Deaths
+  checkDeath(player, 'blue');
+  bots.forEach(b => checkDeath(b, b.team));
+}
+
+function checkDeath(entity, team) {
+  if (entity.hp <= 0 && entity.alive) {
+    entity.alive = false; entity.respawnTimer = 0;
+    if (team === 'blue') { blueScore -= entity.gems; blueScore = Math.max(0, blueScore); }
+    else { redScore -= entity.gems; redScore = Math.max(0, redScore); }
+    for(let i=0;i<entity.gems;i++) gems.push({ x: entity.x + (Math.random()-0.5)*20, y: entity.y + (Math.random()-0.5)*20, dropped: true, picked: false });
+    entity.gems = 0;
+  }
+}
+
+function applyStatus(target, type, freezeDur, poisonDur) {
+  if (type === 'freeze') target.frozen = freezeDur;
+  if (type === 'poison') {
+    target.poison = { active: true, timer: poisonDur, damage: 50, step: 0 };
+  }
+}
+
+function applyDoT(target, dt) {
+  if (!target.poison.active) return;
+  target.poison.step += dt;
+  if (target.poison.step >= 0.5) {
+    target.hp -= target.poison.damage;
+    target.poison.damage = Math.max(10, target.poison.damage - 5);
+    target.poison.step = 0;
+  }
+  target.poison.timer -= dt;
+  if (target.poison.timer <= 0) target.poison.active = false;
+}
+
+function spawnProjectile(owner, dx, dy) {
+  projectiles.push({
+    x: owner.x, y: owner.y,
+    vx: dx * owner.attackConf.speed, vy: dy * owner.attackConf.speed,
+    size: owner.attackConf.size, damage: owner.damage, team: owner.team,
+    life: owner.attackConf.range / owner.attackConf.speed,
+    damageType: owner.attackConf.damageType,
+    freezeDur: owner.attackConf.freezeDuration,
+    poisonDur: owner.attackConf.poisonDuration,
+    dead: false
+  });
+}
+
+function endGame(winnerTeam) {
+  isGameOver = true;
+  winText.textContent = winnerTeam === 'blue' ? '🏆 ПОБЕДА!' : '💀 ПОРАЖЕНИЕ';
+  winText.style.color = winnerTeam === 'blue' ? '#4caf50' : '#f44336';
+  winScreen.classList.remove('hidden');
+}
+
+// --- 5. Drawing ---
+function draw() {
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  // Grid
+  ctx.strokeStyle = '#3a4a3a'; ctx.lineWidth = 1;
+  for (let x=0; x<canvasW; x+=50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvasH); ctx.stroke(); }
+  for (let y=0; y<canvasH; y+=50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvasW,y); ctx.stroke(); }
+
+  // Gems
+  gems.forEach(g => {
+    ctx.fillStyle = '#00ffff';
+    ctx.beginPath(); ctx.arc(g.x, g.y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(g.x-5, g.y); ctx.lineTo(g.x+5, g.y); ctx.moveTo(g.x, g.y-5); ctx.lineTo(g.x, g.y+5); ctx.stroke();
+  });
+
+  // Projectiles
+  projectiles.forEach(p => {
+    ctx.fillStyle = p.team === 'blue' ? '#4d9eff' : '#ff4d4d';
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Bots & Player
+  const entities = [player, ...bots];
+  entities.forEach(e => {
+    if (!e.alive) return;
+    ctx.fillStyle = e.team === 'blue' ? '#4d9eff' : '#ff4d4d';
+    ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
+    
+    // HP Bar
+    ctx.fillStyle = '#333'; ctx.fillRect(e.x - 20, e.y - e.size - 15, 40, 6);
+    ctx.fillStyle = e.hp/e.maxHP > 0.3 ? '#4caf50' : '#f44336';
+    ctx.fillRect(e.x - 20, e.y - e.size - 15, 40 * (e.hp/e.maxHP), 6);
+
+    // Gems count
+    if (e.gems > 0) {
+      ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`💎${e.gems}`, e.x, e.y - e.size - 20);
+    }
+
+    // Freeze effect
+    if (e.frozen > 0) {
+      ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI*2); ctx.stroke();
+    }
+  });
+}
+
+// --- 6. UI & Input ---
+function updateUI() {
+  const hpPct = Math.max(0, (player.hp / player.maxHP) * 100);
+  document.getElementById('hp-bar').style.width = `${hpPct}%`;
+  
+  const ammoCont = document.getElementById('ammo-container');
+  ammoCont.innerHTML = '';
+  for (let i=0; i<player.maxCharges; i++) {
+    const pip = document.createElement('div');
+    pip.className = `ammo-pip ${i >= player.charges ? 'empty' : ''}`;
+    ammoCont.appendChild(pip);
+  }
+  document.getElementById('score-display').textContent = `
