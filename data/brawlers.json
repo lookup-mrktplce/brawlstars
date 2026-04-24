@@ -2,37 +2,30 @@
   "brawlers": [
     {
       "id": "shelly",
-      "name": "ШЕЛЛИ",
-      "rarity": "Начальный",
-      "hp_base": 3200,
-      "hp_step": 160,
+      "name": "Shelly",
+      "rarity": "Trophy Road",
+      "description": "Начальный боец. Стреляет картечью.",
+      "baseHP": 3600,
+      "hpPerLevel": 300,
+      "baseDamage": 400,
+      "damagePerLevel": 50,
       "speed": 3.5,
-      "ammo_max": 3,
-      "reload_time": 1500,
+      "size": 22,
+      "image": "data/shelly.png",
       "attack": {
-        "type": "projectile",
-        "damage_base": 1000,
-        "damage_step": 100,
-        "range": 350,
-        "effect": "normal"
-      }
-    },
-    {
-      "id": "crow",
-      "name": "КРОУ",
-      "rarity": "Легендарный",
-      "hp_base": 2400,
-      "hp_step": 100,
-      "speed": 4.5,
-      "ammo_max": 3,
-      "reload_time": 1200,
-      "attack": {
-        "type": "projectile",
-        "damage_base": 320,
-        "damage_step": 30,
-        "range": 400,
-        "effect": "poison",
-        "poison_duration": 4
+        "name": "Buckshot",
+        "speed": 8,
+        "size": 8,
+        "range": 280,
+        "shape": "projectile",
+        "image": "data/shelly_attack.png",
+        "sound": "data/shelly_attack.mp3",
+        "type": "aimed",
+        "damageType": "normal",
+        "poisonDuration": 0,
+        "freezeDuration": 0,
+        "maxCharges": 3,
+        "reloadSpeed": 1.2
       }
     }
   ]
