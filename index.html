@@ -5,111 +5,370 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viosell</title>
   <style>
-    :root { --primary: #2563eb; --bg: #f8fafc; --card: #fff; --text: #0f172a; --error: #ef4444; --success: #22c55e; --border: #cbd5e1; }
-    body.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 2rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: 0.3s; }
-    .container { background: var(--card); padding: 2rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); width: 100%; max-width: 420px; }
-    input { width: 100%; padding: 0.9rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.5rem 0; box-sizing: border-box; background: var(--card); color: var(--text); }
-    button { width: 100%; padding: 0.9rem; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin: 0.5rem 0; background: var(--primary); color: #fff; font-weight: 500; }
-    button:disabled { background: #94a3b8; cursor: not-allowed; }
-    .btn-secondary { background: var(--border); color: var(--text); }
-    .btn-google { background: var(--card); color: var(--text); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .hidden { display: none !important; }
-    .status { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.9rem; }
-    .status.success { background: #dcfce7; color: #15803d; }
-    .status.error { background: #fee2e2; color: #b91c1c; }
-    .avatar-circle { width: 100px; height: 100px; border-radius: 50%; margin: 1rem auto; background: var(--border); border: 3px solid var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; background-size: cover; background-position: center; }
-    .avatar-circle::after { content: "📷"; font-size: 2rem; opacity: 0.6; }
-    .avatar-circle.has-image::after { display: none; }
-    #avatar-input { display: none; }
-    .rules-box { background: rgba(37,99,235,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin: 1rem 0; font-size: 0.85rem; max-height: 180px; overflow-y: auto; }
-    .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; }
-    .checkbox-wrapper input { width: auto; margin: 0; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    :root {
+      --primary: #2563eb; --bg: #f8fafc; --card: #fff; --text: #0f172a;
+      --error: #ef4444; --success: #22c55e; --border: #cbd5e1;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 12px;
+    }
+    body.dark {
+      --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155;
+      --shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text); margin: 0; padding: 0;
+      min-height: 100vh; transition: background 0.3s, color 0.3s;
+      padding-bottom: 70px;
+    }
+    .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+    
+    /* Хедер */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--card); padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
     .logo { color: var(--primary); font-weight: 700; font-size: 1.3rem; cursor: pointer; }
-    .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; }
-    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.8rem 0; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.75rem; cursor: pointer; opacity: 0.6; }
+    .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; border-radius: 8px; }
+    .theme-toggle:hover { background: var(--border); }
+    
+    /* Поиск */
+    .search-box {
+      padding: 0.8rem 1rem; background: var(--card);
+      border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 99;
+    }
+    .search-box input {
+      width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 1rem; background: var(--bg); color: var(--text);
+    }
+    
+    /* Карточка объявления */
+    .listing-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 1rem; margin: 0.8rem 1rem; box-shadow: var(--shadow);
+      cursor: pointer; transition: transform 0.2s;
+      display: grid; grid-template-columns: 80px 1fr; gap: 0.8rem;
+    }
+    .listing-card:hover { transform: translateY(-2px); }
+    .listing-img {
+      width: 80px; height: 80px; border-radius: 10px;
+      background: var(--border); background-size: cover; background-position: center;
+    }
+    .listing-info h3 { margin: 0 0 0.3rem; font-size: 1.1rem; }
+    .listing-price { color: var(--primary); font-weight: 600; font-size: 1.2rem; }
+    .listing-city { font-size: 0.85rem; color: #64748b; margin: 0.2rem 0; }
+    .listing-status {
+      display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px;
+      font-size: 0.75rem; margin-top: 0.3rem;
+    }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-active { background: #dcfce7; color: #15803d; }
+    .status-blocked { background: #fee2e2; color: #b91c1c; }
+    
+    /* Полная страница объявления */
+    .listing-full {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg); z-index: 200; overflow-y: auto;
+      display: none; padding: 1rem;
+    }
+    .listing-full.active { display: block; }
+    .listing-full .back-btn {
+      background: none; border: none; color: var(--primary);
+      font-size: 1rem; cursor: pointer; padding: 0.5rem 0;
+    }
+    .listing-full-img {
+      width: 100%; height: 250px; border-radius: var(--radius);
+      background: var(--border); background-size: cover; background-position: center;
+      margin: 1rem 0;
+    }
+    .listing-full-info { background: var(--card); padding: 1rem; border-radius: var(--radius); }
+    .seller-card {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.8rem; background: var(--bg); border-radius: 10px;
+      margin-top: 1rem; cursor: pointer;
+    }
+    .seller-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--border); background-size: cover; background-position: center;
+    }
+    
+    /* Визард создания */
+    .wizard {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg); z-index: 200; overflow-y: auto;
+      display: none; padding: 1rem;
+    }
+    .wizard.active { display: block; }
+    .wizard-step { animation: slideIn 0.3s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    .wizard input, .wizard select, .wizard textarea {
+      width: 100%; padding: 0.9rem; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 1rem; margin: 0.5rem 0;
+      background: var(--card); color: var(--text);
+    }
+    .wizard textarea { min-height: 100px; resize: vertical; }
+    .photo-preview {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0;
+    }
+    .photo-preview img {
+      width: 60px; height: 60px; border-radius: 8px;
+      object-fit: cover; border: 2px solid var(--border);
+    }
+    
+    /* Профиль */
+    .profile-header {
+      text-align: center; padding: 1.5rem 1rem;
+      background: var(--card); border-radius: var(--radius); margin: 1rem;
+    }
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--border); background-size: cover; background-position: center;
+      margin: 0 auto 0.8rem; border: 3px solid var(--primary);
+    }
+    .profile-stats {
+      display: flex; justify-content: center; gap: 2rem;
+      margin-top: 1rem; font-size: 0.9rem;
+    }
+    .profile-stat b { display: block; font-size: 1.2rem; color: var(--primary); }
+    
+    /* Чаты (заглушка) */
+    .chats-placeholder {
+      text-align: center; padding: 3rem 1rem; color: #64748b;
+    }
+    
+    /* Навигация */
+    .nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; padding: 0.6rem 0;
+      z-index: 150;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.2rem; font-size: 0.7rem; cursor: pointer; opacity: 0.6;
+    }
     .nav-item.active { opacity: 1; color: var(--primary); }
-    .nav-item svg { width: 24px; height: 24px; }
+    .nav-item svg { width: 22px; height: 22px; }
+    
+    /* Кнопки */
+    .btn {
+      width: 100%; padding: 0.9rem; border: none; border-radius: 10px;
+      font-size: 1rem; cursor: pointer; margin: 0.5rem 0;
+      background: var(--primary); color: #fff; font-weight: 500;
+    }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-fab {
+      position: fixed; bottom: 80px; right: 20px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none;
+      font-size: 1.8rem; cursor: pointer; box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+    }
+    
+    /* Утилиты */
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .mt-1 { margin-top: 1rem; }
+    .error { color: var(--error); font-size: 0.85rem; }
   </style>
 </head>
 <body>
 
-  <!-- АВТОРИЗАЦИЯ -->
-  <div id="auth-section" class="container">
-    <h1 style="text-align:center; color:var(--primary);">🛒 Viosell</h1>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Пароль (мин. 6 символов)">
-    <button id="btn-register">Зарегистрироваться</button>
-    <button id="btn-login" class="btn-secondary">Войти</button>
-    <button id="btn-google" class="btn-google">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/></svg>
-      Войти через Google
-    </button>
-    <div id="auth-status" class="status hidden"></div>
-    <p style="text-align:center; font-size:0.8rem; color:#64748b; margin-top:1rem;">💡 Если не работает — нажми F12 → Console и скинь ошибку</p>
+  <!-- ХЕДЕР -->
+  <header class="header">
+    <div class="logo" id="logo-refresh">viosell</div>
+    <button class="theme-toggle" id="theme-toggle">🌙</button>
+  </header>
+
+  <!-- ПОИСК (только на главной) -->
+  <div class="search-box" id="search-box">
+    <input type="text" id="search-input" placeholder="🔍 Поиск объявлений...">
   </div>
 
-  <!-- ОНБОРДИНГ: НИК -->
-  <div id="onboard-nick" class="container hidden">
-    <h2 style="text-align:center;">👋 Придумай ник</h2>
-    <input type="text" id="nickname" placeholder="Ник (3-20 символов)" maxlength="20">
-    <p id="nick-error" class="status error hidden"></p>
-    <button id="btn-nick-next">Далее</button>
+  <!-- ГЛАВНАЯ: ЛЕНТА ОБЪЯВЛЕНИЙ -->
+  <div id="page-home" class="container">
+    <div id="listings-container"></div>
+    <p id="no-listings" class="text-center" style="color:#64748b; padding:2rem;">Пока нет объявлений. Будь первым! ✨</p>
   </div>
 
-  <!-- ОНБОРДИНГ: АВАТАР -->
-  <div id="onboard-avatar" class="container hidden">
-    <h2 style="text-align:center;">🖼 Выбери аватар</h2>
-    <label for="avatar-input" class="avatar-circle" id="avatar-preview"></label>
-    <input type="file" id="avatar-input" accept="image/*">
-    <p id="avatar-error" class="status error hidden"></p>
-    <button id="btn-avatar-next" disabled>Продолжить</button>
+  <!-- МОИ ОБЪЯВЛЕНИЯ -->
+  <div id="page-listings" class="container hidden">
+    <h2 style="padding:1rem;">📋 Мои объявления</h2>
+    <div id="my-listings-container"></div>
+    <p id="no-my-listings" class="text-center" style="color:#64748b; padding:2rem;">У вас пока нет объявлений</p>
   </div>
 
-  <!-- ОНБОРДИНГ: ПРАВИЛА -->
-  <div id="onboard-rules" class="container hidden">
-    <h2 style="text-align:center;">📜 Правила</h2>
-    <div class="rules-box">
-      <ul style="margin:0.5rem 0; padding-left:1.2rem;">
-        <li>❌ Без мата, 18+, оскорблений</li>
-        <li>❌ Без угроз и слива данных</li>
-        <li>❌ Без обхода банов</li>
-        <li>✅ Уважай других пользователей</li>
-      </ul>
+  <!-- ЧАТЫ -->
+  <div id="page-chats" class="container hidden">
+    <div class="chats-placeholder">
+      <p>💬 Чаты появятся здесь</p>
+      <p style="font-size:0.9rem; margin-top:0.5rem;">Напишите кому-нибудь по объявлению</p>
     </div>
-    <label class="checkbox-wrapper">
-      <input type="checkbox" id="rules-check">
-      <span>Согласен и несу ответственность</span>
-    </label>
-    <button id="btn-finish" disabled>Завершить</button>
   </div>
 
-  <!-- ГЛАВНОЕ МЕНЮ -->
-  <div id="main-menu" class="container hidden" style="max-width:100%; border-radius:0; box-shadow:none;">
-    <div class="header">
-      <div class="logo" id="logo-refresh">viosell</div>
-      <button class="theme-toggle" id="theme-toggle">🌙</button>
+  <!-- ПРОФИЛЬ -->
+  <div id="page-profile" class="container hidden">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profile-avatar"></div>
+      <h3 id="profile-nickname" style="margin:0.5rem 0;"></h3>
+      <p id="profile-rating" style="color:#64748b; margin:0;">⭐ 0.0 (0 отзывов)</p>
+      <div class="profile-stats">
+        <div class="profile-stat"><b id="profile-listings-count">0</b>объявлений</div>
+        <div class="profile-stat"><b id="profile-joined">-</b>в сети</div>
+      </div>
+      <p id="profile-uid" style="font-size:0.75rem; color:#94a3b8; margin-top:0.8rem; word-break: break-all;"></p>
     </div>
-    <div style="text-align:center; padding:3rem 1rem; color:#64748b;">
-      <p>📦 Лента объявлений (подключим следующим шагом)</p>
-    </div>
-    <nav class="nav-bar">
-      <div class="nav-item active" data-page="home">🏠<br>Главная</div>
-      <div class="nav-item" data-page="listings">📋<br>Объявления</div>
-      <div class="nav-item" data-page="chats">💬<br>Чаты</div>
-      <div class="nav-item" data-page="profile">👤<br>Профиль</div>
-    </nav>
+    <button class="btn btn-secondary" id="btn-logout">Выйти</button>
+    <p id="profile-admin" class="hidden" style="text-align:center; color:var(--primary); margin-top:1rem; cursor:pointer;">
+      🔧 Открыть панель модератора
+    </p>
   </div>
+
+  <!-- ПОЛНАЯ СТРАНИЦА ОБЪЯВЛЕНИЯ -->
+  <div id="listing-full" class="listing-full">
+    <button class="back-btn" id="close-listing">← Назад</button>
+    <div class="listing-full-img" id="full-img"></div>
+    <div class="listing-full-info">
+      <h2 id="full-title" style="margin:0 0 0.5rem;"></h2>
+      <p id="full-price" style="color:var(--primary); font-size:1.5rem; font-weight:600; margin:0 0 0.5rem;"></p>
+      <p><b>Категория:</b> <span id="full-category"></span></p>
+      <p><b>Состояние:</b> <span id="full-condition"></span></p>
+      <p><b>Описание:</b> <span id="full-desc"></span></p>
+      <p style="font-size:0.85rem; color:#64748b; margin-top:1rem;">
+        👁 Просмотров: <span id="full-views">0</span>
+      </p>
+      
+      <!-- Карточка продавца -->
+      <div class="seller-card" id="seller-card">
+        <div class="seller-avatar" id="seller-avatar"></div>
+        <div>
+          <b id="seller-nickname"></b>
+          <p style="margin:0.2rem 0 0; font-size:0.85rem; color:#64748b;">
+            ⭐ <span id="seller-rating">0</span> • <span id="seller-reviews">0</span> отзывов
+          </p>
+        </div>
+      </div>
+      
+      <button class="btn" id="btn-chat-seller" style="margin-top:1rem;">💬 Написать продавцу</button>
+    </div>
+  </div>
+
+  <!-- ВИЗАРД СОЗДАНИЯ ОБЪЯВЛЕНИЯ -->
+  <div id="wizard" class="wizard">
+    <button class="back-btn" id="close-wizard">✕ Закрыть</button>
+    
+    <!-- Шаг 1: Название -->
+    <div id="w-step-1" class="wizard-step">
+      <h2>1/6 Название</h2>
+      <p style="color:#64748b;">Как называется ваш товар?</p>
+      <input type="text" id="w-title" placeholder="Например: Кроссовки Nike Air Max">
+      <p id="w-title-error" class="error hidden"></p>
+      <button class="btn" id="w-btn-1">Далее</button>
+    </div>
+    
+    <!-- Шаг 2: Категория -->
+    <div id="w-step-2" class="wizard-step hidden">
+      <h2>2/6 Категория</h2>
+      <p style="color:#64748b;">Выберите раздел</p>
+      <select id="w-category">
+        <option value="">-- Выберите --</option>
+        <option value="clothing">Одежда</option>
+        <option value="shoes">Обувь</option>
+        <option value="electronics">Электроника</option>
+        <option value="home">Для дома</option>
+        <option value="auto">Авто</option>
+        <option value="other">Другое</option>
+      </select>
+      <p id="w-category-error" class="error hidden"></p>
+      <button class="btn btn-secondary" id="w-btn-2-back">Назад</button>
+      <button class="btn" id="w-btn-2">Далее</button>
+    </div>
+    
+    <!-- Шаг 3: Состояние -->
+    <div id="w-step-3" class="wizard-step hidden">
+      <h2>3/6 Состояние</h2>
+      <p style="color:#64748b;">Оцените состояние товара</p>
+      <select id="w-condition">
+        <option value="new">✨ Новое</option>
+        <option value="excellent">🟢 Отличное</option>
+        <option value="good">🟡 Хорошее</option>
+        <option value="fair">🟠 Среднее</option>
+        <option value="poor">🔴 Плохое</option>
+      </select>
+      <button class="btn btn-secondary" id="w-btn-3-back">Назад</button>
+      <button class="btn" id="w-btn-3">Далее</button>
+    </div>
+    
+    <!-- Шаг 4: Цена -->
+    <div id="w-step-4" class="wizard-step hidden">
+      <h2>4/6 Цена</h2>
+      <p style="color:#64748b;">Укажите цену в рублях</p>
+      <input type="number" id="w-price" placeholder="Например: 5000" min="1">
+      <p id="w-price-error" class="error hidden"></p>
+      <button class="btn btn-secondary" id="w-btn-4-back">Назад</button>
+      <button class="btn" id="w-btn-4">Далее</button>
+    </div>
+    
+    <!-- Шаг 5: Фото -->
+    <div id="w-step-5" class="wizard-step hidden">
+      <h2>5/6 Фотографии</h2>
+      <p style="color:#64748b;">Загрузите до 10 фото (макс. 5 МБ каждое)</p>
+      <input type="file" id="w-photos" accept="image/*" multiple>
+      <p id="w-photos-error" class="error hidden"></p>
+      <div class="photo-preview" id="w-photo-preview"></div>
+      <button class="btn btn-secondary" id="w-btn-5-back">Назад</button>
+      <button class="btn" id="w-btn-5">Далее</button>
+    </div>
+    
+    <!-- Шаг 6: Описание -->
+    <div id="w-step-6" class="wizard-step hidden">
+      <h2>6/6 Описание</h2>
+      <p style="color:#64748b;">Расскажите подробнее о товаре</p>
+      <textarea id="w-desc" placeholder="Описание..."></textarea>
+      <p id="w-desc-error" class="error hidden"></p>
+      <button class="btn btn-secondary" id="w-btn-6-back">Назад</button>
+      <button class="btn" id="w-btn-submit">📤 Отправить на модерацию</button>
+    </div>
+    
+    <!-- Загрузка -->
+    <div id="w-loading" class="hidden text-center" style="padding:2rem;">
+      <p>⏳ Загрузка и отправка...</p>
+      <p style="font-size:0.9rem; color:#64748b;">Это может занять до 30 секунд</p>
+    </div>
+  </div>
+
+  <!-- КНОПКА СОЗДАНИЯ -->
+  <button class="btn-fab" id="btn-create">＋</button>
+
+  <!-- НАВИГАЦИЯ -->
+  <nav class="nav-bar">
+    <div class="nav-item active" data-page="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span>Главная</span>
+    </div>
+    <div class="nav-item" data-page="listings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+      <span>Объявления</span>
+    </div>
+    <div class="nav-item" data-page="chats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span>Чаты</span>
+    </div>
+    <div class="nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Профиль</span>
+    </div>
+  </nav>
 
   <script type="module">
-    // 🔥 Firebase imports
+    // 🔥 Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, limit, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 🔽 Твой конфиг (уже вставлен)
     const firebaseConfig = {
       apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
       authDomain: "exzzy1-84d88.firebaseapp.com",
@@ -120,28 +379,16 @@
       measurementId: "G-ZRPGRHES04"
     };
 
-    // 🚀 Инициализация с проверкой
-    let auth, db;
-    try {
-      const app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      db = getFirestore(app);
-      console.log('✅ Firebase инициализирован');
-    } catch (e) {
-      console.error('❌ Ошибка Firebase:', e);
-      alert('Ошибка подключения к Firebase. Проверь консоль (F12).');
-    }
-
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
     const IMGBB_KEY = "d3e0d626da4b69b9cadd392fe36efeac";
-    let onboardData = { nickname: '', avatar: '', avatarFile: null };
 
-    // 🔞 Простой фильтр мата
-    function isBad(text) {
-      if (!text) return false;
-      const t = text.toLowerCase().replace(/[^а-яa-z0-9]/g, '');
-      const bad = ['хуй','пизд','еб','бля','сука','порн','секс','сваст','наци','убью','тварь','сынху','ху@','п0рно'];
-      return bad.some(w => t.includes(w));
-    }
+    // 🌍 Состояние
+    let currentUser = null;
+    let userProfile = null;
+    let wizardData = { title: '', category: '', condition: 'new', price: 0, photos: [], desc: '' };
+    let currentListingId = null;
 
     // 🌓 Тема
     function loadTheme() {
@@ -158,22 +405,29 @@
     };
     loadTheme();
 
-    // 🔄 Переключение секций
-    function show(id) {
-      ['auth-section','onboard-nick','onboard-avatar','onboard-rules','main-menu'].forEach(i => {
-        document.getElementById(i).classList.add('hidden');
+    // 🔄 Навигация
+    function showPage(pageId) {
+      ['page-home','page-listings','page-chats','page-profile'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
       });
-      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(pageId).classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelector(`.nav-item[data-page="${pageId.replace('page-','')}"]`)?.classList.add('active');
+      
+      // Показать/скрыть поиск
+      document.getElementById('search-box').classList.toggle('hidden', pageId !== 'page-home');
+      
+      // Загрузить данные при переходе
+      if (pageId === 'page-home') loadListings();
+      if (pageId === 'page-listings') loadMyListings();
+      if (pageId === 'page-profile') loadProfile();
     }
 
-    // 📧 Статус
-    function status(msg, type='error') {
-      const el = document.getElementById('auth-status');
-      el.textContent = msg;
-      el.className = `status ${type}`;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 4000);
-    }
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.onclick = () => showPage(`page-${item.dataset.page}`);
+    });
+
+    document.getElementById('logo-refresh').onclick = () => location.reload();
 
     // 🖼 Загрузка в ImgBB
     async function uploadToImgBB(file) {
@@ -186,173 +440,379 @@
       return data.data.url;
     }
 
-    // 💾 Сохранение в Firestore
-    async function saveProfile(uid, nick, avatar) {
-      await setDoc(doc(db, 'users', uid), {
-        nickname: nick,
-        avatar: avatar,
-        createdAt: new Date().toISOString(),
-        rating: 0,
-        reviewsCount: 0,
-        banned: false
-      }, { merge: true });
-      console.log('✅ Профиль сохранён');
+    // 📦 Загрузка ленты объявлений
+    async function loadListings(searchQuery = '') {
+      const container = document.getElementById('listings-container');
+      const noData = document.getElementById('no-listings');
+      container.innerHTML = '';
+      
+      try {
+        let q = query(collection(db, 'listings'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), limit(50));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          noData.classList.remove('hidden');
+          return;
+        }
+        noData.classList.add('hidden');
+        
+        let listings = [];
+        snap.forEach(doc => listings.push({ id: doc.id, ...doc.data() }));
+        
+        // Поиск (регистронезависимый)
+        if (searchQuery) {
+          const qLower = searchQuery.toLowerCase();
+          listings = listings.filter(l => 
+            (l.title?.toLowerCase() || '').includes(qLower) ||
+            (l.description?.toLowerCase() || '').includes(qLower)
+          );
+        }
+        
+        // Простая рекомендация: если пользователь смотрел кроссовки — показывать больше обуви
+        if (userProfile?.interests?.includes('shoes')) {
+          listings.sort((a,b) => (b.category === 'shoes' ? 1 : 0) - (a.category === 'shoes' ? 1 : 0));
+        }
+        
+        listings.forEach(listing => {
+          const card = document.createElement('div');
+          card.className = 'listing-card';
+          card.innerHTML = `
+            <div class="listing-img" style="background-image:url('${listing.photos?.[0] || ''}')"></div>
+            <div class="listing-info">
+              <h3>${listing.title}</h3>
+              <p class="listing-price">${listing.price?.toLocaleString('ru-RU')} ₽</p>
+              <p class="listing-city">📍 ${listing.city || 'Не указан'}</p>
+              <span class="listing-status status-active">Активно</span>
+            </div>
+          `;
+          card.onclick = () => openListing(listing.id);
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Ошибка загрузки:', err);
+        container.innerHTML = '<p style="color:var(--error); padding:1rem;">Не удалось загрузить объявления</p>';
+      }
     }
 
-    // 🎯 Онбординг: ник
-    document.getElementById('btn-nick-next').onclick = () => {
-      const nick = document.getElementById('nickname').value.trim();
-      const err = document.getElementById('nick-error');
-      if (nick.length < 3 || nick.length > 20) {
-        err.textContent = 'Ник от 3 до 20 символов';
-        err.classList.remove('hidden');
-        return;
+    // 🔍 Поиск
+    document.getElementById('search-input').oninput = (e) => {
+      loadListings(e.target.value);
+    };
+
+    // 👁 Открытие объявления + счётчик просмотров
+    async function openListing(id) {
+      try {
+        const ref = doc(db, 'listings', id);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          alert('❌ Объявление не найдено');
+          return;
+        }
+        const listing = { id, ...snap.data() };
+        currentListingId = id;
+        
+        // Счётчик просмотров (не считаем автора)
+        if (currentUser && listing.authorId !== currentUser.uid) {
+          await updateDoc(ref, { views: increment(1) });
+          // Запоминаем интерес для рекомендаций
+          if (listing.category && userProfile) {
+            await setDoc(doc(db, 'users', currentUser.uid), {
+              interests: arrayUnion(listing.category)
+            }, { merge: true });
+          }
+        }
+        
+        // Заполняем страницу
+        document.getElementById('full-img').style.backgroundImage = `url('${listing.photos?.[0] || ''}')`;
+        document.getElementById('full-title').textContent = listing.title;
+        document.getElementById('full-price').textContent = `${listing.price?.toLocaleString('ru-RU')} ₽`;
+        document.getElementById('full-category').textContent = {
+          clothing:'Одежда', shoes:'Обувь', electronics:'Электроника',
+          home:'Для дома', auto:'Авто', other:'Другое'
+        }[listing.category] || listing.category;
+        document.getElementById('full-condition').textContent = {
+          new:'Новое', excellent:'Отличное', good:'Хорошее',
+          fair:'Среднее', poor:'Плохое'
+        }[listing.condition] || listing.condition;
+        document.getElementById('full-desc').textContent = listing.description || 'Без описания';
+        document.getElementById('full-views').textContent = listing.views || 0;
+        
+        // Продавец
+        if (listing.authorId) {
+          const sellerSnap = await getDoc(doc(db, 'users', listing.authorId));
+          if (sellerSnap.exists()) {
+            const seller = sellerSnap.data();
+            document.getElementById('seller-avatar').style.backgroundImage = `url('${seller.avatar || ''}')`;
+            document.getElementById('seller-nickname').textContent = seller.nickname || 'Пользователь';
+            document.getElementById('seller-rating').textContent = seller.rating?.toFixed(1) || '0.0';
+            document.getElementById('seller-reviews').textContent = seller.reviewsCount || 0;
+          }
+        }
+        
+        document.getElementById('listing-full').classList.add('active');
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка загрузки объявления');
       }
-      if (isBad(nick)) {
-        err.textContent = '❌ Ник содержит запрещённые слова';
+    }
+
+    document.getElementById('close-listing').onclick = () => {
+      document.getElementById('listing-full').classList.remove('active');
+      currentListingId = null;
+    };
+
+    // 💬 Чат с продавцом (заглушка)
+    document.getElementById('btn-chat-seller').onclick = () => {
+      alert('💬 Чат будет подключен следующим шагом!\nПока можно написать в личные сообщения.');
+    };
+
+    // 📋 Мои объявления
+    async function loadMyListings() {
+      if (!currentUser) return;
+      const container = document.getElementById('my-listings-container');
+      const noData = document.getElementById('no-my-listings');
+      container.innerHTML = '';
+      
+      try {
+        const q = query(collection(db, 'listings'), where('authorId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          noData.classList.remove('hidden');
+          return;
+        }
+        noData.classList.add('hidden');
+        
+        snap.forEach(doc => {
+          const l = { id: doc.id, ...doc.data() };
+          const statusClass = { pending:'status-pending', active:'status-active', blocked:'status-blocked' }[l.status] || 'status-pending';
+          const statusText = { pending:'На проверке', active:'Активно', blocked:'Заблокировано' }[l.status] || l.status;
+          
+          const card = document.createElement('div');
+          card.className = 'listing-card';
+          card.innerHTML = `
+            <div class="listing-img" style="background-image:url('${l.photos?.[0] || ''}')"></div>
+            <div class="listing-info">
+              <h3>${l.title}</h3>
+              <p class="listing-price">${l.price?.toLocaleString('ru-RU')} ₽</p>
+              <p style="font-size:0.85rem; color:#64748b;">👁 ${l.views || 0} просмотров</p>
+              <span class="listing-status ${statusClass}">${statusText}</span>
+            </div>
+          `;
+          // Карандаш для редактирования (заглушка)
+          card.insertAdjacentHTML('beforeend', `<button style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.2rem; cursor:pointer;">✏️</button>`);
+          card.onclick = (e) => { if (!e.target.closest('button')) openListing(l.id); };
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="color:var(--error);">Ошибка загрузки</p>';
+      }
+    }
+
+    // 👤 Профиль
+    async function loadProfile() {
+      if (!currentUser || !userProfile) return;
+      document.getElementById('profile-avatar').style.backgroundImage = `url('${userProfile.avatar || ''}')`;
+      document.getElementById('profile-nickname').textContent = userProfile.nickname || 'Пользователь';
+      document.getElementById('profile-rating').textContent = `⭐ ${userProfile.rating?.toFixed(1) || '0.0'} (${userProfile.reviewsCount || 0} отзывов)`;
+      document.getElementById('profile-listings-count').textContent = userProfile.listingsCount || 0;
+      document.getElementById('profile-joined').textContent = userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('ru-RU') : '-';
+      document.getElementById('profile-uid').textContent = `ID: ${currentUser.uid}`;
+      
+      // Админ-панель
+      const isAdmin = currentUser.email === 'sobakastalina123@gmail.com';
+      document.getElementById('profile-admin').classList.toggle('hidden', !isAdmin);
+    }
+
+    document.getElementById('profile-admin').onclick = () => {
+      alert('🔧 Админ-панель будет подключена следующим шагом!\nЗдесь будет модерация отзывов, жалоб, объявлений.');
+    };
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+    // ➕ Визард создания
+    document.getElementById('btn-create').onclick = () => {
+      if (!currentUser) return alert('Сначала войдите в аккаунт');
+      wizardData = { title: '', category: '', condition: 'new', price: 0, photos: [], desc: '' };
+      showWizardStep(1);
+      document.getElementById('wizard').classList.add('active');
+    };
+
+    document.getElementById('close-wizard').onclick = () => {
+      document.getElementById('wizard').classList.remove('active');
+    };
+
+    function showWizardStep(n) {
+      [1,2,3,4,5,6].forEach(i => {
+        document.getElementById(`w-step-${i}`).classList.add('hidden');
+      });
+      document.getElementById(`w-step-${n}`).classList.remove('hidden');
+      document.getElementById('w-loading').classList.add('hidden');
+    }
+
+    // Шаг 1: Название
+    document.getElementById('w-btn-1').onclick = () => {
+      const title = document.getElementById('w-title').value.trim();
+      const err = document.getElementById('w-title-error');
+      if (title.length < 3) {
+        err.textContent = 'Минимум 3 символа';
         err.classList.remove('hidden');
         return;
       }
       err.classList.add('hidden');
-      onboardData.nickname = nick;
-      show('onboard-avatar');
+      wizardData.title = title;
+      showWizardStep(2);
     };
 
-    // 🎯 Онбординг: аватар
-    const avatarInput = document.getElementById('avatar-input');
-    const avatarPreview = document.getElementById('avatar-preview');
-    
-    avatarInput.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file || !file.type.startsWith('image/')) {
-        document.getElementById('avatar-error').textContent = 'Выберите изображение';
-        document.getElementById('avatar-error').classList.remove('hidden');
+    // Шаг 2: Категория
+    document.getElementById('w-btn-2').onclick = () => {
+      const cat = document.getElementById('w-category').value;
+      const err = document.getElementById('w-category-error');
+      if (!cat) {
+        err.textContent = 'Выберите категорию';
+        err.classList.remove('hidden');
         return;
       }
-      onboardData.avatarFile = file;
-      avatarPreview.style.backgroundImage = `url(${URL.createObjectURL(file)})`;
-      avatarPreview.classList.add('has-image');
-      document.getElementById('avatar-error').classList.add('hidden');
-      document.getElementById('btn-avatar-next').disabled = false;
+      err.classList.add('hidden');
+      wizardData.category = cat;
+      showWizardStep(3);
     };
+    document.getElementById('w-btn-2-back').onclick = () => showWizardStep(1);
 
-    document.getElementById('btn-avatar-next').onclick = async () => {
-      if (!onboardData.avatarFile) return;
-      const btn = document.getElementById('btn-avatar-next');
-      btn.disabled = true;
-      btn.textContent = '⏳ Загрузка...';
-      try {
-        const url = await uploadToImgBB(onboardData.avatarFile);
-        onboardData.avatar = url;
-        show('onboard-rules');
-      } catch (err) {
-        document.getElementById('avatar-error').textContent = 'Ошибка: ' + err.message;
-        document.getElementById('avatar-error').classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Продолжить';
+    // Шаг 3: Состояние
+    document.getElementById('w-btn-3').onclick = () => {
+      wizardData.condition = document.getElementById('w-condition').value;
+      showWizardStep(4);
+    };
+    document.getElementById('w-btn-3-back').onclick = () => showWizardStep(2);
+
+    // Шаг 4: Цена
+    document.getElementById('w-btn-4').onclick = () => {
+      const price = parseInt(document.getElementById('w-price').value);
+      const err = document.getElementById('w-price-error');
+      if (!price || price < 1) {
+        err.textContent = 'Укажите цену от 1 ₽';
+        err.classList.remove('hidden');
+        return;
       }
+      err.classList.add('hidden');
+      wizardData.price = price;
+      showWizardStep(5);
+    };
+    document.getElementById('w-btn-4-back').onclick = () => showWizardStep(3);
+
+    // Шаг 5: Фото
+    const photoInput = document.getElementById('w-photos');
+    const photoPreview = document.getElementById('w-photo-preview');
+    
+    photoInput.onchange = (e) => {
+      const files = Array.from(e.target.files).slice(0, 10);
+      if (files.length === 0) {
+        document.getElementById('w-photos-error').textContent = 'Выберите хотя бы одно фото';
+        document.getElementById('w-photos-error').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('w-photos-error').classList.add('hidden');
+      photoPreview.innerHTML = '';
+      files.forEach(file => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        photoPreview.appendChild(img);
+      });
+      wizardData.photoFiles = files;
     };
 
-    // 🎯 Онбординг: правила
-    const rulesCheck = document.getElementById('rules-check');
-    const btnFinish = document.getElementById('btn-finish');
-    rulesCheck.onchange = () => btnFinish.disabled = !rulesCheck.checked;
+    document.getElementById('w-btn-5').onclick = () => {
+      if (!wizardData.photoFiles?.length) {
+        document.getElementById('w-photos-error').textContent = 'Загрузите фото';
+        document.getElementById('w-photos-error').classList.remove('hidden');
+        return;
+      }
+      showWizardStep(6);
+    };
+    document.getElementById('w-btn-5-back').onclick = () => showWizardStep(4);
 
-    btnFinish.onclick = async () => {
-      if (!auth.currentUser) return;
-      btnFinish.disabled = true;
-      btnFinish.textContent = '⏳ Сохранение...';
+    // Шаг 6: Описание + Отправка
+    document.getElementById('w-btn-submit').onclick = async () => {
+      const desc = document.getElementById('w-desc').value.trim();
+      const err = document.getElementById('w-desc-error');
+      if (desc.length < 10) {
+        err.textContent = 'Описание должно быть от 10 символов';
+        err.classList.remove('hidden');
+        return;
+      }
+      wizardData.desc = desc;
+      
+      // Загрузка
+      document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
+      document.getElementById('w-loading').classList.remove('hidden');
+      
       try {
-        await saveProfile(auth.currentUser.uid, onboardData.nickname, onboardData.avatar);
-        show('main-menu');
+        // Загружаем фото
+        const photoUrls = [];
+        for (const file of wizardData.photoFiles) {
+          const url = await uploadToImgBB(file);
+          photoUrls.push(url);
+        }
+        
+        // Сохраняем объявление
+        await addDoc(collection(db, 'listings'), {
+          title: wizardData.title,
+          category: wizardData.category,
+          condition: wizardData.condition,
+          price: wizardData.price,
+          description: wizardData.desc,
+          photos: photoUrls,
+          authorId: currentUser.uid,
+          authorNickname: userProfile?.nickname || 'Пользователь',
+          city: 'Не указан', // Позже добавим выбор города
+          status: 'pending', // На модерации
+          views: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        
+        // Обновляем счётчик объявлений у пользователя
+        if (userProfile) {
+          await setDoc(doc(db, 'users', currentUser.uid), {
+            listingsCount: increment(1)
+          }, { merge: true });
+        }
+        
+        alert('✅ Объявление отправлено на модерацию!\nОно появится в поиске после проверки.');
+        document.getElementById('wizard').classList.remove('active');
+        showPage('page-listings');
+        loadMyListings();
       } catch (err) {
         console.error(err);
-        alert('Ошибка: ' + err.message + '\n\nПроверь консоль (F12) и правила Firestore');
-        btnFinish.disabled = false;
-        btnFinish.textContent = 'Завершить';
+        alert('❌ Ошибка: ' + err.message);
+        showWizardStep(6);
       }
     };
+    document.getElementById('w-btn-6-back').onclick = () => showWizardStep(5);
 
     // 🔐 Авторизация
-    document.getElementById('btn-register').onclick = async () => {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value;
-      if (!email || pass.length < 6) return status('Email и пароль (мин. 6 символов)');
-      try {
-        console.log('🔄 Регистрация...', email);
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await sendEmailVerification(cred.user).catch(e => console.warn('Письмо не отправлено:', e));
-        status('✅ Аккаунт создан!', 'success');
-        setTimeout(() => show('onboard-nick'), 1200);
-      } catch (e) {
-        console.error('❌ Ошибка регистрации:', e);
-        const msg = e.code?.includes('email-already-in-use') ? 'Email уже занят' :
-                    e.code?.includes('weak-password') ? 'Пароль слишком слабый' :
-                    e.code?.replace('auth/', '') || 'Ошибка';
-        status('❌ ' + msg);
-      }
-    };
-
-    document.getElementById('btn-login').onclick = async () => {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value;
-      if (!email || !pass) return status('Заполните все поля');
-      try {
-        console.log('🔄 Вход...', email);
-        await signInWithEmailAndPassword(auth, email, pass);
-      } catch (e) {
-        console.error('❌ Ошибка входа:', e);
-        const msg = e.code?.includes('user-not-found') ? 'Аккаунт не найден' :
-                    e.code?.includes('wrong-password') ? 'Неверный пароль' :
-                    e.code?.replace('auth/', '') || 'Ошибка';
-        status('❌ ' + msg);
-      }
-    };
-
-    document.getElementById('btn-google').onclick = async () => {
-      try {
-        console.log('🔄 Google вход...');
-        await signInWithPopup(auth, new GoogleAuthProvider());
-      } catch (e) {
-        console.error('❌ Ошибка Google:', e);
-        status('❌ Google: ' + (e.code?.replace('auth/', '') || 'Ошибка'));
-      }
-    };
-
-    document.getElementById('logo-refresh').onclick = () => location.reload();
-
-    // 🔄 Отслеживание входа
     onAuthStateChanged(auth, async (user) => {
-      console.log('👤 onAuthStateChanged:', user ? user.email : 'null');
+      currentUser = user;
       if (!user) {
-        show('auth-section');
+        // Если не авторизован — редирект на вход (упрощённо)
+        document.body.innerHTML = '<div class="container" style="text-align:center; padding:3rem;"><h2>🔐 Войдите в аккаунт</h2><p>Обновите страницу, чтобы войти</p><button class="btn" onclick="location.reload()">Обновить</button></div>';
         return;
       }
+      
+      // Загружаем профиль
       try {
         const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists() && snap.data().nickname) {
-          console.log('✅ Профиль найден, показываем меню');
-          show('main-menu');
-        } else {
-          console.log('🆕 Профиль не найден, запускаем онбординг');
-          show('onboard-nick');
-        }
+        userProfile = snap.exists() ? snap.data() : {};
       } catch (err) {
-        console.error('❌ Ошибка проверки профиля:', err);
-        // Если Firestore недоступен — всё равно показываем онбординг
-        show('onboard-nick');
+        console.warn('Не удалось загрузить профиль:', err);
+        userProfile = {};
       }
-    });
-
-    // 🧭 Навигация (заглушки)
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.onclick = () => {
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        if (item.dataset.page !== 'home') {
-          status(`🚧 "${item.dataset.page}" в разработке`, 'success');
-        }
-      };
+      
+      // Показываем главную
+      showPage('page-home');
+      loadListings();
     });
   </script>
 </body>
