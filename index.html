@@ -19,354 +19,216 @@
       font-family: system-ui, -apple-system, sans-serif;
       background: var(--bg); color: var(--text); margin: 0; padding: 0;
       min-height: 100vh; transition: background 0.3s, color 0.3s;
-      padding-bottom: 70px;
     }
+    .hidden { display: none !important; }
     .container { max-width: 600px; margin: 0 auto; padding: 1rem; }
     
-    /* Хедер */
+    /* AUTH */
+    #auth-section {
+      max-width: 420px; margin: 4rem auto; padding: 2rem;
+      background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+    }
+    #auth-section input, #auth-section select, #auth-section textarea {
+      width: 100%; padding: 0.9rem; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 1rem; margin: 0.5rem 0;
+      background: var(--bg); color: var(--text);
+    }
+    .btn { width: 100%; padding: 0.9rem; border: none; border-radius: 10px;
+      font-size: 1rem; cursor: pointer; margin: 0.5rem 0;
+      background: var(--primary); color: #fff; font-weight: 500; }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-google { background: var(--card); color: var(--text); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .status { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.9rem; }
+    .status.success { background: #dcfce7; color: #15803d; }
+    .status.error { background: #fee2e2; color: #b91c1c; }
+    .divider { display: flex; align-items: center; margin: 1.2rem 0; color: #94a3b8; font-size: 0.85rem; }
+    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+    .divider span { padding: 0 12px; }
+    .text-center { text-align: center; }
+    .error-text { color: var(--error); font-size: 0.85rem; margin-top: 0.3rem; }
+
+    /* APP LAYOUT */
     .header {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--card); padding: 0.8rem 1rem;
-      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100; background: var(--card);
+      padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);
       display: flex; justify-content: space-between; align-items: center;
     }
     .logo { color: var(--primary); font-weight: 700; font-size: 1.3rem; cursor: pointer; }
     .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; border-radius: 8px; }
     .theme-toggle:hover { background: var(--border); }
-    
-    /* Поиск */
     .search-box {
-      padding: 0.8rem 1rem; background: var(--card);
-      border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 99;
+      padding: 0.8rem 1rem; background: var(--card); border-bottom: 1px solid var(--border);
+      position: sticky; top: 60px; z-index: 99;
     }
     .search-box input {
       width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border);
       border-radius: 10px; font-size: 1rem; background: var(--bg); color: var(--text);
     }
     
-    /* Карточка объявления */
+    /* LISTINGS */
     .listing-card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 1rem; margin: 0.8rem 1rem; box-shadow: var(--shadow);
-      cursor: pointer; transition: transform 0.2s;
+      background: var(--card); border-radius: var(--radius); padding: 1rem; margin: 0.8rem 1rem;
+      box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s;
       display: grid; grid-template-columns: 80px 1fr; gap: 0.8rem;
     }
     .listing-card:hover { transform: translateY(-2px); }
-    .listing-img {
-      width: 80px; height: 80px; border-radius: 10px;
-      background: var(--border); background-size: cover; background-position: center;
-    }
+    .listing-img { width: 80px; height: 80px; border-radius: 10px; background: var(--border); background-size: cover; background-position: center; }
     .listing-info h3 { margin: 0 0 0.3rem; font-size: 1.1rem; }
-    .listing-price { color: var(--primary); font-weight: 600; font-size: 1.2rem; }
+    .listing-price { color: var(--primary); font-weight: 600; font-size: 1.2rem; margin: 0; }
     .listing-city { font-size: 0.85rem; color: #64748b; margin: 0.2rem 0; }
-    .listing-status {
-      display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px;
-      font-size: 0.75rem; margin-top: 0.3rem;
-    }
+    .listing-status { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; margin-top: 0.3rem; }
     .status-pending { background: #fef3c7; color: #92400e; }
     .status-active { background: #dcfce7; color: #15803d; }
     .status-blocked { background: #fee2e2; color: #b91c1c; }
-    
-    /* Полная страница объявления */
-    .listing-full {
+
+    /* FULL LISTING & WIZARD OVERLAYS */
+    .overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg); z-index: 200; overflow-y: auto;
-      display: none; padding: 1rem;
+      background: var(--bg); z-index: 200; overflow-y: auto; display: none; padding: 1rem;
     }
-    .listing-full.active { display: block; }
-    .listing-full .back-btn {
-      background: none; border: none; color: var(--primary);
-      font-size: 1rem; cursor: pointer; padding: 0.5rem 0;
-    }
-    .listing-full-img {
-      width: 100%; height: 250px; border-radius: var(--radius);
-      background: var(--border); background-size: cover; background-position: center;
-      margin: 1rem 0;
-    }
+    .overlay.active { display: block; }
+    .back-btn { background: none; border: none; color: var(--primary); font-size: 1rem; cursor: pointer; padding: 0.5rem 0; margin-bottom: 0.5rem; }
+    .listing-full-img { width: 100%; height: 250px; border-radius: var(--radius); background: var(--border); background-size: cover; background-position: center; margin: 1rem 0; }
     .listing-full-info { background: var(--card); padding: 1rem; border-radius: var(--radius); }
-    .seller-card {
-      display: flex; align-items: center; gap: 0.8rem;
-      padding: 0.8rem; background: var(--bg); border-radius: 10px;
-      margin-top: 1rem; cursor: pointer;
-    }
-    .seller-avatar {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--border); background-size: cover; background-position: center;
-    }
-    
-    /* Визард создания */
-    .wizard {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg); z-index: 200; overflow-y: auto;
-      display: none; padding: 1rem;
-    }
-    .wizard.active { display: block; }
+    .seller-card { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem; background: var(--bg); border-radius: 10px; margin-top: 1rem; cursor: pointer; }
+    .seller-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--border); background-size: cover; background-position: center; }
+    .photo-preview { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .photo-preview img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border); }
     .wizard-step { animation: slideIn 0.3s; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-    .wizard input, .wizard select, .wizard textarea {
-      width: 100%; padding: 0.9rem; border: 1px solid var(--border);
-      border-radius: 10px; font-size: 1rem; margin: 0.5rem 0;
-      background: var(--card); color: var(--text);
-    }
+    .wizard input, .wizard select, .wizard textarea { width: 100%; padding: 0.9rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.5rem 0; background: var(--card); color: var(--text); }
     .wizard textarea { min-height: 100px; resize: vertical; }
-    .photo-preview {
-      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0;
-    }
-    .photo-preview img {
-      width: 60px; height: 60px; border-radius: 8px;
-      object-fit: cover; border: 2px solid var(--border);
-    }
-    
-    /* Профиль */
-    .profile-header {
-      text-align: center; padding: 1.5rem 1rem;
-      background: var(--card); border-radius: var(--radius); margin: 1rem;
-    }
-    .profile-avatar {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: var(--border); background-size: cover; background-position: center;
-      margin: 0 auto 0.8rem; border: 3px solid var(--primary);
-    }
-    .profile-stats {
-      display: flex; justify-content: center; gap: 2rem;
-      margin-top: 1rem; font-size: 0.9rem;
-    }
+
+    /* PROFILE */
+    .profile-header { text-align: center; padding: 1.5rem 1rem; background: var(--card); border-radius: var(--radius); margin: 1rem; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--border); background-size: cover; background-position: center; margin: 0 auto 0.8rem; border: 3px solid var(--primary); }
+    .profile-stats { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; font-size: 0.9rem; }
     .profile-stat b { display: block; font-size: 1.2rem; color: var(--primary); }
-    
-    /* Чаты (заглушка) */
-    .chats-placeholder {
-      text-align: center; padding: 3rem 1rem; color: #64748b;
-    }
-    
-    /* Навигация */
-    .nav-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--card); border-top: 1px solid var(--border);
-      display: flex; justify-content: space-around; padding: 0.6rem 0;
-      z-index: 150;
-    }
-    .nav-item {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 0.2rem; font-size: 0.7rem; cursor: pointer; opacity: 0.6;
-    }
+
+    /* NAV & FAB */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.6rem 0; z-index: 150; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.7rem; cursor: pointer; opacity: 0.6; }
     .nav-item.active { opacity: 1; color: var(--primary); }
     .nav-item svg { width: 22px; height: 22px; }
-    
-    /* Кнопки */
-    .btn {
-      width: 100%; padding: 0.9rem; border: none; border-radius: 10px;
-      font-size: 1rem; cursor: pointer; margin: 0.5rem 0;
-      background: var(--primary); color: #fff; font-weight: 500;
-    }
-    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-    .btn-secondary { background: var(--border); color: var(--text); }
-    .btn-fab {
-      position: fixed; bottom: 80px; right: 20px;
-      width: 56px; height: 56px; border-radius: 50%;
-      background: var(--primary); color: #fff; border: none;
-      font-size: 1.8rem; cursor: pointer; box-shadow: var(--shadow);
-      display: flex; align-items: center; justify-content: center;
-    }
-    
-    /* Утилиты */
-    .hidden { display: none !important; }
-    .text-center { text-align: center; }
-    .mt-1 { margin-top: 1rem; }
-    .error { color: var(--error); font-size: 0.85rem; }
+    .btn-fab { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; }
+    .chats-placeholder { text-align: center; padding: 3rem 1rem; color: #64748b; }
   </style>
 </head>
 <body>
 
-  <!-- ХЕДЕР -->
-  <header class="header">
-    <div class="logo" id="logo-refresh">viosell</div>
-    <button class="theme-toggle" id="theme-toggle">🌙</button>
-  </header>
-
-  <!-- ПОИСК (только на главной) -->
-  <div class="search-box" id="search-box">
-    <input type="text" id="search-input" placeholder="🔍 Поиск объявлений...">
+  <!-- 🔐 АВТОРИЗАЦИЯ / РЕГИСТРАЦИЯ -->
+  <div id="auth-section">
+    <h1 class="text-center" style="color:var(--primary); margin:0 0 1rem;">🛒 Viosell</h1>
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-pass" placeholder="Пароль (мин. 6 символов)">
+    <button id="btn-login" class="btn">Войти</button>
+    <button id="btn-register" class="btn btn-secondary">Зарегистрироваться</button>
+    <div class="divider"><span>или</span></div>
+    <button id="btn-google" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/></svg>
+      Войти через Google
+    </button>
+    <div id="auth-status" class="status hidden"></div>
   </div>
 
-  <!-- ГЛАВНАЯ: ЛЕНТА ОБЪЯВЛЕНИЙ -->
-  <div id="page-home" class="container">
-    <div id="listings-container"></div>
-    <p id="no-listings" class="text-center" style="color:#64748b; padding:2rem;">Пока нет объявлений. Будь первым! ✨</p>
-  </div>
+  <!-- 📱 ОСНОВНОЕ ПРИЛОЖЕНИЕ (скрыто до входа) -->
+  <div id="app-container" class="hidden">
+    <header class="header">
+      <div class="logo" id="logo-refresh">viosell</div>
+      <button class="theme-toggle" id="theme-toggle">🌙</button>
+    </header>
 
-  <!-- МОИ ОБЪЯВЛЕНИЯ -->
-  <div id="page-listings" class="container hidden">
-    <h2 style="padding:1rem;">📋 Мои объявления</h2>
-    <div id="my-listings-container"></div>
-    <p id="no-my-listings" class="text-center" style="color:#64748b; padding:2rem;">У вас пока нет объявлений</p>
-  </div>
-
-  <!-- ЧАТЫ -->
-  <div id="page-chats" class="container hidden">
-    <div class="chats-placeholder">
-      <p>💬 Чаты появятся здесь</p>
-      <p style="font-size:0.9rem; margin-top:0.5rem;">Напишите кому-нибудь по объявлению</p>
+    <div class="search-box" id="search-box">
+      <input type="text" id="search-input" placeholder="🔍 Поиск объявлений...">
     </div>
-  </div>
 
-  <!-- ПРОФИЛЬ -->
-  <div id="page-profile" class="container hidden">
-    <div class="profile-header">
-      <div class="profile-avatar" id="profile-avatar"></div>
-      <h3 id="profile-nickname" style="margin:0.5rem 0;"></h3>
-      <p id="profile-rating" style="color:#64748b; margin:0;">⭐ 0.0 (0 отзывов)</p>
-      <div class="profile-stats">
-        <div class="profile-stat"><b id="profile-listings-count">0</b>объявлений</div>
-        <div class="profile-stat"><b id="profile-joined">-</b>в сети</div>
+    <div id="page-home" class="container">
+      <div id="listings-container"></div>
+      <p id="no-listings" class="text-center" style="color:#64748b; padding:2rem;">Пока нет активных объявлений</p>
+    </div>
+
+    <div id="page-listings" class="container hidden">
+      <h2 style="padding:1rem;">📋 Мои объявления</h2>
+      <div id="my-listings-container"></div>
+      <p id="no-my-listings" class="text-center" style="color:#64748b; padding:2rem;">У вас пока нет объявлений</p>
+    </div>
+
+    <div id="page-chats" class="container hidden">
+      <div class="chats-placeholder">💬 Чаты появятся после первого сообщения</div>
+    </div>
+
+    <div id="page-profile" class="container hidden">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar"></div>
+        <h3 id="profile-nickname" style="margin:0.5rem 0;"></h3>
+        <p id="profile-rating" style="color:#64748b; margin:0;">⭐ 0.0 (0 отзывов)</p>
+        <div class="profile-stats">
+          <div class="profile-stat"><b id="profile-listings-count">0</b>объявлений</div>
+          <div class="profile-stat"><b id="profile-joined">-</b>дата регистрации</div>
+        </div>
+        <p id="profile-uid" style="font-size:0.75rem; color:#94a3b8; margin-top:0.8rem; word-break:break-all;"></p>
       </div>
-      <p id="profile-uid" style="font-size:0.75rem; color:#94a3b8; margin-top:0.8rem; word-break: break-all;"></p>
+      <button id="btn-logout" class="btn btn-secondary">Выйти из аккаунта</button>
+      <p id="profile-admin" class="hidden" style="text-align:center; color:var(--primary); margin-top:1rem; cursor:pointer;">🔧 Открыть панель модератора</p>
     </div>
-    <button class="btn btn-secondary" id="btn-logout">Выйти</button>
-    <p id="profile-admin" class="hidden" style="text-align:center; color:var(--primary); margin-top:1rem; cursor:pointer;">
-      🔧 Открыть панель модератора
-    </p>
+
+    <nav class="nav-bar">
+      <div class="nav-item active" data-page="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Главная</span>
+      </div>
+      <div class="nav-item" data-page="listings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+        <span>Объявления</span>
+      </div>
+      <div class="nav-item" data-page="chats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>Чаты</span>
+      </div>
+      <div class="nav-item" data-page="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Профиль</span>
+      </div>
+    </nav>
+
+    <button class="btn-fab" id="btn-create">＋</button>
   </div>
 
-  <!-- ПОЛНАЯ СТРАНИЦА ОБЪЯВЛЕНИЯ -->
-  <div id="listing-full" class="listing-full">
+  <!-- 📄 ПОЛНОЕ ОБЪЯВЛЕНИЕ -->
+  <div id="listing-full" class="overlay">
     <button class="back-btn" id="close-listing">← Назад</button>
     <div class="listing-full-img" id="full-img"></div>
     <div class="listing-full-info">
       <h2 id="full-title" style="margin:0 0 0.5rem;"></h2>
       <p id="full-price" style="color:var(--primary); font-size:1.5rem; font-weight:600; margin:0 0 0.5rem;"></p>
-      <p><b>Категория:</b> <span id="full-category"></span></p>
-      <p><b>Состояние:</b> <span id="full-condition"></span></p>
+      <p><b>Категория:</b> <span id="full-category"></span> | <b>Состояние:</b> <span id="full-condition"></span></p>
       <p><b>Описание:</b> <span id="full-desc"></span></p>
-      <p style="font-size:0.85rem; color:#64748b; margin-top:1rem;">
-        👁 Просмотров: <span id="full-views">0</span>
-      </p>
-      
-      <!-- Карточка продавца -->
+      <p style="font-size:0.85rem; color:#64748b; margin-top:1rem;">👁 Просмотров: <span id="full-views">0</span></p>
       <div class="seller-card" id="seller-card">
         <div class="seller-avatar" id="seller-avatar"></div>
-        <div>
-          <b id="seller-nickname"></b>
-          <p style="margin:0.2rem 0 0; font-size:0.85rem; color:#64748b;">
-            ⭐ <span id="seller-rating">0</span> • <span id="seller-reviews">0</span> отзывов
-          </p>
-        </div>
+        <div><b id="seller-nickname"></b><p style="margin:0.2rem 0 0; font-size:0.85rem; color:#64748b;">⭐ <span id="seller-rating">0</span> • <span id="seller-reviews">0</span> отзывов</p></div>
       </div>
-      
       <button class="btn" id="btn-chat-seller" style="margin-top:1rem;">💬 Написать продавцу</button>
     </div>
   </div>
 
-  <!-- ВИЗАРД СОЗДАНИЯ ОБЪЯВЛЕНИЯ -->
-  <div id="wizard" class="wizard">
+  <!-- ➕ ВИЗАРД СОЗДАНИЯ -->
+  <div id="wizard" class="overlay wizard">
     <button class="back-btn" id="close-wizard">✕ Закрыть</button>
-    
-    <!-- Шаг 1: Название -->
-    <div id="w-step-1" class="wizard-step">
-      <h2>1/6 Название</h2>
-      <p style="color:#64748b;">Как называется ваш товар?</p>
-      <input type="text" id="w-title" placeholder="Например: Кроссовки Nike Air Max">
-      <p id="w-title-error" class="error hidden"></p>
-      <button class="btn" id="w-btn-1">Далее</button>
-    </div>
-    
-    <!-- Шаг 2: Категория -->
-    <div id="w-step-2" class="wizard-step hidden">
-      <h2>2/6 Категория</h2>
-      <p style="color:#64748b;">Выберите раздел</p>
-      <select id="w-category">
-        <option value="">-- Выберите --</option>
-        <option value="clothing">Одежда</option>
-        <option value="shoes">Обувь</option>
-        <option value="electronics">Электроника</option>
-        <option value="home">Для дома</option>
-        <option value="auto">Авто</option>
-        <option value="other">Другое</option>
-      </select>
-      <p id="w-category-error" class="error hidden"></p>
-      <button class="btn btn-secondary" id="w-btn-2-back">Назад</button>
-      <button class="btn" id="w-btn-2">Далее</button>
-    </div>
-    
-    <!-- Шаг 3: Состояние -->
-    <div id="w-step-3" class="wizard-step hidden">
-      <h2>3/6 Состояние</h2>
-      <p style="color:#64748b;">Оцените состояние товара</p>
-      <select id="w-condition">
-        <option value="new">✨ Новое</option>
-        <option value="excellent">🟢 Отличное</option>
-        <option value="good">🟡 Хорошее</option>
-        <option value="fair">🟠 Среднее</option>
-        <option value="poor">🔴 Плохое</option>
-      </select>
-      <button class="btn btn-secondary" id="w-btn-3-back">Назад</button>
-      <button class="btn" id="w-btn-3">Далее</button>
-    </div>
-    
-    <!-- Шаг 4: Цена -->
-    <div id="w-step-4" class="wizard-step hidden">
-      <h2>4/6 Цена</h2>
-      <p style="color:#64748b;">Укажите цену в рублях</p>
-      <input type="number" id="w-price" placeholder="Например: 5000" min="1">
-      <p id="w-price-error" class="error hidden"></p>
-      <button class="btn btn-secondary" id="w-btn-4-back">Назад</button>
-      <button class="btn" id="w-btn-4">Далее</button>
-    </div>
-    
-    <!-- Шаг 5: Фото -->
-    <div id="w-step-5" class="wizard-step hidden">
-      <h2>5/6 Фотографии</h2>
-      <p style="color:#64748b;">Загрузите до 10 фото (макс. 5 МБ каждое)</p>
-      <input type="file" id="w-photos" accept="image/*" multiple>
-      <p id="w-photos-error" class="error hidden"></p>
-      <div class="photo-preview" id="w-photo-preview"></div>
-      <button class="btn btn-secondary" id="w-btn-5-back">Назад</button>
-      <button class="btn" id="w-btn-5">Далее</button>
-    </div>
-    
-    <!-- Шаг 6: Описание -->
-    <div id="w-step-6" class="wizard-step hidden">
-      <h2>6/6 Описание</h2>
-      <p style="color:#64748b;">Расскажите подробнее о товаре</p>
-      <textarea id="w-desc" placeholder="Описание..."></textarea>
-      <p id="w-desc-error" class="error hidden"></p>
-      <button class="btn btn-secondary" id="w-btn-6-back">Назад</button>
-      <button class="btn" id="w-btn-submit">📤 Отправить на модерацию</button>
-    </div>
-    
-    <!-- Загрузка -->
-    <div id="w-loading" class="hidden text-center" style="padding:2rem;">
-      <p>⏳ Загрузка и отправка...</p>
-      <p style="font-size:0.9rem; color:#64748b;">Это может занять до 30 секунд</p>
-    </div>
+    <div id="w-step-1" class="wizard-step"><h2>1/6 Название</h2><input type="text" id="w-title" placeholder="Например: Кроссовки Nike"><p id="w-title-error" class="error-text hidden"></p><button class="btn" id="w-btn-1">Далее</button></div>
+    <div id="w-step-2" class="wizard-step hidden"><h2>2/6 Категория</h2><select id="w-category"><option value="">-- Выберите --</option><option value="clothing">Одежда</option><option value="shoes">Обувь</option><option value="electronics">Электроника</option><option value="home">Для дома</option><option value="auto">Авто</option><option value="other">Другое</option></select><p id="w-category-error" class="error-text hidden"></p><button class="btn btn-secondary" id="w-btn-2-back">Назад</button><button class="btn" id="w-btn-2">Далее</button></div>
+    <div id="w-step-3" class="wizard-step hidden"><h2>3/6 Состояние</h2><select id="w-condition"><option value="new">✨ Новое</option><option value="excellent">🟢 Отличное</option><option value="good">🟡 Хорошее</option><option value="fair">🟠 Среднее</option><option value="poor">🔴 Плохое</option></select><button class="btn btn-secondary" id="w-btn-3-back">Назад</button><button class="btn" id="w-btn-3">Далее</button></div>
+    <div id="w-step-4" class="wizard-step hidden"><h2>4/6 Цена</h2><input type="number" id="w-price" placeholder="В рублях" min="1"><p id="w-price-error" class="error-text hidden"></p><button class="btn btn-secondary" id="w-btn-4-back">Назад</button><button class="btn" id="w-btn-4">Далее</button></div>
+    <div id="w-step-5" class="wizard-step hidden"><h2>5/6 Фото (до 10)</h2><input type="file" id="w-photos" accept="image/*" multiple><div class="photo-preview" id="w-photo-preview"></div><p id="w-photos-error" class="error-text hidden"></p><button class="btn btn-secondary" id="w-btn-5-back">Назад</button><button class="btn" id="w-btn-5">Далее</button></div>
+    <div id="w-step-6" class="wizard-step hidden"><h2>6/6 Описание</h2><textarea id="w-desc" placeholder="Расскажите подробнее..."></textarea><p id="w-desc-error" class="error-text hidden"></p><button class="btn btn-secondary" id="w-btn-6-back">Назад</button><button class="btn" id="w-btn-submit">📤 Отправить на модерацию</button></div>
+    <div id="w-loading" class="hidden text-center" style="padding:2rem;"><p>⏳ Загрузка фото и сохранение...</p></div>
   </div>
 
-  <!-- КНОПКА СОЗДАНИЯ -->
-  <button class="btn-fab" id="btn-create">＋</button>
-
-  <!-- НАВИГАЦИЯ -->
-  <nav class="nav-bar">
-    <div class="nav-item active" data-page="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      <span>Главная</span>
-    </div>
-    <div class="nav-item" data-page="listings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
-      <span>Объявления</span>
-    </div>
-    <div class="nav-item" data-page="chats">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-      <span>Чаты</span>
-    </div>
-    <div class="nav-item" data-page="profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span>Профиль</span>
-    </div>
-  </nav>
-
   <script type="module">
-    // 🔥 Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, limit, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -384,19 +246,17 @@
     const db = getFirestore(app);
     const IMGBB_KEY = "d3e0d626da4b69b9cadd392fe36efeac";
 
-    // 🌍 Состояние
     let currentUser = null;
     let userProfile = null;
-    let wizardData = { title: '', category: '', condition: 'new', price: 0, photos: [], desc: '' };
-    let currentListingId = null;
+    let wizardData = { photoFiles: [] };
 
     // 🌓 Тема
-    function loadTheme() {
+    const loadTheme = () => {
       if (localStorage.getItem('viosell-theme') === 'dark') {
         document.body.classList.add('dark');
         document.getElementById('theme-toggle').textContent = '☀️';
       }
-    }
+    };
     document.getElementById('theme-toggle').onclick = () => {
       document.body.classList.toggle('dark');
       const dark = document.body.classList.contains('dark');
@@ -405,28 +265,48 @@
     };
     loadTheme();
 
-    // 🔄 Навигация
-    function showPage(pageId) {
-      ['page-home','page-listings','page-chats','page-profile'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-      });
-      document.getElementById(pageId).classList.remove('hidden');
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      document.querySelector(`.nav-item[data-page="${pageId.replace('page-','')}"]`)?.classList.add('active');
-      
-      // Показать/скрыть поиск
-      document.getElementById('search-box').classList.toggle('hidden', pageId !== 'page-home');
-      
-      // Загрузить данные при переходе
-      if (pageId === 'page-home') loadListings();
-      if (pageId === 'page-listings') loadMyListings();
-      if (pageId === 'page-profile') loadProfile();
+    // 🔄 Переключение экранов
+    function showScreen(screenId) {
+      ['auth-section', 'app-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById(screenId).classList.remove('hidden');
     }
 
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.onclick = () => showPage(`page-${item.dataset.page}`);
-    });
+    // 📧 Статус авторизации
+    function authStatus(msg, type='error') {
+      const el = document.getElementById('auth-status');
+      el.textContent = msg;
+      el.className = `status ${type}`;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 4000);
+    }
 
+    // 🔐 Вход / Регистрация
+    document.getElementById('btn-login').onclick = async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      if (!email || !pass) return authStatus('Заполните все поля');
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (e) { authStatus('Ошибка входа: ' + (e.code?.replace('auth/','') || e.message)); }
+    };
+
+    document.getElementById('btn-register').onclick = async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      if (!email || pass.length < 6) return authStatus('Пароль мин. 6 символов');
+      try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        authStatus('✅ Аккаунт создан!', 'success');
+      } catch (e) { authStatus('Ошибка регистрации: ' + (e.code?.replace('auth/','') || e.message)); }
+    };
+
+    document.getElementById('btn-google').onclick = async () => {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch (e) { authStatus('Ошибка Google: ' + (e.code?.replace('auth/','') || e.message)); }
+    };
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth);
     document.getElementById('logo-refresh').onclick = () => location.reload();
 
     // 🖼 Загрузка в ImgBB
@@ -440,131 +320,87 @@
       return data.data.url;
     }
 
-    // 📦 Загрузка ленты объявлений
+    // 📦 Лента объявлений
     async function loadListings(searchQuery = '') {
       const container = document.getElementById('listings-container');
       const noData = document.getElementById('no-listings');
       container.innerHTML = '';
       
       try {
-        let q = query(collection(db, 'listings'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), limit(50));
+        const q = query(collection(db, 'listings'), where('status', '==', 'active'), orderBy('createdAt', 'desc'), limit(50));
         const snap = await getDocs(q);
-        
-        if (snap.empty) {
-          noData.classList.remove('hidden');
-          return;
-        }
+        if (snap.empty) { noData.classList.remove('hidden'); return; }
         noData.classList.add('hidden');
         
         let listings = [];
-        snap.forEach(doc => listings.push({ id: doc.id, ...doc.data() }));
+        snap.forEach(d => listings.push({ id: d.id, ...d.data() }));
         
-        // Поиск (регистронезависимый)
         if (searchQuery) {
           const qLower = searchQuery.toLowerCase();
-          listings = listings.filter(l => 
-            (l.title?.toLowerCase() || '').includes(qLower) ||
-            (l.description?.toLowerCase() || '').includes(qLower)
-          );
+          listings = listings.filter(l => (l.title?.toLowerCase()||'').includes(qLower) || (l.description?.toLowerCase()||'').includes(qLower));
         }
         
-        // Простая рекомендация: если пользователь смотрел кроссовки — показывать больше обуви
+        // Простая рекомендация
         if (userProfile?.interests?.includes('shoes')) {
           listings.sort((a,b) => (b.category === 'shoes' ? 1 : 0) - (a.category === 'shoes' ? 1 : 0));
         }
         
-        listings.forEach(listing => {
+        listings.forEach(l => {
           const card = document.createElement('div');
           card.className = 'listing-card';
           card.innerHTML = `
-            <div class="listing-img" style="background-image:url('${listing.photos?.[0] || ''}')"></div>
+            <div class="listing-img" style="background-image:url('${l.photos?.[0]||''}')"></div>
             <div class="listing-info">
-              <h3>${listing.title}</h3>
-              <p class="listing-price">${listing.price?.toLocaleString('ru-RU')} ₽</p>
-              <p class="listing-city">📍 ${listing.city || 'Не указан'}</p>
+              <h3>${l.title}</h3>
+              <p class="listing-price">${l.price?.toLocaleString('ru-RU')} ₽</p>
+              <p class="listing-city">📍 ${l.city || 'Не указан'}</p>
               <span class="listing-status status-active">Активно</span>
-            </div>
-          `;
-          card.onclick = () => openListing(listing.id);
+            </div>`;
+          card.onclick = () => openListing(l.id);
           container.appendChild(card);
         });
-      } catch (err) {
-        console.error('Ошибка загрузки:', err);
-        container.innerHTML = '<p style="color:var(--error); padding:1rem;">Не удалось загрузить объявления</p>';
-      }
+      } catch (err) { console.error(err); container.innerHTML = '<p style="color:var(--error); padding:1rem;">Ошибка загрузки</p>'; }
     }
 
-    // 🔍 Поиск
-    document.getElementById('search-input').oninput = (e) => {
-      loadListings(e.target.value);
-    };
+    document.getElementById('search-input').oninput = (e) => loadListings(e.target.value);
 
-    // 👁 Открытие объявления + счётчик просмотров
+    // 👁 Открытие объявления
     async function openListing(id) {
       try {
         const ref = doc(db, 'listings', id);
         const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          alert('❌ Объявление не найдено');
-          return;
-        }
-        const listing = { id, ...snap.data() };
-        currentListingId = id;
+        if (!snap.exists()) return alert('❌ Объявление удалено');
+        const l = { id, ...snap.data() };
         
-        // Счётчик просмотров (не считаем автора)
-        if (currentUser && listing.authorId !== currentUser.uid) {
+        if (currentUser && l.authorId !== currentUser.uid) {
           await updateDoc(ref, { views: increment(1) });
-          // Запоминаем интерес для рекомендаций
-          if (listing.category && userProfile) {
-            await setDoc(doc(db, 'users', currentUser.uid), {
-              interests: arrayUnion(listing.category)
-            }, { merge: true });
-          }
+          if (l.category) await setDoc(doc(db, 'users', currentUser.uid), { interests: arrayUnion(l.category) }, { merge: true });
         }
         
-        // Заполняем страницу
-        document.getElementById('full-img').style.backgroundImage = `url('${listing.photos?.[0] || ''}')`;
-        document.getElementById('full-title').textContent = listing.title;
-        document.getElementById('full-price').textContent = `${listing.price?.toLocaleString('ru-RU')} ₽`;
-        document.getElementById('full-category').textContent = {
-          clothing:'Одежда', shoes:'Обувь', electronics:'Электроника',
-          home:'Для дома', auto:'Авто', other:'Другое'
-        }[listing.category] || listing.category;
-        document.getElementById('full-condition').textContent = {
-          new:'Новое', excellent:'Отличное', good:'Хорошее',
-          fair:'Среднее', poor:'Плохое'
-        }[listing.condition] || listing.condition;
-        document.getElementById('full-desc').textContent = listing.description || 'Без описания';
-        document.getElementById('full-views').textContent = listing.views || 0;
+        document.getElementById('full-img').style.backgroundImage = `url('${l.photos?.[0]||''}')`;
+        document.getElementById('full-title').textContent = l.title;
+        document.getElementById('full-price').textContent = `${l.price?.toLocaleString('ru-RU')} ₽`;
+        document.getElementById('full-category').textContent = {clothing:'Одежда',shoes:'Обувь',electronics:'Электроника',home:'Для дома',auto:'Авто',other:'Другое'}[l.category] || l.category;
+        document.getElementById('full-condition').textContent = {new:'Новое',excellent:'Отличное',good:'Хорошее',fair:'Среднее',poor:'Плохое'}[l.condition] || l.condition;
+        document.getElementById('full-desc').textContent = l.description || 'Без описания';
+        document.getElementById('full-views').textContent = l.views || 0;
         
-        // Продавец
-        if (listing.authorId) {
-          const sellerSnap = await getDoc(doc(db, 'users', listing.authorId));
-          if (sellerSnap.exists()) {
-            const seller = sellerSnap.data();
-            document.getElementById('seller-avatar').style.backgroundImage = `url('${seller.avatar || ''}')`;
-            document.getElementById('seller-nickname').textContent = seller.nickname || 'Пользователь';
-            document.getElementById('seller-rating').textContent = seller.rating?.toFixed(1) || '0.0';
-            document.getElementById('seller-reviews').textContent = seller.reviewsCount || 0;
+        if (l.authorId) {
+          const sSnap = await getDoc(doc(db, 'users', l.authorId));
+          if (sSnap.exists()) {
+            const s = sSnap.data();
+            document.getElementById('seller-avatar').style.backgroundImage = `url('${s.avatar||''}')`;
+            document.getElementById('seller-nickname').textContent = s.nickname || 'Пользователь';
+            document.getElementById('seller-rating').textContent = s.rating?.toFixed(1) || '0.0';
+            document.getElementById('seller-reviews').textContent = s.reviewsCount || 0;
           }
         }
-        
         document.getElementById('listing-full').classList.add('active');
-      } catch (err) {
-        console.error(err);
-        alert('Ошибка загрузки объявления');
-      }
+      } catch (err) { alert('Ошибка: ' + err.message); }
     }
 
-    document.getElementById('close-listing').onclick = () => {
-      document.getElementById('listing-full').classList.remove('active');
-      currentListingId = null;
-    };
-
-    // 💬 Чат с продавцом (заглушка)
-    document.getElementById('btn-chat-seller').onclick = () => {
-      alert('💬 Чат будет подключен следующим шагом!\nПока можно написать в личные сообщения.');
-    };
+    document.getElementById('close-listing').onclick = () => document.getElementById('listing-full').classList.remove('active');
+    document.getElementById('btn-chat-seller').onclick = () => alert('💬 Чат будет подключён следующим шагом');
 
     // 📋 Мои объявления
     async function loadMyListings() {
@@ -572,247 +408,132 @@
       const container = document.getElementById('my-listings-container');
       const noData = document.getElementById('no-my-listings');
       container.innerHTML = '';
-      
       try {
         const q = query(collection(db, 'listings'), where('authorId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
         const snap = await getDocs(q);
-        
-        if (snap.empty) {
-          noData.classList.remove('hidden');
-          return;
-        }
+        if (snap.empty) { noData.classList.remove('hidden'); return; }
         noData.classList.add('hidden');
-        
-        snap.forEach(doc => {
-          const l = { id: doc.id, ...doc.data() };
-          const statusClass = { pending:'status-pending', active:'status-active', blocked:'status-blocked' }[l.status] || 'status-pending';
-          const statusText = { pending:'На проверке', active:'Активно', blocked:'Заблокировано' }[l.status] || l.status;
-          
+        snap.forEach(d => {
+          const l = { id: d.id, ...d.data() };
+          const stClass = {pending:'status-pending',active:'status-active',blocked:'status-blocked'}[l.status] || 'status-pending';
+          const stText = {pending:'На проверке',active:'Активно',blocked:'Заблокировано'}[l.status] || l.status;
           const card = document.createElement('div');
           card.className = 'listing-card';
-          card.innerHTML = `
-            <div class="listing-img" style="background-image:url('${l.photos?.[0] || ''}')"></div>
-            <div class="listing-info">
-              <h3>${l.title}</h3>
-              <p class="listing-price">${l.price?.toLocaleString('ru-RU')} ₽</p>
-              <p style="font-size:0.85rem; color:#64748b;">👁 ${l.views || 0} просмотров</p>
-              <span class="listing-status ${statusClass}">${statusText}</span>
-            </div>
-          `;
-          // Карандаш для редактирования (заглушка)
-          card.insertAdjacentHTML('beforeend', `<button style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.2rem; cursor:pointer;">✏️</button>`);
-          card.onclick = (e) => { if (!e.target.closest('button')) openListing(l.id); };
+          card.innerHTML = `<div class="listing-img" style="background-image:url('${l.photos?.[0]||''}')"></div>
+            <div class="listing-info"><h3>${l.title}</h3><p class="listing-price">${l.price?.toLocaleString('ru-RU')} ₽</p>
+            <p style="font-size:0.85rem; color:#64748b;">👁 ${l.views||0}</p><span class="listing-status ${stClass}">${stText}</span></div>`;
+          card.onclick = () => openListing(l.id);
           container.appendChild(card);
         });
-      } catch (err) {
-        console.error(err);
-        container.innerHTML = '<p style="color:var(--error);">Ошибка загрузки</p>';
-      }
+      } catch (err) { container.innerHTML = '<p style="color:var(--error);">Ошибка</p>'; }
     }
 
     // 👤 Профиль
     async function loadProfile() {
       if (!currentUser || !userProfile) return;
-      document.getElementById('profile-avatar').style.backgroundImage = `url('${userProfile.avatar || ''}')`;
+      document.getElementById('profile-avatar').style.backgroundImage = `url('${userProfile.avatar||''}')`;
       document.getElementById('profile-nickname').textContent = userProfile.nickname || 'Пользователь';
-      document.getElementById('profile-rating').textContent = `⭐ ${userProfile.rating?.toFixed(1) || '0.0'} (${userProfile.reviewsCount || 0} отзывов)`;
+      document.getElementById('profile-rating').textContent = `⭐ ${userProfile.rating?.toFixed(1)||'0.0'} (${userProfile.reviewsCount||0} отзывов)`;
       document.getElementById('profile-listings-count').textContent = userProfile.listingsCount || 0;
       document.getElementById('profile-joined').textContent = userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('ru-RU') : '-';
       document.getElementById('profile-uid').textContent = `ID: ${currentUser.uid}`;
-      
-      // Админ-панель
-      const isAdmin = currentUser.email === 'sobakastalina123@gmail.com';
-      document.getElementById('profile-admin').classList.toggle('hidden', !isAdmin);
+      document.getElementById('profile-admin').classList.toggle('hidden', currentUser.email !== 'sobakastalina123@gmail.com');
     }
+    document.getElementById('profile-admin').onclick = () => alert('🔧 Админ-панель в разработке');
 
-    document.getElementById('profile-admin').onclick = () => {
-      alert('🔧 Админ-панель будет подключена следующим шагом!\nЗдесь будет модерация отзывов, жалоб, объявлений.');
-    };
-
-    document.getElementById('btn-logout').onclick = () => signOut(auth);
-
-    // ➕ Визард создания
+    // ➕ Визард
     document.getElementById('btn-create').onclick = () => {
-      if (!currentUser) return alert('Сначала войдите в аккаунт');
-      wizardData = { title: '', category: '', condition: 'new', price: 0, photos: [], desc: '' };
+      wizardData = { title:'', category:'', condition:'new', price:0, photos:[], desc:'', photoFiles:[] };
       showWizardStep(1);
       document.getElementById('wizard').classList.add('active');
     };
-
-    document.getElementById('close-wizard').onclick = () => {
-      document.getElementById('wizard').classList.remove('active');
-    };
+    document.getElementById('close-wizard').onclick = () => document.getElementById('wizard').classList.remove('active');
 
     function showWizardStep(n) {
-      [1,2,3,4,5,6].forEach(i => {
-        document.getElementById(`w-step-${i}`).classList.add('hidden');
-      });
+      [1,2,3,4,5,6].forEach(i => document.getElementById(`w-step-${i}`).classList.add('hidden'));
       document.getElementById(`w-step-${n}`).classList.remove('hidden');
       document.getElementById('w-loading').classList.add('hidden');
     }
 
-    // Шаг 1: Название
-    document.getElementById('w-btn-1').onclick = () => {
-      const title = document.getElementById('w-title').value.trim();
-      const err = document.getElementById('w-title-error');
-      if (title.length < 3) {
-        err.textContent = 'Минимум 3 символа';
-        err.classList.remove('hidden');
-        return;
-      }
-      err.classList.add('hidden');
-      wizardData.title = title;
-      showWizardStep(2);
+    const wNav = (next, back, step) => {
+      document.getElementById(`w-btn-${step}`).onclick = () => {
+        const err = document.getElementById(`w-${next}-error`);
+        const val = document.getElementById(`w-${next}`).value.trim();
+        if (!val || (step===1 && val.length<3) || (step===4 && val<1)) {
+          err.textContent = step===1?'Мин. 3 символа':step===4?'Укажите цену':'Заполните поле';
+          err.classList.remove('hidden'); return;
+        }
+        err.classList.add('hidden');
+        wizardData[step===1?'title':step===2?'category':step===3?'condition':step===4?'price':step===5?'photos':step===6?'desc':''] = step===4?parseInt(val):val;
+        showWizardStep(step+1);
+      };
+      if(back) document.getElementById(`w-btn-${back}`).onclick = () => showWizardStep(back-1);
     };
+    wNav('title',null,1); wNav('category','category',2); wNav('condition',null,3); wNav('price','price',4); wNav('desc','desc',6);
 
-    // Шаг 2: Категория
-    document.getElementById('w-btn-2').onclick = () => {
-      const cat = document.getElementById('w-category').value;
-      const err = document.getElementById('w-category-error');
-      if (!cat) {
-        err.textContent = 'Выберите категорию';
-        err.classList.remove('hidden');
-        return;
-      }
-      err.classList.add('hidden');
-      wizardData.category = cat;
-      showWizardStep(3);
-    };
-    document.getElementById('w-btn-2-back').onclick = () => showWizardStep(1);
-
-    // Шаг 3: Состояние
-    document.getElementById('w-btn-3').onclick = () => {
-      wizardData.condition = document.getElementById('w-condition').value;
-      showWizardStep(4);
-    };
-    document.getElementById('w-btn-3-back').onclick = () => showWizardStep(2);
-
-    // Шаг 4: Цена
-    document.getElementById('w-btn-4').onclick = () => {
-      const price = parseInt(document.getElementById('w-price').value);
-      const err = document.getElementById('w-price-error');
-      if (!price || price < 1) {
-        err.textContent = 'Укажите цену от 1 ₽';
-        err.classList.remove('hidden');
-        return;
-      }
-      err.classList.add('hidden');
-      wizardData.price = price;
-      showWizardStep(5);
-    };
-    document.getElementById('w-btn-4-back').onclick = () => showWizardStep(3);
-
-    // Шаг 5: Фото
-    const photoInput = document.getElementById('w-photos');
-    const photoPreview = document.getElementById('w-photo-preview');
-    
-    photoInput.onchange = (e) => {
-      const files = Array.from(e.target.files).slice(0, 10);
-      if (files.length === 0) {
-        document.getElementById('w-photos-error').textContent = 'Выберите хотя бы одно фото';
-        document.getElementById('w-photos-error').classList.remove('hidden');
-        return;
-      }
-      document.getElementById('w-photos-error').classList.add('hidden');
-      photoPreview.innerHTML = '';
-      files.forEach(file => {
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        photoPreview.appendChild(img);
-      });
+    document.getElementById('w-photos').onchange = (e) => {
+      const files = Array.from(e.target.files).slice(0,10);
+      const preview = document.getElementById('w-photo-preview');
+      preview.innerHTML = '';
+      files.forEach(f => { preview.innerHTML += `<img src="${URL.createObjectURL(f)}">`; });
       wizardData.photoFiles = files;
     };
-
     document.getElementById('w-btn-5').onclick = () => {
-      if (!wizardData.photoFiles?.length) {
-        document.getElementById('w-photos-error').textContent = 'Загрузите фото';
-        document.getElementById('w-photos-error').classList.remove('hidden');
-        return;
-      }
-      showWizardStep(6);
+      if(!wizardData.photoFiles.length) { document.getElementById('w-photos-error').textContent='Выберите фото'; document.getElementById('w-photos-error').classList.remove('hidden'); return; }
+      document.getElementById('w-photos-error').classList.add('hidden'); showWizardStep(6);
     };
     document.getElementById('w-btn-5-back').onclick = () => showWizardStep(4);
 
-    // Шаг 6: Описание + Отправка
     document.getElementById('w-btn-submit').onclick = async () => {
-      const desc = document.getElementById('w-desc').value.trim();
-      const err = document.getElementById('w-desc-error');
-      if (desc.length < 10) {
-        err.textContent = 'Описание должно быть от 10 символов';
-        err.classList.remove('hidden');
-        return;
-      }
-      wizardData.desc = desc;
-      
-      // Загрузка
-      document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
+      if(wizardData.desc.length < 10) { document.getElementById('w-desc-error').textContent='Мин. 10 символов'; document.getElementById('w-desc-error').classList.remove('hidden'); return; }
+      wizardData.desc = document.getElementById('w-desc').value.trim();
+      document.querySelectorAll('.wizard-step').forEach(el=>el.classList.add('hidden'));
       document.getElementById('w-loading').classList.remove('hidden');
-      
       try {
-        // Загружаем фото
-        const photoUrls = [];
-        for (const file of wizardData.photoFiles) {
-          const url = await uploadToImgBB(file);
-          photoUrls.push(url);
-        }
-        
-        // Сохраняем объявление
-        await addDoc(collection(db, 'listings'), {
-          title: wizardData.title,
-          category: wizardData.category,
-          condition: wizardData.condition,
-          price: wizardData.price,
-          description: wizardData.desc,
-          photos: photoUrls,
-          authorId: currentUser.uid,
-          authorNickname: userProfile?.nickname || 'Пользователь',
-          city: 'Не указан', // Позже добавим выбор города
-          status: 'pending', // На модерации
-          views: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+        const urls = await Promise.all(wizardData.photoFiles.map(f=>uploadToImgBB(f)));
+        await addDoc(collection(db,'listings'), {
+          title: wizardData.title, category: wizardData.category, condition: wizardData.condition,
+          price: wizardData.price, description: wizardData.desc, photos: urls,
+          authorId: currentUser.uid, authorNickname: userProfile?.nickname||'Пользователь',
+          city: 'Не указан', status: 'pending', views: 0,
+          createdAt: new Date().toISOString()
         });
-        
-        // Обновляем счётчик объявлений у пользователя
-        if (userProfile) {
-          await setDoc(doc(db, 'users', currentUser.uid), {
-            listingsCount: increment(1)
-          }, { merge: true });
-        }
-        
-        alert('✅ Объявление отправлено на модерацию!\nОно появится в поиске после проверки.');
+        if(userProfile) await setDoc(doc(db,'users',currentUser.uid), { listingsCount: increment(1) }, { merge: true });
+        alert('✅ Отправлено на модерацию!');
         document.getElementById('wizard').classList.remove('active');
-        showPage('page-listings');
         loadMyListings();
-      } catch (err) {
-        console.error(err);
-        alert('❌ Ошибка: ' + err.message);
-        showWizardStep(6);
-      }
+      } catch(err) { alert('❌ Ошибка: '+err.message); showWizardStep(6); }
     };
-    document.getElementById('w-btn-6-back').onclick = () => showWizardStep(5);
 
-    // 🔐 Авторизация
+    // 🔄 Отслеживание состояния входа
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (!user) {
-        // Если не авторизован — редирект на вход (упрощённо)
-        document.body.innerHTML = '<div class="container" style="text-align:center; padding:3rem;"><h2>🔐 Войдите в аккаунт</h2><p>Обновите страницу, чтобы войти</p><button class="btn" onclick="location.reload()">Обновить</button></div>';
+        showScreen('auth-section');
         return;
       }
-      
-      // Загружаем профиль
+      showScreen('app-container');
       try {
         const snap = await getDoc(doc(db, 'users', user.uid));
         userProfile = snap.exists() ? snap.data() : {};
-      } catch (err) {
-        console.warn('Не удалось загрузить профиль:', err);
-        userProfile = {};
-      }
-      
-      // Показываем главную
-      showPage('page-home');
+      } catch(e) { userProfile = {}; }
+      showPage('home');
       loadListings();
+    });
+
+    // 🧭 Навигация
+    function showPage(page) {
+      ['home','listings','chats','profile'].forEach(p => document.getElementById(`page-${p}`).classList.add('hidden'));
+      document.getElementById(`page-${page}`).classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+      document.getElementById('search-box').classList.toggle('hidden', page !== 'home');
+      if(page==='home') loadListings();
+      if(page==='listings') loadMyListings();
+      if(page==='profile') loadProfile();
+    }
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.onclick = () => showPage(item.dataset.page);
     });
   </script>
 </body>
