@@ -5,42 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viosell</title>
   <style>
-    :root { --primary: #2563eb; --bg: #f8fafc; --card: #fff; --text: #0f172a; --border: #cbd5e1; --shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    body.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 2rem; min-height: 100vh; transition: 0.3s; }
+    :root { --primary: #2563eb; --bg: #f8fafc; --card: #fff; --text: #0f172a; --border: #cbd5e1; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 14px; }
+    body.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; --shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; min-height: 100vh; transition: 0.3s; padding-bottom: 70px; }
     .hidden { display: none !important; }
-    .container { max-width: 420px; margin: 2rem auto; background: var(--card); padding: 2rem; border-radius: 16px; box-shadow: var(--shadow); }
-    input, select, textarea { width: 100%; padding: 0.9rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.5rem 0; box-sizing: border-box; background: var(--bg); color: var(--text); }
-    button { width: 100%; padding: 0.9rem; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin: 0.5rem 0; background: var(--primary); color: #fff; font-weight: 500; }
+    .container { max-width: 480px; margin: 0 auto; padding: 1rem; }
+    
+    /* AUTH & ONBOARD */
+    .auth-wrap { max-width: 400px; margin: 3rem auto; padding: 2rem; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+    input, select, textarea { width: 100%; padding: 0.9rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.5rem 0; background: var(--bg); color: var(--text); }
+    button { width: 100%; padding: 0.9rem; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin: 0.5rem 0; background: var(--primary); color: #fff; font-weight: 500; transition: 0.2s; }
     button:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-sec { background: var(--border); color: var(--text); }
     .btn-google { background: var(--card); color: var(--text); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .status { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.9rem; }
-    .status.ok { background: #dcfce7; color: #15803d; }
-    .status.err { background: #fee2e2; color: #b91c1c; }
+    .msg { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.9rem; }
+    .msg.ok { background: #dcfce7; color: #15803d; }
+    .msg.err { background: #fee2e2; color: #b91c1c; }
     .divider { display: flex; align-items: center; margin: 1.2rem 0; color: #94a3b8; font-size: 0.85rem; }
     .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
     .divider span { padding: 0 12px; }
-    .avatar-circle { width: 100px; height: 100px; border-radius: 50%; margin: 1rem auto; background: var(--border); background-size: cover; background-position: center; border: 3px solid var(--primary); cursor: pointer; }
-    .rules-box { background: rgba(37,99,235,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin: 1rem 0; font-size: 0.85rem; max-height: 180px; overflow-y: auto; }
+    
+    /* AVATAR FIX */
+    .avatar-box { width: 110px; height: 110px; border-radius: 50%; margin: 1rem auto; background: var(--border); border: 3px solid var(--primary); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .avatar-box img { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 50%; }
+    .avatar-box::after { content: "📷"; font-size: 2rem; opacity: 0.6; position: absolute; }
+    .avatar-box.has-img::after { display: none; }
+    .avatar-box.has-img img { display: block; }
+    
+    .rules-box { background: rgba(37,99,235,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin: 1rem 0; font-size: 0.85rem; max-height: 160px; overflow-y: auto; }
     .check-wrap { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; }
     .check-wrap input { width: auto; margin: 0; }
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.8rem 0; }
+
+    /* APP UI */
+    .header { position: sticky; top: 0; z-index: 50; background: var(--card); padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .logo { color: var(--primary); font-weight: 700; font-size: 1.3rem; cursor: pointer; }
+    .theme-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; border-radius: 8px; }
+    .search-bar { padding: 0.8rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 58px; z-index: 40; }
+    
+    .card { background: var(--card); border-radius: var(--radius); padding: 1rem; margin: 0.8rem 0; box-shadow: var(--shadow); cursor: pointer; display: grid; grid-template-columns: 70px 1fr; gap: 0.8rem; }
+    .card-img { width: 70px; height: 70px; border-radius: 10px; background: var(--border); background-size: cover; background-position: center; }
+    .card h3 { margin: 0 0 0.3rem; font-size: 1.05rem; }
+    .price { color: var(--primary); font-weight: 600; font-size: 1.1rem; }
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.7rem; margin-top: 0.3rem; }
+    .b-pend { background: #fef3c7; color: #92400e; }
+    .b-active { background: #dcfce7; color: #15803d; }
+    .b-block { background: #fee2e2; color: #b91c1c; }
+
+    /* OVERLAYS */
+    .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 100; overflow-y: auto; display: none; padding: 1rem; }
+    .overlay.active { display: block; }
+    .back { background: none; border: none; color: var(--primary); font-size: 1rem; cursor: pointer; padding: 0.5rem 0; margin-bottom: 0.5rem; }
+    .full-img { width: 100%; height: 220px; border-radius: var(--radius); background: var(--border); background-size: cover; background-position: center; margin: 0.5rem 0; }
+    .info-box { background: var(--card); padding: 1rem; border-radius: var(--radius); margin-top: 0.5rem; }
+    .seller { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem; background: var(--bg); border-radius: 10px; margin-top: 1rem; cursor: pointer; }
+    .seller-av { width: 44px; height: 44px; border-radius: 50%; background: var(--border); background-size: cover; background-position: center; border: 2px solid var(--primary); }
+    
+    /* WIZARD */
+    .step { animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .photos { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .photos img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
+
+    /* CHAT */
+    .chat-list { max-height: 70vh; overflow-y: auto; }
+    .chat-item { display: flex; align-items: center; gap: 0.8rem; padding: 1rem; background: var(--card); margin: 0.5rem 0; border-radius: 10px; cursor: pointer; }
+    .chat-window { display: flex; flex-direction: column; height: calc(100vh - 100px); }
+    .messages { flex: 1; overflow-y: auto; padding: 0.5rem; background: var(--bg); border-radius: 10px; margin-bottom: 0.5rem; }
+    .msg-bubble { max-width: 80%; padding: 0.7rem 1rem; border-radius: 12px; margin: 0.5rem 0; word-break: break-word; }
+    .msg-me { background: var(--primary); color: #fff; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+    .msg-them { background: var(--card); border: 1px solid var(--border); align-self: flex-start; margin-right: auto; border-bottom-left-radius: 4px; }
+    .input-row { display: flex; gap: 0.5rem; }
+    .input-row input { flex: 1; margin: 0; }
+    .input-row button { width: auto; margin: 0; }
+
+    /* PROFILE & NAV */
+    .prof-header { text-align: center; padding: 1.5rem; background: var(--card); border-radius: var(--radius); margin: 1rem 0; }
+    .prof-av { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 0.8rem; background: var(--border); background-size: cover; background-position: center; border: 3px solid var(--primary); }
+    .stats { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; font-size: 0.9rem; }
+    .stats b { display: block; font-size: 1.2rem; color: var(--primary); }
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.7rem 0; z-index: 60; }
     .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; cursor: pointer; opacity: 0.6; }
     .nav-item.active { opacity: 1; color: var(--primary); }
-    .fab { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; }
-    .header { position: sticky; top: 0; background: var(--card); padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-    .logo { color: var(--primary); font-weight: 700; font-size: 1.3rem; cursor: pointer; }
-    .theme-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+    .fab { position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; z-index: 55; }
+    .admin-link { text-align: center; color: var(--primary); margin-top: 1rem; cursor: pointer; font-size: 0.9rem; }
+    .empty { text-align: center; padding: 3rem 1rem; color: #64748b; }
   </style>
 </head>
 <body>
 
   <!-- 🔐 АВТОРИЗАЦИЯ -->
-  <div id="screen-auth" class="container">
+  <div id="screen-auth" class="auth-wrap">
     <h1 style="text-align:center; color:var(--primary); margin:0 0 1rem;">🛒 Viosell</h1>
-    <input type="email" id="in-email" placeholder="Email">
-    <input type="password" id="in-pass" placeholder="Пароль (мин. 6 символов)">
+    <input type="email" id="a-email" placeholder="Email">
+    <input type="password" id="a-pass" placeholder="Пароль (мин. 6)">
     <button id="btn-login">Войти</button>
     <button id="btn-reg" class="btn-sec">Зарегистрироваться</button>
     <div class="divider"><span>или</span></div>
@@ -48,62 +106,107 @@
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/></svg>
       Войти через Google
     </button>
-    <div id="auth-msg" class="status hidden"></div>
-    <p style="font-size:0.75rem; color:#64748b; text-align:center; margin-top:1rem;">💡 Если Google не открывается: отключи блокировщик всплывающих окон и проверь настройки Firebase</p>
+    <div id="a-msg" class="msg hidden"></div>
   </div>
 
   <!-- 👤 ОНБОРДИНГ -->
-  <div id="screen-onboard" class="container hidden">
-    <h2 id="onb-title" style="text-align:center; margin:0 0 1rem;">Шаг 1: Никнейм</h2>
-    <div id="step-1">
-      <input type="text" id="onb-nick" placeholder="Придумай ник (3-20 символов)" maxlength="20">
-      <p id="onb-nick-err" class="status err hidden"></p>
-      <button id="onb-btn-1">Далее</button>
+  <div id="screen-onboard" class="auth-wrap hidden">
+    <h2 id="ob-title" style="text-align:center; margin:0 0 1rem;">Шаг 1/3: Никнейм</h2>
+    <div id="ob-1">
+      <input type="text" id="ob-nick" placeholder="Ник (3-20 символов)" maxlength="20">
+      <p id="ob-nick-err" class="msg err hidden"></p>
+      <button id="ob-btn-1">Далее</button>
     </div>
-    <div id="step-2" class="hidden">
-      <p style="text-align:center; color:#64748b;">Нажми на кружок, чтобы загрузить аватар</p>
-      <label for="onb-file" class="avatar-circle" id="onb-preview"></label>
-      <input type="file" id="onb-file" accept="image/*" hidden>
-      <p id="onb-av-err" class="status err hidden"></p>
-      <button id="onb-btn-2" disabled>Продолжить</button>
+    <div id="ob-2" class="hidden">
+      <p style="text-align:center; color:#64748b; margin-bottom:0.5rem;">Нажми на кружок</p>
+      <label for="ob-file" class="avatar-box" id="ob-preview"><img id="ob-img"></label>
+      <input type="file" id="ob-file" accept="image/*" hidden>
+      <p id="ob-av-err" class="msg err hidden"></p>
+      <button id="ob-btn-2" disabled>Продолжить</button>
     </div>
-    <div id="step-3" class="hidden">
-      <div class="rules-box">
-        <ul style="margin:0.5rem 0; padding-left:1.2rem;">
-          <li>❌ Без мата, 18+, оскорблений</li>
-          <li>❌ Без угроз и слива данных</li>
-          <li>❌ Без обхода банов</li>
-          <li>✅ Уважай других</li>
-        </ul>
-      </div>
-      <label class="check-wrap"><input type="checkbox" id="onb-check"><span>Согласен с правилами</span></label>
-      <button id="onb-btn-3" disabled>Завершить регистрацию</button>
+    <div id="ob-3" class="hidden">
+      <div class="rules-box"><ul style="margin:0.5rem 0; padding-left:1.2rem;">
+        <li>❌ Без мата, 18+, оскорблений</li><li>❌ Без угроз и слива данных</li><li>❌ Без обхода банов</li><li>✅ Уважай других</li>
+      </ul></div>
+      <label class="check-wrap"><input type="checkbox" id="ob-check"><span>Согласен с правилами</span></label>
+      <button id="ob-btn-3" disabled>Завершить</button>
     </div>
   </div>
 
-  <!-- 📱 ГЛАВНОЕ МЕНЮ -->
+  <!-- 📱 ПРИЛОЖЕНИЕ -->
   <div id="screen-app" class="hidden">
-    <header class="header">
-      <div class="logo" id="logo-refresh">viosell</div>
-      <button class="theme-btn" id="theme-toggle">🌙</button>
-    </header>
-    <div style="padding:2rem; text-align:center; color:#64748b;">
-      <p>✅ Вы вошли в Viosell</p>
-      <p style="font-size:0.9rem;">Лента, объявления и чаты подключим следующим шагом</p>
+    <header class="header"><div class="logo" id="logo-refresh">viosell</div><button class="theme-btn" id="theme-toggle">🌙</button></header>
+    <div class="search-bar"><input type="text" id="search" placeholder="🔍 Поиск..."></div>
+
+    <div id="tab-home" class="container"><div id="feed"></div><div id="no-feed" class="empty">Нет активных объявлений</div></div>
+    <div id="tab-my" class="container hidden"><h2 style="padding:1rem;">📋 Мои объявления</h2><div id="my-feed"></div><div id="no-my" class="empty">У вас пока нет объявлений</div></div>
+    <div id="tab-chat" class="container hidden"><h2 style="padding:1rem;">💬 Чаты</h2><div id="chat-list" class="chat-list"></div><div id="no-chat" class="empty">Напишите кому-нибудь по объявлению</div></div>
+    <div id="tab-prof" class="container hidden">
+      <div class="prof-header">
+        <div class="prof-av" id="p-av"></div>
+        <h3 id="p-nick" style="margin:0.5rem 0;"></h3>
+        <p id="p-rate" style="color:#64748b; margin:0;">⭐ 0.0 (0 отзывов)</p>
+        <div class="stats"><div><b id="p-count">0</b>объявлений</div><div><b id="p-date">-</b>дата регистрации</div></div>
+        <p id="p-uid" style="font-size:0.75rem; color:#94a3b8; margin-top:0.8rem; word-break:break-all;"></p>
+      </div>
+      <button id="btn-logout" class="btn-sec">Выйти</button>
+      <div id="admin-link" class="admin-link hidden">🔧 Панель модератора</div>
     </div>
-    <button id="btn-logout" class="btn-sec" style="max-width:200px; margin:2rem auto 0; display:block;">Выйти</button>
+
+    <button class="fab" id="fab-add">＋</button>
     <nav class="nav">
-      <div class="nav-item active">🏠<br>Главная</div>
-      <div class="nav-item">📋<br>Объявления</div>
-      <div class="nav-item">💬<br>Чаты</div>
-      <div class="nav-item">👤<br>Профиль</div>
+      <div class="nav-item active" data-t="home">🏠<br>Главная</div>
+      <div class="nav-item" data-t="my">📋<br>Объявления</div>
+      <div class="nav-item" data-t="chat">💬<br>Чаты</div>
+      <div class="nav-item" data-t="prof">👤<br>Профиль</div>
     </nav>
+  </div>
+
+  <!-- 🔍 ПРОСМОТР ОБЪЯВЛЕНИЯ -->
+  <div id="view-listing" class="overlay">
+    <button class="back" onclick="document.getElementById('view-listing').classList.remove('active')">← Назад</button>
+    <div class="full-img" id="v-img"></div>
+    <div class="info-box">
+      <h2 id="v-title" style="margin:0 0 0.3rem;"></h2>
+      <p class="price" id="v-price"></p>
+      <p><b>Категория:</b> <span id="v-cat"></span> | <b>Состояние:</b> <span id="v-cond"></span></p>
+      <p id="v-desc"></p>
+      <p style="font-size:0.85rem; color:#64748b;">👁 <span id="v-views">0</span></p>
+      <div class="seller" id="v-seller">
+        <div class="seller-av" id="s-av"></div>
+        <div><b id="s-nick"></b><p style="margin:0.2rem 0 0; font-size:0.85rem; color:#64748b;">⭐ <span id="s-rate">0</span> • <span id="s-rev">0</span> отзывов</p></div>
+      </div>
+      <button class="btn-sec" id="btn-start-chat" style="margin-top:1rem;">💬 Написать продавцу</button>
+    </div>
+  </div>
+
+  <!-- ➕ ВИЗАРД -->
+  <div id="wizard" class="overlay">
+    <button class="back" id="close-wiz">✕ Закрыть</button>
+    <div id="w1" class="step"><h2>1/5 Название</h2><input id="w-title" placeholder="Товар"><button id="w-btn1">Далее</button></div>
+    <div id="w2" class="step hidden"><h2>2/5 Категория</h2><select id="w-cat"><option value="">Выбери...</option><option value="Одежда">Одежда</option><option value="Обувь">Обувь</option><option value="Электроника">Электроника</option><option value="Другое">Другое</option></select><button class="btn-sec" id="w-back2">Назад</button><button id="w-btn2">Далее</button></div>
+    <div id="w3" class="step hidden"><h2>3/5 Состояние</h2><select id="w-cond"><option value="Новое">Новое</option><option value="Отличное">Отличное</option><option value="Хорошее">Хорошее</option><option value="Среднее">Среднее</option></select><button class="btn-sec" id="w-back3">Назад</button><button id="w-btn3">Далее</button></div>
+    <div id="w4" class="step hidden"><h2>4/5 Цена</h2><input type="number" id="w-price" placeholder="₽" min="1"><button class="btn-sec" id="w-back4">Назад</button><button id="w-btn4">Далее</button></div>
+    <div id="w5" class="step hidden"><h2>5/5 Фото + Описание</h2><input type="file" id="w-files" accept="image/*" multiple><div class="photos" id="w-prev"></div><textarea id="w-desc" placeholder="Описание..."></textarea><button class="btn-sec" id="w-back5">Назад</button><button id="w-submit">📤 Отправить на модерацию</button></div>
+    <div id="w-load" class="empty hidden">⏳ Загрузка...</div>
+  </div>
+
+  <!-- 💬 ЧАТ -->
+  <div id="chat-view" class="overlay">
+    <button class="back" id="close-chat">← Назад</button>
+    <div class="chat-window">
+      <div style="padding:0.8rem; background:var(--card); border-radius:10px; margin-bottom:0.5rem;">
+        <b id="c-seller">Продавец</b> • <span id="c-item" style="color:var(--primary); cursor:pointer;">Товар</span>
+      </div>
+      <div class="messages" id="c-msgs"></div>
+      <div class="input-row"><input id="c-input" placeholder="Сообщение..."><button id="c-send">➤</button></div>
+    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, updateDoc, arrayUnion, increment, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
@@ -111,155 +214,239 @@
       projectId: "exzzy1-84d88",
       storageBucket: "exzzy1-84d88.firebasestorage.app",
       messagingSenderId: "892085705947",
-      appId: "1:892085705947:web:bbbd44ebc1cf460bdbc0fe",
-      measurementId: "G-ZRPGRHES04"
+      appId: "1:892085705947:web:bbbd44ebc1cf460bdbc0fe"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const IMGBB_KEY = "d3e0d626da4b69b9cadd392fe36efeac";
+    const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
-    let currentUser = null;
-    let onboardData = { nick: "", avUrl: "" };
+    let user = null, profile = null, curList = null, curChat = null;
 
     // 🌓 Тема
-    function loadTheme() {
-      if (localStorage.getItem('viosell-theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').textContent = '☀️';
-      }
-    }
-    document.getElementById('theme-toggle').onclick = () => {
-      document.body.classList.toggle('dark');
-      const d = document.body.classList.contains('dark');
-      localStorage.setItem('viosell-theme', d ? 'dark' : 'light');
-      document.getElementById('theme-toggle').textContent = d ? '☀️' : '🌙';
-    };
+    const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
+    document.getElementById('theme-toggle').onclick = () => { document.body.classList.toggle('dark'); const d=document.body.classList.contains('dark'); localStorage.setItem('vio-theme', d?'dark':'light'); document.getElementById('theme-toggle').textContent = d?'☀️':'🌙'; };
     loadTheme();
 
-    // 🔄 Переключение экранов
-    function showScreen(id) {
-      ['screen-auth', 'screen-onboard', 'screen-app'].forEach(s => document.getElementById(s).classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }
+    function show(id){ ['screen-auth','screen-onboard','screen-app'].forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+    function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
 
-    function msg(text, type='err') {
-      const el = document.getElementById('auth-msg');
-      el.textContent = text;
-      el.className = `status ${type}`;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 4000);
-    }
-
-    // 🔐 Авторизация
+    // 🔐 Auth
     document.getElementById('btn-login').onclick = async () => {
-      const e = document.getElementById('in-email').value.trim();
-      const p = document.getElementById('in-pass').value;
-      if (!e || !p) return msg('Заполните все поля');
-      try { await signInWithEmailAndPassword(auth, e, p); }
-      catch (err) { msg('Ошибка входа: ' + (err.code?.replace('auth/','') || err.message)); }
+      const e=document.getElementById('a-email').value.trim(), p=document.getElementById('a-pass').value;
+      if(!e||!p) return msg('Заполните поля');
+      try { await signInWithEmailAndPassword(auth,e,p); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка'); }
     };
-
     document.getElementById('btn-reg').onclick = async () => {
-      const e = document.getElementById('in-email').value.trim();
-      const p = document.getElementById('in-pass').value;
-      if (!e || p.length < 6) return msg('Пароль мин. 6 символов');
-      try {
-        await createUserWithEmailAndPassword(auth, e, p);
-        sendEmailVerification(auth.currentUser).catch(() => {}); // Не ждём письмо
-        msg('✅ Аккаунт создан! Загружаем профиль...', 'ok');
-        // onAuthStateChanged сработает автоматически и покажет онбординг
-      } catch (err) { msg('Ошибка: ' + (err.code?.replace('auth/','') || err.message)); }
+      const e=document.getElementById('a-email').value.trim(), p=document.getElementById('a-pass').value;
+      if(!e||p.length<6) return msg('Пароль мин. 6 символов');
+      try { await createUserWithEmailAndPassword(auth,e,p); msg('✅ Аккаунт создан!','ok'); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка'); }
     };
-
     document.getElementById('btn-google').onclick = async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        console.error(err);
-        if (err.code === 'auth/popup-blocked') msg('❌ Всплывающее окно заблокировано браузером. Разреши его в настройках.');
-        else if (err.code === 'auth/unauthorized-domain') msg('❌ Домен не разрешён в Firebase Console. Добавь свой домен в Authentication → Settings → Authorized domains.');
-        else msg('Google ошибка: ' + (err.code?.replace('auth/','') || err.message));
-      }
+      try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(err){ msg('Google: '+(err.code?.replace('auth/','')||'Проверь домены в Firebase')); }
     };
-
     document.getElementById('btn-logout').onclick = () => signOut(auth);
     document.getElementById('logo-refresh').onclick = () => location.reload();
 
-    // 🖼 Загрузка аватарки
-    async function uploadAv(file) {
-      const fd = new FormData(); fd.append('key', IMGBB_KEY); fd.append('image', file);
-      const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error?.message || 'Ошибка загрузки');
-      return data.data.url;
-    }
+    // 🖼 Upload
+    async function up(file){ const f=new FormData(); f.append('key',IMGBB); f.append('image',file); const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:f}); const d=await r.json(); if(!d.success) throw new Error(d.error?.message); return d.data.url; }
 
-    // 📱 Онбординг
-    document.getElementById('onb-btn-1').onclick = () => {
-      const n = document.getElementById('onb-nick').value.trim();
-      const err = document.getElementById('onb-nick-err');
-      if (n.length < 3 || n.length > 20) { err.textContent = 'Ник от 3 до 20 символов'; err.classList.remove('hidden'); return; }
-      const t = n.toLowerCase().replace(/[^а-яa-z0-9]/g,'');
-      if (/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@/.test(t)) { err.textContent = '❌ Ник содержит запрещённые слова'; err.classList.remove('hidden'); return; }
-      err.classList.add('hidden'); onboardData.nick = n;
-      document.getElementById('step-1').classList.add('hidden');
-      document.getElementById('step-2').classList.remove('hidden');
+    // 📱 Onboard
+    document.getElementById('ob-btn-1').onclick = () => {
+      const n=document.getElementById('ob-nick').value.trim(), er=document.getElementById('ob-nick-err');
+      if(n.length<3||n.length>20){er.textContent='3-20 символов';er.classList.remove('hidden');return;}
+      if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@/.test(n.toLowerCase().replace(/[^а-яa-z0-9]/g,''))){er.textContent='❌ Запрещённые слова';er.classList.remove('hidden');return;}
+      er.classList.add('hidden'); profile={nick:n};
+      document.getElementById('ob-1').classList.add('hidden'); document.getElementById('ob-2').classList.remove('hidden');
     };
-
-    document.getElementById('onb-file').onchange = async (e) => {
-      const f = e.target.files[0]; if (!f) return;
-      document.getElementById('onb-preview').style.backgroundImage = `url(${URL.createObjectURL(f)})`;
-      document.getElementById('onb-btn-2').disabled = false;
-      document.getElementById('onb-btn-2').onclick = async () => {
-        document.getElementById('onb-btn-2').textContent = '⏳ Загрузка...';
-        document.getElementById('onb-btn-2').disabled = true;
-        try {
-          onboardData.avUrl = await uploadAv(f);
-          document.getElementById('step-2').classList.add('hidden');
-          document.getElementById('step-3').classList.remove('hidden');
-        } catch (err) {
-          document.getElementById('onb-av-err').textContent = 'Ошибка: ' + err.message;
-          document.getElementById('onb-av-err').classList.remove('hidden');
-          document.getElementById('onb-btn-2').textContent = 'Продолжить';
-          document.getElementById('onb-btn-2').disabled = false;
-        }
+    document.getElementById('ob-file').onchange = (e) => {
+      const f=e.target.files[0]; if(!f)return;
+      document.getElementById('ob-img').src = URL.createObjectURL(f);
+      document.getElementById('ob-preview').classList.add('has-img');
+      document.getElementById('ob-btn-2').disabled=false;
+      document.getElementById('ob-btn-2').onclick = async () => {
+        document.getElementById('ob-btn-2').textContent='⏳ Загрузка...';
+        try { profile.av = await up(f); document.getElementById('ob-2').classList.add('hidden'); document.getElementById('ob-3').classList.remove('hidden'); }
+        catch(err){ document.getElementById('ob-av-err').textContent=err.message; document.getElementById('ob-av-err').classList.remove('hidden'); document.getElementById('ob-btn-2').textContent='Продолжить'; }
       };
     };
-
-    document.getElementById('onb-check').onchange = (e) => {
-      document.getElementById('onb-btn-3').disabled = !e.target.checked;
+    document.getElementById('ob-check').onchange = (e)=>document.getElementById('ob-btn-3').disabled=!e.target.checked;
+    document.getElementById('ob-btn-3').onclick = async () => {
+      if(!auth.currentUser)return;
+      await setDoc(doc(db,'users',auth.currentUser.uid),{...profile,createdAt:new Date().toISOString(),rating:0,reviews:0},{merge:true});
+      show('screen-app');
     };
 
-    document.getElementById('onb-btn-3').onclick = async () => {
-      if (!auth.currentUser) return;
-      document.getElementById('onb-btn-3').textContent = '⏳ Сохранение...';
-      try {
-        await setDoc(doc(db, 'users', auth.currentUser.uid), {
-          nickname: onboardData.nick,
-          avatar: onboardData.avUrl,
-          createdAt: new Date().toISOString(),
-          rating: 0, reviewsCount: 0
-        }, { merge: true });
-        showScreen('screen-app');
-      } catch (err) { alert('Ошибка сохранения: ' + err.message); }
-    };
+    // 🧭 Tabs
+    function tab(t){ ['home','my','chat','prof'].forEach(p=>document.getElementById(`tab-${p}`).classList.add('hidden')); document.getElementById(`tab-${t}`).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.t===t)); loadTab(t); }
+    document.querySelectorAll('.nav-item').forEach(n=>n.onclick=()=>tab(n.dataset.t));
+    document.getElementById('search').oninput = (e)=>loadFeed(e.target.value);
 
-    // 🔁 Главное состояние
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
-      if (!user) { showScreen('screen-auth'); return; }
+    // 📦 Data Loaders
+    async function loadFeed(q=''){
+      const box=document.getElementById('feed'), emp=document.getElementById('no-feed'); box.innerHTML='';
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists() && snap.data().nickname) {
-          showScreen('screen-app');
-        } else {
-          showScreen('screen-onboard');
+        const snap = await getDocs(query(collection(db,'listings'), where('status','==','active')));
+        let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()}));
+        if(q) items=items.filter(l=>(l.title||'').toLowerCase().includes(q.toLowerCase()));
+        items.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+        if(!items.length){emp.classList.remove('hidden');return;} emp.classList.add('hidden');
+        items.forEach(l=>{
+          const c=document.createElement('div'); c.className='card';
+          c.innerHTML=`<div class="card-img" style="background-image:url('${l.photos?.[0]||''}')"></div><div><h3>${l.title}</h3><p class="price">${l.price?.toLocaleString()} ₽</p><span class="badge b-active">Активно</span></div>`;
+          c.onclick=()=>viewList(l.id); box.appendChild(c);
+        });
+      } catch(e){ console.error(e); }
+    }
+    async function loadMy(){
+      if(!user)return;
+      const box=document.getElementById('my-feed'), emp=document.getElementById('no-my'); box.innerHTML='';
+      try {
+        const snap=await getDocs(query(collection(db,'listings'), where('authorId','==',user.uid)));
+        let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+        if(!items.length){emp.classList.remove('hidden');return;} emp.classList.add('hidden');
+        items.forEach(l=>{
+          const st=l.status||'pending', cls=st==='active'?'b-active':st==='blocked'?'b-block':'b-pend', txt=st==='active'?'Активно':st==='blocked'?'Заблокировано':'На проверке';
+          const c=document.createElement('div'); c.className='card';
+          c.innerHTML=`<div class="card-img" style="background-image:url('${l.photos?.[0]||''}')"></div><div><h3>${l.title}</h3><p class="price">${l.price?.toLocaleString()} ₽</p><span class="badge ${cls}">${txt}</span></div>`;
+          c.onclick=()=>viewList(l.id); box.appendChild(c);
+        });
+      } catch(e){}
+    }
+    async function loadChats(){
+      if(!user)return;
+      const box=document.getElementById('chat-list'), emp=document.getElementById('no-chat'); box.innerHTML='';
+      try {
+        const snap=await getDocs(query(collection(db,'chats'), where('users','array-contains',user.uid)));
+        let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()}));
+        if(!items.length){emp.classList.remove('hidden');return;} emp.classList.add('hidden');
+        items.forEach(ch=>{
+          const c=document.createElement('div'); c.className='chat-item';
+          c.innerHTML=`<div class="seller-av" style="background-image:url('${ch.avatar||''}')"></div><div><b>${ch.partner}</b><p style="margin:0.2rem 0 0; color:#64748b; font-size:0.85rem;">${ch.lastMsg||'Новый чат'}</p></div>`;
+          c.onclick=()=>openChat(ch.id, ch.partner, ch.avatar, ch.listingId, ch.listingTitle); box.appendChild(c);
+        });
+      } catch(e){}
+    }
+    async function loadProf(){
+      if(!user||!profile)return;
+      document.getElementById('p-av').style.backgroundImage=`url('${profile.avatar||''}')`;
+      document.getElementById('p-nick').textContent=profile.nickname||'Пользователь';
+      document.getElementById('p-rate').textContent=`⭐ ${(profile.rating||0).toFixed(1)} (${profile.reviews||0} отзывов)`;
+      document.getElementById('p-count').textContent=profile.listings||0;
+      document.getElementById('p-date').textContent=profile.createdAt?new Date(profile.createdAt).toLocaleDateString('ru-RU'):'-';
+      document.getElementById('p-uid').textContent=`ID: ${user.uid}`;
+      document.getElementById('admin-link').classList.toggle('hidden', user.email!=='sobakastalina123@gmail.com');
+    }
+    async function loadTab(t){ if(t==='home')loadFeed(); if(t==='my')loadMy(); if(t==='chat')loadChats(); if(t==='prof')loadProf(); }
+
+    // 👁 View Listing
+    async function viewList(id){
+      curList=id;
+      try {
+        const snap=await getDoc(doc(db,'listings',id));
+        if(!snap.exists()) return alert('Удалено');
+        const l={id,...snap.data()};
+        if(user && l.authorId!==user.uid){
+          await updateDoc(doc(db,'listings',id),{views:increment(1)});
+          if(l.category) await setDoc(doc(db,'users',user.uid),{interests:arrayUnion(l.category)},{merge:true});
         }
-      } catch (err) { showScreen('screen-onboard'); }
+        document.getElementById('v-img').style.backgroundImage=`url('${l.photos?.[0]||''}')`;
+        document.getElementById('v-title').textContent=l.title;
+        document.getElementById('v-price').textContent=`${l.price?.toLocaleString()} ₽`;
+        document.getElementById('v-cat').textContent=l.category||'-';
+        document.getElementById('v-cond').textContent=l.condition||'-';
+        document.getElementById('v-desc').textContent=l.description||'Без описания';
+        document.getElementById('v-views').textContent=l.views||0;
+        
+        if(l.authorId){
+          const s=await getDoc(doc(db,'users',l.authorId));
+          if(s.exists()){
+            const d=s.data();
+            document.getElementById('s-av').style.backgroundImage=`url('${d.avatar||''}')`;
+            document.getElementById('s-nick').textContent=d.nickname||'Пользователь';
+            document.getElementById('s-rate').textContent=(d.rating||0).toFixed(1);
+            document.getElementById('s-rev').textContent=d.reviews||0;
+            document.getElementById('v-seller').onclick=()=>openChat(null,d.nickname,d.avatar,l.id,l.title);
+          }
+        }
+        document.getElementById('view-listing').classList.add('active');
+      } catch(e){ alert('Ошибка: '+e.message); }
+    }
+
+    // 💬 Chat Logic
+    async function openChat(chatId, partner, av, listId, listTitle){
+      curChat = chatId || 'new';
+      document.getElementById('c-seller').textContent=partner;
+      document.getElementById('c-item').textContent=listTitle||'Товар';
+      document.getElementById('c-msgs').innerHTML='';
+      document.getElementById('chat-view').classList.add('active');
+      if(listId) document.getElementById('c-item').onclick=()=>{viewList(listId);document.getElementById('chat-view').classList.remove('active');};
+      else document.getElementById('c-item').onclick=null;
+
+      if(chatId){
+        const snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`), orderBy('ts','asc')));
+        snap.forEach(d=>{ const m=d.data(); addMsg(m.text, m.uid===user.uid); });
+      }
+    }
+    function addMsg(txt,me){ const d=document.createElement('div'); d.className=`msg-bubble ${me?'msg-me':'msg-them'}`; d.textContent=txt; document.getElementById('c-msgs').appendChild(d); document.getElementById('c-msgs').scrollTop=1e6; }
+    document.getElementById('c-send').onclick = async () => {
+      const inp=document.getElementById('c-input'), txt=inp.value.trim(); if(!txt||!user)return;
+      inp.value=''; addMsg(txt,true);
+      try {
+        if(curChat==='new'){
+          const sellerId = (await getDoc(doc(db,'listings',document.getElementById('c-item').dataset.id || curList)))?.data()?.authorId;
+          if(!sellerId) throw new Error('Не найден продавец');
+          const ref = await addDoc(collection(db,'chats'), {
+            users:[user.uid, sellerId], partner:document.getElementById('c-seller').textContent, avatar:document.getElementById('s-av').style.backgroundImage.match(/url\("(.+)"\)/)?.[1]||'',
+            listingId:curList, listingTitle:document.getElementById('c-item').textContent, lastMsg:txt
+          });
+          curChat=ref.id;
+          await addDoc(collection(db,`chats/${curChat}/msgs`), {uid:user.uid, text:txt, ts:new Date()});
+        } else {
+          await addDoc(collection(db,`chats/${curChat}/msgs`), {uid:user.uid, text:txt, ts:new Date()});
+          await updateDoc(doc(db,'chats',curChat),{lastMsg:txt});
+        }
+      } catch(e){ console.error(e); alert('Ошибка отправки'); }
+    };
+    document.getElementById('close-chat').onclick=()=>document.getElementById('chat-view').classList.remove('active');
+    document.getElementById('btn-start-chat').onclick=()=>{
+      document.getElementById('view-listing').classList.remove('active');
+      openChat(null, document.getElementById('s-nick').textContent, document.getElementById('s-av').style.backgroundImage.match(/url\("(.+)"\)/)?.[1]||'', curList, document.getElementById('v-title').textContent);
+    };
+
+    // ➕ Wizard
+    let wiz={files:[],data:{}};
+    document.getElementById('fab-add').onclick=()=>{ wiz={files:[],data:{}}; document.querySelectorAll('#wizard .step').forEach(s=>s.classList.add('hidden')); document.getElementById('w1').classList.remove('hidden'); document.getElementById('wizard').classList.add('active'); };
+    document.getElementById('close-wiz').onclick=()=>document.getElementById('wizard').classList.remove('active');
+    const wNext=(cur,next)=>{ document.getElementById(cur).classList.add('hidden'); document.getElementById(next).classList.remove('hidden'); };
+    document.getElementById('w-btn1').onclick=()=>{ if(document.getElementById('w-title').value.trim().length<3)return; wiz.data.title=document.getElementById('w-title').value; wNext('w1','w2'); };
+    document.getElementById('w-back2').onclick=()=>wNext('w2','w1'); document.getElementById('w-btn2').onclick=()=>{ wiz.data.cat=document.getElementById('w-cat').value; wNext('w2','w3'); };
+    document.getElementById('w-back3').onclick=()=>wNext('w3','w2'); document.getElementById('w-btn3').onclick=()=>{ wiz.data.cond=document.getElementById('w-cond').value; wNext('w3','w4'); };
+    document.getElementById('w-back4').onclick=()=>wNext('w4','w3'); document.getElementById('w-btn4').onclick=()=>{ const p=parseInt(document.getElementById('w-price').value); if(!p||p<1)return; wiz.data.price=p; wNext('w4','w5'); };
+    document.getElementById('w-back5').onclick=()=>wNext('w5','w4');
+    document.getElementById('w-files').onchange=(e)=>{
+      wiz.files=Array.from(e.target.files).slice(0,10); const p=document.getElementById('w-prev'); p.innerHTML='';
+      wiz.files.forEach(f=>{ const i=document.createElement('img'); i.src=URL.createObjectURL(f); p.appendChild(i); });
+    };
+    document.getElementById('w-submit').onclick=async()=>{
+      if(wiz.files.length===0)return alert('Добавьте фото');
+      const desc=document.getElementById('w-desc').value.trim(); if(desc.length<10)return alert('Описание мин. 10 символов');
+      document.querySelectorAll('#wizard .step').forEach(s=>s.classList.add('hidden')); document.getElementById('w-load').classList.remove('hidden');
+      try {
+        const urls=await Promise.all(wiz.files.map(f=>up(f)));
+        await addDoc(collection(db,'listings'),{...wiz.data,description:desc,photos:urls,authorId:user.uid,authorNick:profile?.nickname,status:'pending',views:0,createdAt:new Date().toISOString()});
+        alert('✅ Отправлено на модерацию'); document.getElementById('wizard').classList.remove('active'); tab('my');
+      } catch(e){ alert('Ошибка: '+e.message); document.getElementById('w-load').classList.add('hidden'); document.getElementById('w5').classList.remove('hidden'); }
+    };
+
+    // 🔁 Auth State
+    onAuthStateChanged(auth, async (u) => {
+      user=u; if(!u){show('screen-auth');return;}
+      try { const s=await getDoc(doc(db,'users',u.uid)); profile=s.exists()?s.data():{}; show(profile.nickname?'screen-app':'screen-onboard'); loadTab('home'); }
+      catch{show('screen-onboard');}
     });
+    document.getElementById('admin-link').onclick=()=>alert('🔧 Админ-панель подключается следующим этапом (модерация, баны, жалобы)');
   </script>
 </body>
 </html>
