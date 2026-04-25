@@ -12,7 +12,6 @@
     .hidden { display: none !important; }
     .container { max-width: 500px; margin: 0 auto; padding: 1rem; }
     
-    /* AUTH & ONBOARD */
     .auth-wrap { max-width: 400px; margin: 3rem auto; padding: 2rem; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
     input, select, textarea { width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.4rem 0; background: var(--bg); color: var(--text); }
     button { width: 100%; padding: 0.8rem; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin: 0.4rem 0; background: var(--primary); color: #fff; font-weight: 500; }
@@ -26,7 +25,6 @@
     .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
     .divider span { padding: 0 12px; }
     
-    /* Аватарка */
     .avatar-circle { width: 100px; height: 100px; border-radius: 50%; margin: 1rem auto; background: var(--border); border: 3px solid var(--primary); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     .avatar-circle img { width: 100%; height: 100%; object-fit: cover; display: none; }
     .avatar-circle::after { content: "📷"; font-size: 1.8rem; opacity: 0.6; }
@@ -37,15 +35,12 @@
     .check-wrap { display: flex; align-items: center; gap: 0.5rem; margin: 0.8rem 0; }
     .check-wrap input { width: auto; margin: 0; }
 
-    /* HEADER & NAV */
     .header { position: sticky; top: 0; z-index: 50; background: var(--card); padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .logo { color: var(--primary); font-weight: 700; font-size: 1.2rem; cursor: pointer; }
     .theme-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; }
     .search-bar { padding: 0.7rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 54px; z-index: 40; }
     
-    /* КАРТОЧКА ОБЪЯВЛЕНИЯ */
     .listing-card { background: var(--card); border-radius: var(--radius); padding: 0.8rem; margin: 0.6rem 0; box-shadow: var(--shadow); cursor: pointer; display: grid; grid-template-columns: 60px 1fr auto; gap: 0.7rem; align-items: start; }
-    .listing-card:hover { transform: none; }
     .listing-img { width: 60px; height: 60px; border-radius: 8px; background: var(--border); background-size: cover; background-position: center; }
     .listing-info h3 { margin: 0 0 0.2rem; font-size: 1rem; }
     .listing-price { color: var(--primary); font-weight: 600; font-size: 1.05rem; margin: 0; }
@@ -58,12 +53,10 @@
     .b-active { background: #dcfce7; color: #15803d; }
     .b-block { background: #fee2e2; color: #b91c1c; }
 
-    /* OVERLAYS */
     .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 100; overflow-y: auto; display: none; padding: 1rem; }
     .overlay.active { display: block; }
     .back { background: none; border: none; color: var(--primary); font-size: 0.95rem; cursor: pointer; padding: 0.4rem 0; margin-bottom: 0.4rem; }
     
-    /* ГАЛЕРЕЯ ФОТО */
     .gallery { position: relative; width: 100%; height: 200px; border-radius: var(--radius); background: var(--border); margin: 0.5rem 0; overflow: hidden; }
     .gallery-img { width: 100%; height: 100%; object-fit: cover; display: none; }
     .gallery-img.active { display: block; }
@@ -77,13 +70,11 @@
     .seller-card { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem; background: var(--bg); border-radius: 10px; margin-top: 0.8rem; cursor: pointer; }
     .seller-av { width: 40px; height: 40px; border-radius: 50%; background: var(--border); background-size: cover; background-position: center; border: 2px solid var(--primary); }
     
-    /* ВИЗАРД */
     .step { animation: fadeIn 0.25s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .photos { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.4rem 0; }
     .photos img { width: 56px; height: 56px; object-fit: cover; border-radius: 7px; border: 2px solid var(--border); }
 
-    /* ЧАТ */
     .chat-list { max-height: 65vh; overflow-y: auto; }
     .chat-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.9rem; background: var(--card); margin: 0.4rem 0; border-radius: 10px; cursor: pointer; }
     .chat-item.muted { opacity: 0.5; }
@@ -107,7 +98,6 @@
     .menu-btn { display: block; width: 100%; padding: 0.5rem; background: none; border: none; text-align: left; cursor: pointer; font-size: 0.9rem; }
     .menu-btn:hover { background: var(--bg); }
 
-    /* ПРОФИЛЬ */
     .profile-header { text-align: center; padding: 1.3rem; background: var(--card); border-radius: var(--radius); margin: 0.8rem 0; }
     .profile-av { width: 85px; height: 85px; border-radius: 50%; margin: 0 auto 0.7rem; background: var(--border); background-size: cover; background-position: center; border: 3px solid var(--primary); cursor: pointer; }
     .profile-nick { margin: 0.4rem 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; }
@@ -119,13 +109,11 @@
     .stats b { display: block; font-size: 1.1rem; color: var(--primary); }
     .profile-uid { font-size: 0.7rem; color: #94a3b8; margin-top: 0.7rem; word-break: break-all; background: var(--bg); padding: 0.4rem; border-radius: 6px; }
 
-    /* ОТЗЫВЫ */
     .review-card { background: var(--card); padding: 0.8rem; border-radius: 10px; margin: 0.4rem 0; border-left: 3px solid var(--primary); position: relative; }
     .review-menu { position: absolute; top: 0.5rem; right: 0.5rem; cursor: pointer; font-size: 1.2rem; }
     .stars { color: #f59e0b; font-size: 1rem; letter-spacing: 1px; }
     .review-type { font-size: 0.75rem; color: #64748b; margin: 0.2rem 0; }
 
-    /* АДМИН-ПАНЕЛЬ */
     .admin-cat { background: var(--card); padding: 0.8rem; margin: 0.4rem 0; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); }
     .admin-cat.active { border-color: var(--primary); background: rgba(37,99,235,0.05); }
     .admin-content { background: var(--card); padding: 0.8rem; border-radius: 10px; margin-top: 0.5rem; max-height: 60vh; overflow-y: auto; }
@@ -135,8 +123,8 @@
     .admin-actions { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
     .btn-approve { background: #22c55e; padding: 0.3rem 0.7rem; font-size: 0.8rem; width: auto; margin: 0; }
     .btn-reject { background: #ef4444; padding: 0.3rem 0.7rem; font-size: 0.8rem; width: auto; margin: 0; }
+    .admin-input { margin: 0.4rem 0; }
 
-    /* НАВИГАЦИЯ */
     .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.6rem 0; z-index: 60; }
     .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; cursor: pointer; opacity: 0.6; }
     .nav-item.active { opacity: 1; color: var(--primary); }
@@ -371,7 +359,6 @@
 
     let user = null, profile = null, curList = null, curChat = null, chatMsgCount = 0, galleryPhotos = [], galleryIdx = 0;
 
-    // 🌓 Тема
     const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
     document.getElementById('theme-toggle').onclick = () => { document.body.classList.toggle('dark'); const d=document.body.classList.contains('dark'); localStorage.setItem('vio-theme', d?'dark':'light'); document.getElementById('theme-toggle').textContent = d?'☀️':'🌙'; };
     loadTheme();
@@ -396,7 +383,6 @@
     document.getElementById('btn-logout').onclick = () => signOut(auth);
     document.getElementById('logo-refresh').onclick = () => location.reload();
 
-    // 🖼 Upload
     async function up(file){ const f=new FormData(); f.append('key',IMGBB); f.append('image',file); const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:f}); const d=await r.json(); if(!d.success) throw new Error(d.error?.message); return d.data.url; }
 
     // 📱 Onboard
@@ -426,12 +412,10 @@
       show('screen-app');
     };
 
-    // 🧭 Tabs
     function tab(t){ ['home','my','chat','prof'].forEach(p=>document.getElementById(`tab-${p}`).classList.add('hidden')); document.getElementById(`tab-${t}`).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.t===t)); loadTab(t); }
     document.querySelectorAll('.nav-item').forEach(n=>n.onclick=()=>tab(n.dataset.t));
     document.getElementById('search').oninput = (e)=>loadFeed(e.target.value);
 
-    // 📦 Loaders
     async function loadFeed(q=''){
       const box=document.getElementById('feed'), emp=document.getElementById('no-feed'); box.innerHTML='';
       try {
@@ -499,7 +483,6 @@
     }
     async function loadTab(t){ if(t==='home')loadFeed(); if(t==='my')loadMy(); if(t==='chat')loadChats(); if(t==='prof')loadProf(); }
 
-    // 👁 View Listing + Gallery
     async function viewList(id){
       curList=id; galleryPhotos=[]; galleryIdx=0;
       try {
@@ -557,7 +540,6 @@
       openChat(null, document.getElementById('v-seller').dataset.name, document.getElementById('v-seller').dataset.av, curList, document.getElementById('v-title').textContent);
     };
 
-    // 💬 Chat
     async function openChat(chatId, partner, av, listId, listTitle){
       curChat = chatId || 'new'; chatMsgCount = 0;
       document.getElementById('c-nick').textContent=partner;
@@ -651,7 +633,6 @@
     };
     document.getElementById('m-review').onclick=()=>{
       document.getElementById('rev-listing').innerHTML='';
-      // Загружаем объявления собеседника
       (async()=>{
         const chat=await getDoc(doc(db,'chats',curChat));
         const d=chat.data();
@@ -668,10 +649,12 @@
     document.getElementById('m-report').onclick=()=>{
       const msgId=prompt('Введите ID сообщения для репорта:');
       const reason=prompt('Причина репорта:');
-      if(msgId && reason) alert('🚨 Репорт отправлен на модерацию');
+      if(msgId && reason) {
+        await addDoc(collection(db,'reports'), { msgId, reason, reportedBy: user.uid, reviewed: false, createdAt: new Date().toISOString() });
+        alert('🚨 Репорт отправлен на модерацию');
+      }
     };
 
-    // ⭐ Отзывы
     let selStars=0;
     document.querySelectorAll('#star-picker span').forEach(s=>{
       s.onclick=()=>{
@@ -689,10 +672,11 @@
       const listingId=document.getElementById('rev-listing').value;
       const chat=await getDoc(doc(db,'chats',curChat));
       const d=chat.data(), partnerId=d.users.find(u=>u!==user.uid);
-      const isFirst=user.uid < partnerId; // Кто начал первым
+      const isFirst=user.uid < partnerId;
+      const listing = await getDoc(doc(db,'listings',listingId));
       await addDoc(collection(db,'reviews'), {
         targetUserId: partnerId, authorId: user.uid, authorNick: profile.nickname, authorAv: profile.avatar,
-        listingId, rating: selStars, status, text: txt, photo: photoUrl,
+        listingId, listingTitle: listing.exists()?listing.data().title:'', rating: selStars, status, text: txt, photo: photoUrl,
         type: isFirst?'покупатель':'продавец', moderated: false, createdAt: new Date().toISOString()
       });
       alert('✅ Отзыв отправлен на модерацию');
@@ -701,7 +685,6 @@
     };
     document.getElementById('close-review-form').onclick=()=>document.getElementById('review-form').classList.remove('active');
 
-    // ⭐ Отзывы в профиле
     document.getElementById('p-rate').onclick = async () => {
       if(!user) return;
       document.getElementById('reviews-modal').classList.add('active');
@@ -723,7 +706,6 @@
     };
     document.getElementById('close-reviews').onclick=()=>document.getElementById('reviews-modal').classList.remove('active');
 
-    // ⚖️ Обжалование
     window.openDispute = (reviewId) => {
       document.getElementById('dispute-form').dataset.id = reviewId;
       document.getElementById('dispute-form').classList.add('active');
@@ -741,7 +723,6 @@
     };
     document.getElementById('close-dispute').onclick=()=>document.getElementById('dispute-form').classList.remove('active');
 
-    // ➕ Визард
     let wiz={files:[],data:{}};
     document.getElementById('fab-add').onclick=()=>{ wiz={files:[],data:{}}; document.querySelectorAll('#wizard .step').forEach(s=>s.classList.add('hidden')); document.getElementById('w1').classList.remove('hidden'); document.getElementById('wizard').classList.add('active'); };
     document.getElementById('close-wiz').onclick=()=>document.getElementById('wizard').classList.remove('active');
@@ -767,11 +748,9 @@
       } catch(e){ alert('Ошибка: '+e.message); document.getElementById('w-load').classList.add('hidden'); document.getElementById('w6').classList.remove('hidden'); }
     };
 
-    // ✏️ Редактирование / 🗑 Удаление объявления
     window.editListing = async (id) => {
       const l=await getDoc(doc(db,'listings',id));
       if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать');
-      // Упрощённо: открываем визард с данными
       const d=l.data();
       wiz={files:[],data:{title:d.title,cat:d.category,cond:d.condition,price:d.price,desc:d.description}};
       document.getElementById('w-title').value=d.title;
@@ -784,7 +763,6 @@
       document.getElementById('w6').classList.remove('hidden');
       document.getElementById('wizard').classList.add('active');
       document.getElementById('w-submit').onclick=async()=>{
-        // Обновляем
         await updateDoc(doc(db,'listings',id),{...wiz.data,description:document.getElementById('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()});
         alert('✅ Изменения отправлены на модерацию');
         document.getElementById('wizard').classList.remove('active');
@@ -799,9 +777,33 @@
       loadFeed();
     };
 
-    // 🔧 Админ-панель
+    // 👤 Редактирование ника/авы в профиле (теперь с модерацией)
+    document.getElementById('p-nick').onclick = async () => {
+      const newNick = prompt('Введите новый никнейм:', profile.nickname);
+      if(!newNick || newNick===profile.nickname) return;
+      if(newNick.length<3||newNick.length>20) return alert('Ник от 3 до 20 символов');
+      const t=newNick.toLowerCase().replace(/[^а-яa-z0-9]/g,'');
+      if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова');
+      // Сохраняем в pendingNick и ставим флаг modNick=true
+      await setDoc(doc(db,'users',user.uid),{modNick:true, pendingNick:newNick},{merge:true});
+      alert('✅ Никнейм отправлен на модерацию. После одобрения он изменится у всех.');
+    };
+    document.getElementById('p-av').onclick = async () => {
+      const input = document.createElement('input'); input.type='file'; input.accept='image/*';
+      input.onchange = async (e) => {
+        const file = e.target.files[0]; if(!file) return;
+        const url = await up(file);
+        // Сохраняем в pendingAv и ставим флаг modAv=true
+        await setDoc(doc(db,'users',user.uid),{modAv:true, pendingAv:url},{merge:true});
+        alert('✅ Аватарка отправлена на модерацию. После одобрения она обновится.');
+      };
+      input.click();
+    };
+
+    // 🔧 АДМИН-ПАНЕЛЬ — ПОЛНАЯ ЛОГИКА
     document.getElementById('admin-link').onclick=()=>document.getElementById('admin-panel').classList.add('active');
     document.getElementById('close-admin').onclick=()=>document.getElementById('admin-panel').classList.remove('active');
+    
     document.querySelectorAll('.admin-cat').forEach(cat=>{
       cat.onclick=async()=>{
         document.querySelectorAll('.admin-cat').forEach(c=>c.classList.remove('active'));
@@ -823,11 +825,12 @@
                 ${l.photos?.[0]?`<img src="${l.photos[0]}" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin-top:0.4rem;">`:''}
                 <div class="admin-actions">
                   <button class="btn-approve" onclick="adminApprove('listing','${d.id}')">✓ Одобрить</button>
-                  <button class="btn-reject" onclick="adminReject('listing','${d.id}')">✕ Отклонить</button>
+                  <button class="btn-reject" onclick="adminReject('listing','${d.id}','blocked')">✕ Заблокировать</button>
                 </div>`;
               box.appendChild(el);
             });
-          } else if(type==='reviews'){
+          }
+          else if(type==='reviews'){
             const snap=await getDocs(query(collection(db,'reviews'), where('moderated','==',false)));
             if(snap.empty){box.innerHTML='<p class="empty">Нет отзывов на модерации</p>';return;}
             box.innerHTML='';
@@ -843,28 +846,140 @@
                 </div>`;
               box.appendChild(el);
             });
-          } else if(type==='ban-user'){
+          }
+          else if(type==='review-complaints'){
+            const snap=await getDocs(query(collection(db,'review-complaints'), where('reviewed','==',false)));
+            if(snap.empty){box.innerHTML='<p class="empty">Нет жалоб на отзывы</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const c=d.data();
+              const el=document.createElement('div'); el.className='admin-item';
+              el.innerHTML=`<b>Жалоба на отзыв</b><p style="font-size:0.8rem; color:#64748b;">От: ${c.authorId} • ${new Date(c.createdAt).toLocaleDateString()}</p>
+                <p><b>Причина:</b> ${c.reason}</p>
+                ${c.photo?`<img src="${c.photo}" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin-top:0.4rem;">`:''}
+                <div class="admin-actions">
+                  <button class="btn-approve" onclick="adminApprove('complaint','${d.id}')">✓ Удалить отзыв</button>
+                  <button class="btn-reject" onclick="adminReject('complaint','${d.id}')">✕ Отклонить жалобу</button>
+                </div>`;
+              box.appendChild(el);
+            });
+          }
+          else if(type==='reports'){
+            const snap=await getDocs(query(collection(db,'reports'), where('reviewed','==',false)));
+            if(snap.empty){box.innerHTML='<p class="empty">Нет репортов</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const r=d.data();
+              const el=document.createElement('div'); el.className='admin-item';
+              el.innerHTML=`<b>Репорт</b><p style="font-size:0.8rem; color:#64748b;">Сообщение ID: ${r.msgId} • От: ${r.reportedBy}</p>
+                <p><b>Причина:</b> ${r.reason}</p>
+                <div class="admin-actions">
+                  <button class="btn-approve" onclick="adminApprove('report','${d.id}')">✓ Рассмотрено</button>
+                  <button class="btn-reject" onclick="adminReject('report','${d.id}')">✕ Отклонить</button>
+                </div>`;
+              box.appendChild(el);
+            });
+          }
+          else if(type==='avatars'){
+            // Пользователи с modAv=true
+            const snap=await getDocs(query(collection(db,'users'), where('modAv','==',true)));
+            if(snap.empty){box.innerHTML='<p class="empty">Нет аватарок на модерации</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const u=d.data();
+              const el=document.createElement('div'); el.className='admin-item';
+              el.innerHTML=`<b>${u.nickname}</b><p style="font-size:0.8rem; color:#64748b;">UID: ${d.id}</p>
+                <p><b>Новая аватарка:</b></p>
+                ${u.pendingAv?`<img src="${u.pendingAv}" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin-top:0.4rem;">`:''}
+                <div class="admin-actions">
+                  <button class="btn-approve" onclick="adminApprove('avatar','${d.id}')">✓ Одобрить</button>
+                  <button class="btn-reject" onclick="adminReject('avatar','${d.id}')">✕ Отклонить</button>
+                </div>`;
+              box.appendChild(el);
+            });
+          }
+          else if(type==='nicknames'){
+            // Пользователи с modNick=true
+            const snap=await getDocs(query(collection(db,'users'), where('modNick','==',true)));
+            if(snap.empty){box.innerHTML='<p class="empty">Нет никнеймов на модерации</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const u=d.data();
+              const el=document.createElement('div'); el.className='admin-item';
+              el.innerHTML=`<b>${u.nickname}</b> → <b style="color:var(--primary)">${u.pendingNick}</b><p style="font-size:0.8rem; color:#64748b;">UID: ${d.id}</p>
+                <div class="admin-actions">
+                  <button class="btn-approve" onclick="adminApprove('nickname','${d.id}')">✓ Одобрить</button>
+                  <button class="btn-reject" onclick="adminReject('nickname','${d.id}')">✕ Отклонить</button>
+                </div>`;
+              box.appendChild(el);
+            });
+          }
+          else if(type==='ban-user'){
             box.innerHTML=`<p style="margin-bottom:0.5rem;">Введите ID пользователя и причину бана:</p>
-              <input type="text" id="ban-uid" placeholder="UID пользователя">
-              <input type="text" id="ban-reason" placeholder="Причина">
+              <input type="text" id="ban-uid" placeholder="UID пользователя" class="admin-input">
+              <input type="text" id="ban-reason" placeholder="Причина" class="admin-input">
               <button class="btn-approve" onclick="adminBan()">Забанить</button>`;
-          } else {
+          }
+          else if(type==='warn-user'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">Введите ID пользователя и текст предупреждения:</p>
+              <input type="text" id="warn-uid" placeholder="UID пользователя" class="admin-input">
+              <textarea id="warn-text" placeholder="Текст предупреждения" class="admin-input"></textarea>
+              <button class="btn-approve" onclick="adminWarn()">Отправить предупреждение</button>`;
+          }
+          else if(type==='block-listing'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">Введите ID объявления и причину блокировки:</p>
+              <input type="text" id="block-lid" placeholder="ID объявления" class="admin-input">
+              <input type="text" id="block-reason" placeholder="Причина" class="admin-input">
+              <button class="btn-reject" onclick="adminBlockListing()">Заблокировать</button>`;
+          }
+          else if(type==='user-chats'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">Введите ID пользователя для просмотра чатов:</p>
+              <input type="text" id="chat-uid" placeholder="UID пользователя" class="admin-input">
+              <button class="btn-approve" onclick="adminViewChats()">Показать чаты</button>
+              <div id="chat-results" style="margin-top:0.8rem;"></div>`;
+          }
+          else {
             box.innerHTML='<p class="empty">Категория в разработке</p>';
           }
         } catch(e){ box.innerHTML='<p class="err">Ошибка: '+e.message+'</p>'; }
       };
     });
+
+    // ✅ Функции одобрения/отклонения
     window.adminApprove = async (type, id) => {
-      if(type==='listing') await updateDoc(doc(db,'listings',id),{status:'active'});
-      else if(type==='review') await updateDoc(doc(db,'reviews',id),{moderated:true});
-      alert('✅ Одобрено');
-      document.querySelector('.admin-cat.active').click();
+      try {
+        if(type==='listing') await updateDoc(doc(db,'listings',id),{status:'active'});
+        else if(type==='review') await updateDoc(doc(db,'reviews',id),{moderated:true});
+        else if(type==='complaint'){
+          const c=await getDoc(doc(db,'review-complaints',id));
+          await deleteDoc(doc(db,'reviews',c.data().reviewId));
+          await updateDoc(doc(db,'review-complaints',id),{reviewed:true});
+          // Пересчёт рейтинга
+          await recalcRating(c.data().targetUserId);
+        }
+        else if(type==='report') await updateDoc(doc(db,'reports',id),{reviewed:true});
+        else if(type==='avatar'){
+          const u=await getDoc(doc(db,'users',id));
+          await updateDoc(doc(db,'users',id),{avatar:u.data().pendingAv, modAv:false, pendingAv:null});
+        }
+        else if(type==='nickname'){
+          const u=await getDoc(doc(db,'users',id));
+          await updateDoc(doc(db,'users',id),{nickname:u.data().pendingNick, modNick:false, pendingNick:null});
+        }
+        alert('✅ Одобрено');
+        document.querySelector('.admin-cat.active').click();
+      } catch(e){ alert('Ошибка: '+e.message); }
     };
-    window.adminReject = async (type, id) => {
-      if(type==='listing') await updateDoc(doc(db,'listings',id),{status:'blocked'});
-      else if(type==='review') await deleteDoc(doc(db,'reviews',id));
-      alert('❌ Отклонено');
-      document.querySelector('.admin-cat.active').click();
+    window.adminReject = async (type, id, status='rejected') => {
+      try {
+        if(type==='listing') await updateDoc(doc(db,'listings',id),{status});
+        else if(type==='review') await deleteDoc(doc(db,'reviews',id));
+        else if(type==='complaint') await updateDoc(doc(db,'review-complaints',id),{reviewed:true});
+        else if(type==='report') await updateDoc(doc(db,'reports',id),{reviewed:true});
+        else if(type==='avatar' || type==='nickname') await updateDoc(doc(db,'users',id),{modAv:false,modNick:false,pendingAv:null,pendingNick:null});
+        alert('❌ Отклонено');
+        document.querySelector('.admin-cat.active').click();
+      } catch(e){ alert('Ошибка: '+e.message); }
     };
     window.adminBan = async () => {
       const uid=document.getElementById('ban-uid').value.trim(), reason=document.getElementById('ban-reason').value.trim();
@@ -873,6 +988,45 @@
       alert('🚫 Пользователь забанен');
       document.querySelector('.admin-cat.active').click();
     };
+    window.adminWarn = async () => {
+      const uid=document.getElementById('warn-uid').value.trim(), text=document.getElementById('warn-text').value.trim();
+      if(!uid||!text) return alert('Заполните все поля');
+      await addDoc(collection(db,'warnings'), {userId:uid, text, by:'admin', createdAt:new Date().toISOString()});
+      alert('⚠️ Предупреждение отправлено');
+      document.querySelector('.admin-cat.active').click();
+    };
+    window.adminBlockListing = async () => {
+      const lid=document.getElementById('block-lid').value.trim(), reason=document.getElementById('block-reason').value.trim();
+      if(!lid||!reason) return alert('Заполните все поля');
+      await updateDoc(doc(db,'listings',lid),{status:'blocked',blockReason:reason});
+      alert('🔒 Объявление заблокировано');
+      document.querySelector('.admin-cat.active').click();
+    };
+    window.adminViewChats = async () => {
+      const uid=document.getElementById('chat-uid').value.trim();
+      if(!uid) return alert('Введите UID');
+      const box=document.getElementById('chat-results'); box.innerHTML='⏳ Загрузка...';
+      try {
+        const snap=await getDocs(query(collection(db,'chats'), where('users','array-contains',uid)));
+        if(snap.empty){box.innerHTML='<p class="empty">Чатов не найдено</p>';return;}
+        box.innerHTML='';
+        snap.forEach(d=>{
+          const c=d.data();
+          const el=document.createElement('div'); el.className='admin-item';
+          el.innerHTML=`<b>Чат с ${c.partner}</b><p style="font-size:0.8rem; color:#64748b;">ID: ${d.id} • Последнее: ${c.lastMsg||'—'}</p>`;
+          box.appendChild(el);
+        });
+      } catch(e){ box.innerHTML='<p class="err">Ошибка: '+e.message+'</p>'; }
+    };
+
+    // 🔄 Пересчёт рейтинга после удаления отзыва
+    async function recalcRating(userId){
+      const snap=await getDocs(query(collection(db,'reviews'), where('targetUserId','==',userId), where('moderated','==',true)));
+      let total=0, count=0;
+      snap.forEach(d=>{ total+=d.data().rating; count++; });
+      const rating = count>0 ? total/count : 0;
+      await updateDoc(doc(db,'users',userId), {rating, reviewCount:count});
+    }
 
     // 🔁 Auth State
     onAuthStateChanged(auth, async (u) => {
@@ -880,27 +1034,6 @@
       try { const s=await getDoc(doc(db,'users',u.uid)); profile=s.exists()?s.data():{}; show(profile.nickname?'screen-app':'screen-onboard'); loadTab('home'); }
       catch{show('screen-onboard');}
     });
-
-    // 👤 Редактирование ника/авы в профиле
-    document.getElementById('p-nick').onclick = async () => {
-      const newNick = prompt('Введите новый никнейм:', profile.nickname);
-      if(!newNick || newNick===profile.nickname) return;
-      if(newNick.length<3||newNick.length>20) return alert('Ник от 3 до 20 символов');
-      const t=newNick.toLowerCase().replace(/[^а-яa-z0-9]/g,'');
-      if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова');
-      await setDoc(doc(db,'users',user.uid),{modNick:true, pendingNick:newNick},{merge:true});
-      alert('✅ Никнейм отправлен на модерацию. После одобрения он изменится у всех.');
-    };
-    document.getElementById('p-av').onclick = async () => {
-      const input = document.createElement('input'); input.type='file'; input.accept='image/*';
-      input.onchange = async (e) => {
-        const file = e.target.files[0]; if(!file) return;
-        const url = await up(file);
-        await setDoc(doc(db,'users',user.uid),{modAv:true, pendingAv:url},{merge:true});
-        alert('✅ Аватарка отправлена на модерацию. После одобрения она обновится.');
-      };
-      input.click();
-    };
   </script>
 </body>
 </html>
