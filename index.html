@@ -12,7 +12,6 @@
     .hidden { display: none !important; }
     .container { max-width: 480px; margin: 0 auto; padding: 1rem; }
     
-    /* AUTH & ONBOARD */
     .auth-wrap { max-width: 400px; margin: 3rem auto; padding: 2rem; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
     input, select, textarea { width: 100%; padding: 0.9rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.5rem 0; background: var(--bg); color: var(--text); }
     button { width: 100%; padding: 0.9rem; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin: 0.5rem 0; background: var(--primary); color: #fff; font-weight: 500; transition: 0.2s; }
@@ -26,7 +25,6 @@
     .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
     .divider span { padding: 0 12px; }
     
-    /* AVATAR FIX */
     .avatar-box { width: 110px; height: 110px; border-radius: 50%; margin: 1rem auto; background: var(--border); border: 3px solid var(--primary); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     .avatar-box img { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 50%; }
     .avatar-box::after { content: "📷"; font-size: 2rem; opacity: 0.6; position: absolute; }
@@ -37,7 +35,6 @@
     .check-wrap { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; }
     .check-wrap input { width: auto; margin: 0; }
 
-    /* APP UI */
     .header { position: sticky; top: 0; z-index: 50; background: var(--card); padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .logo { color: var(--primary); font-weight: 700; font-size: 1.3rem; cursor: pointer; }
     .theme-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; border-radius: 8px; }
@@ -52,7 +49,6 @@
     .b-active { background: #dcfce7; color: #15803d; }
     .b-block { background: #fee2e2; color: #b91c1c; }
 
-    /* OVERLAYS */
     .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 100; overflow-y: auto; display: none; padding: 1rem; }
     .overlay.active { display: block; }
     .back { background: none; border: none; color: var(--primary); font-size: 1rem; cursor: pointer; padding: 0.5rem 0; margin-bottom: 0.5rem; }
@@ -61,13 +57,11 @@
     .seller { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem; background: var(--bg); border-radius: 10px; margin-top: 1rem; cursor: pointer; }
     .seller-av { width: 44px; height: 44px; border-radius: 50%; background: var(--border); background-size: cover; background-position: center; border: 2px solid var(--primary); }
     
-    /* WIZARD */
     .step { animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .photos { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
     .photos img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
 
-    /* CHAT */
     .chat-list { max-height: 70vh; overflow-y: auto; }
     .chat-item { display: flex; align-items: center; gap: 0.8rem; padding: 1rem; background: var(--card); margin: 0.5rem 0; border-radius: 10px; cursor: pointer; }
     .chat-window { display: flex; flex-direction: column; height: calc(100vh - 100px); }
@@ -79,17 +73,31 @@
     .input-row input { flex: 1; margin: 0; }
     .input-row button { width: auto; margin: 0; }
 
-    /* PROFILE & NAV */
     .prof-header { text-align: center; padding: 1.5rem; background: var(--card); border-radius: var(--radius); margin: 1rem 0; }
     .prof-av { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 0.8rem; background: var(--border); background-size: cover; background-position: center; border: 3px solid var(--primary); }
     .stats { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; font-size: 0.9rem; }
     .stats b { display: block; font-size: 1.2rem; color: var(--primary); }
+    .rating-click { cursor: pointer; transition: 0.2s; }
+    .rating-click:hover { opacity: 0.8; }
+
     .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.7rem 0; z-index: 60; }
     .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; cursor: pointer; opacity: 0.6; }
     .nav-item.active { opacity: 1; color: var(--primary); }
     .fab { position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; z-index: 55; }
     .admin-link { text-align: center; color: var(--primary); margin-top: 1rem; cursor: pointer; font-size: 0.9rem; }
     .empty { text-align: center; padding: 3rem 1rem; color: #64748b; }
+
+    /* Reviews & Admin */
+    .review-card { background: var(--card); padding: 1rem; border-radius: 10px; margin: 0.5rem 0; border-left: 4px solid var(--primary); }
+    .stars { color: #f59e0b; font-size: 1.1rem; letter-spacing: 2px; }
+    .admin-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; background: var(--card); margin: 0.5rem 0; border-radius: 8px; font-size: 0.9rem; }
+    .admin-btns { display: flex; gap: 0.5rem; }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; margin: 0; width: auto; border-radius: 6px; }
+    .btn-approve { background: #22c55e; }
+    .btn-reject { background: #ef4444; }
+    .tab-group { display: flex; gap: 0.5rem; margin: 1rem 0; }
+    .tab-btn { flex: 1; padding: 0.6rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
   </style>
 </head>
 <body>
@@ -112,11 +120,7 @@
   <!-- 👤 ОНБОРДИНГ -->
   <div id="screen-onboard" class="auth-wrap hidden">
     <h2 id="ob-title" style="text-align:center; margin:0 0 1rem;">Шаг 1/3: Никнейм</h2>
-    <div id="ob-1">
-      <input type="text" id="ob-nick" placeholder="Ник (3-20 символов)" maxlength="20">
-      <p id="ob-nick-err" class="msg err hidden"></p>
-      <button id="ob-btn-1">Далее</button>
-    </div>
+    <div id="ob-1"><input type="text" id="ob-nick" placeholder="Ник (3-20 символов)" maxlength="20"><p id="ob-nick-err" class="msg err hidden"></p><button id="ob-btn-1">Далее</button></div>
     <div id="ob-2" class="hidden">
       <p style="text-align:center; color:#64748b; margin-bottom:0.5rem;">Нажми на кружок</p>
       <label for="ob-file" class="avatar-box" id="ob-preview"><img id="ob-img"></label>
@@ -125,9 +129,7 @@
       <button id="ob-btn-2" disabled>Продолжить</button>
     </div>
     <div id="ob-3" class="hidden">
-      <div class="rules-box"><ul style="margin:0.5rem 0; padding-left:1.2rem;">
-        <li>❌ Без мата, 18+, оскорблений</li><li>❌ Без угроз и слива данных</li><li>❌ Без обхода банов</li><li>✅ Уважай других</li>
-      </ul></div>
+      <div class="rules-box"><ul style="margin:0.5rem 0; padding-left:1.2rem;"><li>❌ Без мата, 18+, оскорблений</li><li>❌ Без угроз и слива данных</li><li>❌ Без обхода банов</li><li>✅ Уважай других</li></ul></div>
       <label class="check-wrap"><input type="checkbox" id="ob-check"><span>Согласен с правилами</span></label>
       <button id="ob-btn-3" disabled>Завершить</button>
     </div>
@@ -145,7 +147,7 @@
       <div class="prof-header">
         <div class="prof-av" id="p-av"></div>
         <h3 id="p-nick" style="margin:0.5rem 0;"></h3>
-        <p id="p-rate" style="color:#64748b; margin:0;">⭐ 0.0 (0 отзывов)</p>
+        <p id="p-rate" class="rating-click" style="color:#64748b; margin:0;">⭐ 0.0 (0 отзывов)</p>
         <div class="stats"><div><b id="p-count">0</b>объявлений</div><div><b id="p-date">-</b>дата регистрации</div></div>
         <p id="p-uid" style="font-size:0.75rem; color:#94a3b8; margin-top:0.8rem; word-break:break-all;"></p>
       </div>
@@ -199,14 +201,53 @@
         <b id="c-seller">Продавец</b> • <span id="c-item" style="color:var(--primary); cursor:pointer;">Товар</span>
       </div>
       <div class="messages" id="c-msgs"></div>
-      <div class="input-row"><input id="c-input" placeholder="Сообщение..."><button id="c-send">➤</button></div>
+      <div class="input-row">
+        <input id="c-input" placeholder="Сообщение...">
+        <button id="c-send">➤</button>
+        <button class="btn-sec" id="c-review-btn" style="width:auto; margin:0; display:none;">⭐ Отзыв</button>
+      </div>
     </div>
+  </div>
+
+  <!-- ⭐ ОТЗЫВЫ (ПРОФИЛЬ) -->
+  <div id="reviews-modal" class="overlay">
+    <button class="back" onclick="document.getElementById('reviews-modal').classList.remove('active')">← Закрыть</button>
+    <h2 style="text-align:center; margin:1rem 0;">⭐ Отзывы о пользователе</h2>
+    <div id="reviews-list" style="max-height:70vh; overflow-y:auto;"></div>
+    <p id="no-reviews" class="empty hidden">Отзывов пока нет</p>
+  </div>
+
+  <!-- 📝 ФОРМА ОТЗЫВА -->
+  <div id="review-form" class="overlay">
+    <button class="back" onclick="document.getElementById('review-form').classList.remove('active')">✕ Отмена</button>
+    <h2 style="text-align:center;">Оставить отзыв</h2>
+    <div style="display:flex; justify-content:center; gap:0.5rem; margin:1rem 0; font-size:2rem; cursor:pointer;" id="star-picker">
+      <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span data-v="4">☆</span><span data-v="5">☆</span>
+    </div>
+    <p style="text-align:center; color:#64748b; margin:0;">Выбрано: <b id="rev-selected">0</b></p>
+    <select id="rev-status" style="margin-top:1rem;"><option>Сделка состоялась</option><option>Не состоялась</option><option>Скам</option><option>Не отвечает</option></select>
+    <textarea id="rev-text" placeholder="Опишите опыт..."></textarea>
+    <input type="file" id="rev-photo" accept="image/*" style="margin-top:0.5rem;">
+    <button id="rev-submit">Отправить на модерацию</button>
+  </div>
+
+  <!-- 🔧 АДМИН-ПАНЕЛЬ -->
+  <div id="admin-panel" class="overlay">
+    <button class="back" onclick="document.getElementById('admin-panel').classList.remove('active')">← Закрыть</button>
+    <h2 style="text-align:center;">🔧 Панель модератора</h2>
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="loadAdmin('listings')">Объявления</button>
+      <button class="tab-btn" onclick="loadAdmin('reviews')">Отзывы</button>
+      <button class="tab-btn" onclick="loadAdmin('users')">Пользователи</button>
+    </div>
+    <div id="admin-content"></div>
+    <div id="admin-loading" class="empty">Загрузка...</div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, updateDoc, arrayUnion, increment, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, updateDoc, arrayUnion, increment, orderBy, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
@@ -222,9 +263,8 @@
     const db = getFirestore(app);
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
-    let user = null, profile = null, curList = null, curChat = null;
+    let user = null, profile = null, curList = null, curChat = null, chatMsgCount = 0;
 
-    // 🌓 Тема
     const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
     document.getElementById('theme-toggle').onclick = () => { document.body.classList.toggle('dark'); const d=document.body.classList.contains('dark'); localStorage.setItem('vio-theme', d?'dark':'light'); document.getElementById('theme-toggle').textContent = d?'☀️':'🌙'; };
     loadTheme();
@@ -274,7 +314,7 @@
     document.getElementById('ob-check').onchange = (e)=>document.getElementById('ob-btn-3').disabled=!e.target.checked;
     document.getElementById('ob-btn-3').onclick = async () => {
       if(!auth.currentUser)return;
-      await setDoc(doc(db,'users',auth.currentUser.uid),{...profile,createdAt:new Date().toISOString(),rating:0,reviews:0},{merge:true});
+      await setDoc(doc(db,'users',auth.currentUser.uid),{nickname:profile.nick,avatar:profile.av,createdAt:new Date().toISOString(),rating:0,reviewCount:0},{merge:true});
       show('screen-app');
     };
 
@@ -332,7 +372,7 @@
       if(!user||!profile)return;
       document.getElementById('p-av').style.backgroundImage=`url('${profile.avatar||''}')`;
       document.getElementById('p-nick').textContent=profile.nickname||'Пользователь';
-      document.getElementById('p-rate').textContent=`⭐ ${(profile.rating||0).toFixed(1)} (${profile.reviews||0} отзывов)`;
+      document.getElementById('p-rate').textContent=`⭐ ${(profile.rating||0).toFixed(1)} (${profile.reviewCount||0} отзывов)`;
       document.getElementById('p-count').textContent=profile.listings||0;
       document.getElementById('p-date').textContent=profile.createdAt?new Date(profile.createdAt).toLocaleDateString('ru-RU'):'-';
       document.getElementById('p-uid').textContent=`ID: ${user.uid}`;
@@ -366,36 +406,44 @@
             document.getElementById('s-av').style.backgroundImage=`url('${d.avatar||''}')`;
             document.getElementById('s-nick').textContent=d.nickname||'Пользователь';
             document.getElementById('s-rate').textContent=(d.rating||0).toFixed(1);
-            document.getElementById('s-rev').textContent=d.reviews||0;
-            document.getElementById('v-seller').onclick=()=>openChat(null,d.nickname,d.avatar,l.id,l.title);
+            document.getElementById('s-rev').textContent=d.reviewCount||0;
+            document.getElementById('v-seller').dataset.uid=l.authorId;
+            document.getElementById('v-seller').dataset.name=d.nickname||'Пользователь';
+            document.getElementById('v-seller').dataset.av=d.avatar||'';
           }
         }
         document.getElementById('view-listing').classList.add('active');
       } catch(e){ alert('Ошибка: '+e.message); }
     }
 
-    // 💬 Chat Logic
+    // 💬 Chat & Reviews
     async function openChat(chatId, partner, av, listId, listTitle){
-      curChat = chatId || 'new';
+      curChat = chatId || 'new'; chatMsgCount = 0;
       document.getElementById('c-seller').textContent=partner;
       document.getElementById('c-item').textContent=listTitle||'Товар';
+      document.getElementById('c-item').dataset.id=listId;
       document.getElementById('c-msgs').innerHTML='';
       document.getElementById('chat-view').classList.add('active');
+      document.getElementById('c-review-btn').style.display='none';
+
       if(listId) document.getElementById('c-item').onclick=()=>{viewList(listId);document.getElementById('chat-view').classList.remove('active');};
       else document.getElementById('c-item').onclick=null;
 
       if(chatId){
         const snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`), orderBy('ts','asc')));
+        chatMsgCount = snap.size;
+        if(chatMsgCount >= 2) document.getElementById('c-review-btn').style.display='block';
         snap.forEach(d=>{ const m=d.data(); addMsg(m.text, m.uid===user.uid); });
       }
     }
     function addMsg(txt,me){ const d=document.createElement('div'); d.className=`msg-bubble ${me?'msg-me':'msg-them'}`; d.textContent=txt; document.getElementById('c-msgs').appendChild(d); document.getElementById('c-msgs').scrollTop=1e6; }
+    
     document.getElementById('c-send').onclick = async () => {
       const inp=document.getElementById('c-input'), txt=inp.value.trim(); if(!txt||!user)return;
       inp.value=''; addMsg(txt,true);
       try {
         if(curChat==='new'){
-          const sellerId = (await getDoc(doc(db,'listings',document.getElementById('c-item').dataset.id || curList)))?.data()?.authorId;
+          const sellerId = document.getElementById('v-seller').dataset.uid;
           if(!sellerId) throw new Error('Не найден продавец');
           const ref = await addDoc(collection(db,'chats'), {
             users:[user.uid, sellerId], partner:document.getElementById('c-seller').textContent, avatar:document.getElementById('s-av').style.backgroundImage.match(/url\("(.+)"\)/)?.[1]||'',
@@ -407,15 +455,71 @@
           await addDoc(collection(db,`chats/${curChat}/msgs`), {uid:user.uid, text:txt, ts:new Date()});
           await updateDoc(doc(db,'chats',curChat),{lastMsg:txt});
         }
+        chatMsgCount++;
+        if(chatMsgCount >= 2) document.getElementById('c-review-btn').style.display='block';
       } catch(e){ console.error(e); alert('Ошибка отправки'); }
     };
     document.getElementById('close-chat').onclick=()=>document.getElementById('chat-view').classList.remove('active');
     document.getElementById('btn-start-chat').onclick=()=>{
       document.getElementById('view-listing').classList.remove('active');
-      openChat(null, document.getElementById('s-nick').textContent, document.getElementById('s-av').style.backgroundImage.match(/url\("(.+)"\)/)?.[1]||'', curList, document.getElementById('v-title').textContent);
+      openChat(null, document.getElementById('v-seller').dataset.name, document.getElementById('v-seller').dataset.av, curList, document.getElementById('v-title').textContent);
     };
 
-    // ➕ Wizard
+    // ⭐ Review System
+    let selReviewStar = 0;
+    document.querySelectorAll('#star-picker span').forEach(s => {
+      s.onclick = () => {
+        selReviewStar = parseInt(s.dataset.v);
+        document.querySelectorAll('#star-picker span').forEach(x => x.textContent='☆');
+        for(let i=1;i<=selReviewStar;i++) document.querySelector(`#star-picker span[data-v="${i}"]`).textContent='★';
+        document.getElementById('rev-selected').textContent=selReviewStar;
+      };
+    });
+    document.getElementById('c-review-btn').onclick = () => {
+      if(!curChat) return;
+      document.getElementById('review-form').classList.add('active');
+    };
+    document.getElementById('rev-submit').onclick = async () => {
+      if(selReviewStar<1) return alert('Выберите рейтинг');
+      const txt=document.getElementById('rev-text').value.trim(), status=document.getElementById('rev-status').value;
+      const file=document.getElementById('rev-photo').files[0];
+      let photoUrl = '';
+      if(file) photoUrl = await up(file);
+      
+      const targetId = document.getElementById('v-seller').dataset.uid || (await getDoc(doc(db,'chats',curChat))).data().partnerUid;
+      await addDoc(collection(db,'reviews'), {
+        targetUserId: targetId,
+        authorId: user.uid,
+        authorNick: profile.nickname,
+        authorAv: profile.avatar,
+        rating: selReviewStar,
+        status, text: txt, photo: photoUrl,
+        moderated: false, createdAt: new Date().toISOString()
+      });
+      alert('✅ Отзыв отправлен на модерацию!');
+      document.getElementById('review-form').classList.remove('active');
+      document.getElementById('rev-text').value=''; selReviewStar=0; document.getElementById('rev-selected').textContent='0'; document.querySelectorAll('#star-picker span').forEach(x=>x.textContent='☆');
+    };
+
+    // ⭐ Reviews Modal (Profile)
+    document.getElementById('p-rate').onclick = async () => {
+      if(!user) return;
+      document.getElementById('reviews-modal').classList.add('active');
+      document.getElementById('reviews-list').innerHTML='';
+      const snap=await getDocs(query(collection(db,'reviews'), where('targetUserId','==',user.uid), where('moderated','==',true)));
+      if(snap.empty) return document.getElementById('no-reviews').classList.remove('hidden');
+      document.getElementById('no-reviews').classList.add('hidden');
+      snap.forEach(d=>{
+        const r=d.data(), stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
+        const el=document.createElement('div'); el.className='review-card';
+        el.innerHTML=`<div style="display:flex; justify-content:space-between;"><b>${r.authorNick}</b><span class="stars">${stars}</span></div>
+          <p style="color:#64748b; font-size:0.85rem; margin:0.3rem 0;">${r.status} • ${new Date(r.createdAt).toLocaleDateString()}</p>
+          <p>${r.text}</p>`;
+        document.getElementById('reviews-list').appendChild(el);
+      });
+    };
+
+    // ➕ Wizard (Fixed syntax)
     let wiz={files:[],data:{}};
     document.getElementById('fab-add').onclick=()=>{ wiz={files:[],data:{}}; document.querySelectorAll('#wizard .step').forEach(s=>s.classList.add('hidden')); document.getElementById('w1').classList.remove('hidden'); document.getElementById('wizard').classList.add('active'); };
     document.getElementById('close-wiz').onclick=()=>document.getElementById('wizard').classList.remove('active');
@@ -440,13 +544,64 @@
       } catch(e){ alert('Ошибка: '+e.message); document.getElementById('w-load').classList.add('hidden'); document.getElementById('w5').classList.remove('hidden'); }
     };
 
+    // 🔧 Admin Panel
+    document.getElementById('admin-link').onclick=()=>document.getElementById('admin-panel').classList.add('active');
+    window.loadAdmin = async (type) => {
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      event.target.classList.add('active');
+      const box=document.getElementById('admin-content'); box.innerHTML=''; document.getElementById('admin-loading').classList.remove('hidden');
+      try {
+        if(type==='listings'){
+          const snap=await getDocs(query(collection(db,'listings'), where('status','in',['pending','blocked'])));
+          snap.forEach(d=>{
+            const l=d.data(), el=document.createElement('div'); el.className='admin-row';
+            el.innerHTML=`<div><b>${l.title}</b><br><small>${l.status} • ${l.authorNick}</small></div><div class="admin-btns">
+              <button class="btn-sm btn-approve" onclick="adminAction('listing','approve','${d.id}')">✓</button>
+              <button class="btn-sm btn-reject" onclick="adminAction('listing','reject','${d.id}')">✕</button></div>`;
+            box.appendChild(el);
+          });
+        } else if(type==='reviews'){
+          const snap=await getDocs(query(collection(db,'reviews'), where('moderated','==',false)));
+          snap.forEach(d=>{
+            const r=d.data(), el=document.createElement('div'); el.className='admin-row';
+            el.innerHTML=`<div><b>${r.authorNick}</b> → ${r.targetUserId}<br><small>⭐${r.rating} • ${r.status}</small></div><div class="admin-btns">
+              <button class="btn-sm btn-approve" onclick="adminAction('review','approve','${d.id}')">✓</button>
+              <button class="btn-sm btn-reject" onclick="adminAction('review','reject','${d.id}')">✕</button></div>`;
+            box.appendChild(el);
+          });
+        } else if(type==='users'){
+          const snap=await getDocs(collection(db,'users'));
+          snap.forEach(d=>{
+            const u=d.data(), el=document.createElement('div'); el.className='admin-row';
+            el.innerHTML=`<div><b>${u.nickname}</b><br><small>${d.id}</small></div><div class="admin-btns">
+              <button class="btn-sm btn-reject" onclick="adminAction('user','ban','${d.id}')">Забанить</button></div>`;
+            box.appendChild(el);
+          });
+        }
+      } catch(e){ box.innerHTML='<p class="err">Ошибка загрузки</p>'; }
+      document.getElementById('admin-loading').classList.add('hidden');
+    };
+    window.adminAction = async (type, action, id) => {
+      try {
+        if(type==='listing'){
+          await updateDoc(doc(db,'listings',id), {status: action==='approve'?'active':'blocked'});
+        } else if(type==='review'){
+          if(action==='approve') await updateDoc(doc(db,'reviews',id), {moderated:true});
+          else await deleteDoc(doc(db,'reviews',id));
+        } else if(type==='user' && action==='ban'){
+          const reason = prompt('Причина бана:');
+          if(reason) await updateDoc(doc(db,'users',id), {banned:true, banReason:reason});
+        }
+        alert('✅ Выполнено'); loadAdmin(type==='listing'?'listings':type==='review'?'reviews':'users');
+      } catch(e){ alert('Ошибка: '+e.message); }
+    };
+
     // 🔁 Auth State
     onAuthStateChanged(auth, async (u) => {
       user=u; if(!u){show('screen-auth');return;}
       try { const s=await getDoc(doc(db,'users',u.uid)); profile=s.exists()?s.data():{}; show(profile.nickname?'screen-app':'screen-onboard'); loadTab('home'); }
       catch{show('screen-onboard');}
     });
-    document.getElementById('admin-link').onclick=()=>alert('🔧 Админ-панель подключается следующим этапом (модерация, баны, жалобы)');
   </script>
 </body>
 </html>
