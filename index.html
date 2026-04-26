@@ -143,7 +143,7 @@
 </head>
 <body>
 
-  <!-- 🔐 АВТОРИЗАЦИЯ (1:1 как у тебя) -->
+  <!-- 🔐 АВТОРИЗАЦИЯ -->
   <div id="scr-auth" class="auth-box">
     <h1 style="text-align:center; color:var(--primary); margin:0 0 0.8rem;">🛒 Viosell</h1>
     <input type="email" id="a-email" placeholder="Email">
@@ -158,7 +158,7 @@
     <div id="a-msg" class="msg hidden"></div>
   </div>
 
-  <!-- 👤 ОНБОРДИНГ (1:1 как у тебя) -->
+  <!-- 👤 ОНБОРДИНГ -->
   <div id="scr-on" class="auth-box hidden">
     <h2 id="on-tit" style="text-align:center; margin:0 0 0.8rem;">Шаг 1/3: Никнейм</h2>
     <div id="on-1"><input type="text" id="on-nick" placeholder="Ник (3-20 символов)" maxlength="20"><p id="on-err" class="msg err hidden"></p><button id="on-btn1">Далее</button></div>
@@ -166,7 +166,7 @@
     <div id="on-3" class="hidden"><div class="rules"><ul style="margin:0.4rem 0; padding-left:1rem; font-size:0.8rem;"><li>❌ Нельзя оскорблять людей в чате</li><li>❌ Кидать репорты без причины</li><li>❌ Оскорблять чувства верующих</li><li>❌ Притеснять или унижать людей</li><li>❌ Писать маты и 18+ в объявлениях/фото</li><li>❌ Угрожать или сливать личные данные</li><li>❌ Писать маты/18+ в никнейме</li><li>❌ Пытаться обходить баны</li></ul></div><label class="check"><input type="checkbox" id="on-check"><span>Я согласен и несу ответственность</span></label><button id="on-btn3" disabled>Завершить регистрацию</button></div>
   </div>
 
-  <!-- 📱 ПРИЛОЖЕНИЕ (1:1 как у тебя) -->
+  <!-- 📱 ПРИЛОЖЕНИЕ -->
   <div id="scr-app" class="hidden">
     <header class="header"><div class="logo" id="logo-ref">viosell</div><button class="theme-btn" id="theme-toggle">🌙</button></header>
     <div class="search-bar"><input type="text" id="search" placeholder="🔍 Поиск..."></div>
@@ -188,14 +188,14 @@
     </nav>
   </div>
 
-  <!-- 🔍 ПРОСМОТР ОБЪЯВЛЕНИЯ (1:1 как у тебя) -->
+  <!-- 🔍 ПРОСМОТР ОБЪЯВЛЕНИЯ -->
   <div id="ov-list" class="overlay">
     <button class="back" id="close-list">← Назад</button>
     <div class="gallery" id="gallery"><div class="gal-nav"><button class="gal-btn" id="gal-prev">‹</button><button class="gal-btn" id="gal-next">›</button></div><div class="gal-dots" id="gal-dots"></div></div>
     <div class="info"><h2 id="v-tit" style="margin:0 0 0.2rem;"></h2><p class="price" id="v-price"></p><p style="font-size:0.8rem; color:#64748b; margin:0.2rem 0;">ID: <span id="v-id"></span></p><p><b>Категория:</b> <span id="v-cat"></span> | <b>Состояние:</b> <span id="v-cond"></span></p><p id="v-desc"></p><p style="font-size:0.8rem; color:#64748b; margin-top:0.8rem;">👁 <span id="v-views">0</span></p><div class="seller" id="v-seller"><div class="s-av" id="s-av"></div><div><b id="s-nick"></b><p class="status" id="s-stat"></p><p style="margin:0.15rem 0 0; font-size:0.8rem; color:#64748b;">⭐ <span id="s-rate">0</span> • <span id="s-rev">0</span> отзывов</p></div></div><button class="btn-sec" id="btn-chat" style="margin-top:0.8rem;">💬 Написать продавцу</button></div>
   </div>
 
-  <!-- ➕ ВИЗАРД (1:1 как у тебя) -->
+  <!-- ➕ ВИЗАРД -->
   <div id="ov-wiz" class="overlay">
     <button class="back" id="close-wiz">✕ Закрыть</button>
     <div id="w1" class="step"><h2>1/6 Название</h2><input id="w-tit" placeholder="Название товара"><button id="w-btn1">Далее</button></div>
@@ -207,7 +207,7 @@
     <div id="w-load" class="empty hidden">⏳ Загрузка...</div>
   </div>
 
-  <!-- 💬 ЧАТ (ДОБАВЛЕНО: профиль, поддержка, статус, галочки, уведомления) -->
+  <!-- 💬 ЧАТ -->
   <div id="ov-chat" class="overlay">
     <button class="back" id="close-chat">← Назад</button>
     <div class="chat-win">
@@ -230,7 +230,7 @@
     </div>
   </div>
 
-  <!-- ⭐ ОТЗЫВЫ (1:1 как у тебя + фикс: после одобрения рейтинг пересчитывается) -->
+  <!-- ⭐ ОТЗЫВЫ -->
   <div id="ov-rev" class="overlay">
     <button class="back" id="close-rev">← Закрыть</button>
     <h2 style="text-align:center; margin:0.8rem 0;">⭐ Отзывы</h2>
@@ -238,7 +238,7 @@
     <p id="no-rev" class="empty hidden">Отзывов пока нет</p>
   </div>
 
-  <!-- 📝 ФОРМА ОТЗЫВА (1:1 как у тебя) -->
+  <!-- 📝 ФОРМА ОТЗЫВА -->
   <div id="ov-revf" class="overlay">
     <button class="back" id="close-revf">✕ Отмена</button>
     <h2 style="text-align:center;">Оставить отзыв</h2>
@@ -252,7 +252,7 @@
     <button id="rf-send">Отправить на модерацию</button>
   </div>
 
-  <!-- ⚖️ ОБЖАЛОВАНИЕ / АПЕЛЛЯЦИИ (ДОБАВЛЕНО) -->
+  <!-- ⚖️ ОБЖАЛОВАНИЕ / АПЕЛЛЯЦИИ -->
   <div id="ov-dis" class="overlay">
     <button class="back" id="close-dis">✕ Отмена</button>
     <h2 style="text-align:center;" id="dis-tit">Обжаловать</h2>
@@ -262,7 +262,7 @@
     <button id="dis-send">Отправить</button>
   </div>
 
-  <!-- 🔧 АДМИН (ДОБАВЛЕНО: апелляции, разбан, чаты с сообщениями) -->
+  <!-- 🔧 АДМИН -->
   <div id="ov-adm" class="overlay">
     <button class="back" id="close-adm">← Закрыть</button>
     <h2 style="text-align:center;">🔧 Панель модератора</h2>
@@ -281,7 +281,7 @@
     <div class="adm-content" id="adm-content"></div>
   </div>
 
-  <!-- МОДАЛКА БАНА/ВАРНА (ДОБАВЛЕНО) -->
+  <!-- МОДАЛКА БАНА/ВАРНА -->
   <div id="modal-block" class="block-modal hidden">
     <div class="block-box">
       <div class="block-icon" id="blk-icon"></div>
@@ -293,12 +293,10 @@
   </div>
 
   <script type="module">
-    // 🔥 ИМПОРТЫ (1:1 как у тебя)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, updateDoc, arrayUnion, increment, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 🔽 КОНФИГ (1:1 как у тебя)
     const firebaseConfig = {
       apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
       authDomain: "exzzy1-84d88.firebaseapp.com",
@@ -308,29 +306,26 @@
       appId: "1:892085705947:web:bbbd44ebc1cf460bdbc0fe"
     };
 
-    // 🚀 ИНИЦИАЛИЗАЦИЯ (1:1 как у тебя)
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
+    // 🔧 ИСПРАВЛЕНО: добавлено chData = null
     let user = null, prof = null;
-    let curLst = null, curCh = null, chCnt = 0;
+    let curLst = null, curCh = null, chCnt = 0, chData = null;
     let galPh = [], galIdx = 0;
-    let wizData = { files: [], data: {} };
+    let wizData = { files: [],  {} };
     let stSel = 0;
 
-    // 🌓 ТЕМА (1:1 как у тебя)
     const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
     document.getElementById('theme-toggle').onclick = () => { document.body.classList.toggle('dark'); const d=document.body.classList.contains('dark'); localStorage.setItem('vio-theme', d?'dark':'light'); document.getElementById('theme-toggle').textContent = d?'☀️':'🌙'; };
     loadTheme();
 
-    // 🔄 UI ХЕЛПЕРЫ (1:1 как у тебя)
     function show(id){ ['scr-auth','scr-on','scr-app'].forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
     function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
     function el(id){ return document.getElementById(id); }
 
-    // 🔐 АВТОРИЗАЦИЯ (1:1 как у тебя - НЕ ТРОГАЕМ)
     el('btn-login').onclick = async () => {
       const e=el('a-email').value.trim(), p=el('a-pass').value;
       if(!e||!p) return msg('Заполните поля');
@@ -347,14 +342,12 @@
     el('btn-logout').onclick = () => signOut(auth);
     el('logo-ref').onclick = () => location.reload();
 
-    // 🖼 ЗАГРУЗКА В IMGBB (1:1 как у тебя)
     async function up(file){ 
       const f=new FormData(); f.append('key',IMGBB); f.append('image',file); 
       const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:f}); 
       const d=await r.json(); if(!d.success) throw new Error(d.error?.message); return d.data.url; 
     }
 
-    // 👤 ОНБОРДИНГ (1:1 как у тебя)
     el('on-btn1').onclick = () => {
       const n=el('on-nick').value.trim(), er=el('on-err');
       if(n.length<3||n.length>20){er.textContent='3-20 символов';er.classList.remove('hidden');return;}
@@ -379,12 +372,10 @@
       show('scr-app'); 
     };
 
-    // 🧭 ВКЛАДКИ (1:1 как у тебя)
     function tab(t){ ['home','my','chat','prof'].forEach(p=>el(`tab-${p}`).classList.add('hidden')); el(`tab-${t}`).classList.remove('hidden'); document.querySelectorAll('.nav-it').forEach(n=>n.classList.toggle('active',n.dataset.t===t)); loadTab(t); }
     document.querySelectorAll('.nav-it').forEach(n=>n.onclick=()=>tab(n.dataset.t));
     el('search').oninput = (e)=>loadFeed(e.target.value);
 
-    // 📦 ЗАГРУЗКА ДАННЫХ (1:1 как у тебя + фикс чатов)
     async function loadFeed(q=''){
       const box=el('feed'), emp=el('no-feed'); box.innerHTML='';
       try {
@@ -419,7 +410,6 @@
       if(!user)return;
       const box=el('chat-list'), emp=el('no-chat'); box.innerHTML='';
       try {
-        // 1. Чат поддержки (авто-создание)
         const supRef=doc(db,'chats',`support_${user.uid}`);
         const supSnap=await getDoc(supRef);
         if(!supSnap.exists()){
@@ -427,11 +417,9 @@
         }
         const supData=(await getDoc(supRef)).data()||{};
         
-        // 2. Обычные чаты
         const s=await getDocs(query(collection(db,'chats'),where('users','array-contains',user.uid)));
         let items=[]; s.forEach(d=>{ if(d.id!==`support_${user.uid}`) items.push({id:d.id,...d.data()}); });
         
-        // Сортировка: поддержка -> закрепленные -> по дате
         items.sort((a,b)=>(b.lastMsgTime||'').localeCompare(a.lastMsgTime||''));
         const pinned=items.filter(x=>x.pinned);
         const unpinned=items.filter(x=>!x.pinned);
@@ -462,7 +450,6 @@
     }
     async function loadTab(t){ if(t==='home')loadFeed(); if(t==='my')loadMy(); if(t==='chat')loadChatList(); if(t==='prof')loadProf(); }
 
-    // 👁 ПРОСМОТР + ГАЛЕРЕЯ (1:1 как у тебя)
     async function viewLst(id){
       curLst=id; galPh=[]; galIdx=0;
       try {
@@ -490,13 +477,11 @@
     el('v-seller').onclick=async(e)=>{if(e.target.closest('#btn-chat'))return;viewProf(el('v-seller').dataset.uid);};
     el('btn-chat').onclick=()=>{ el('ov-list').classList.remove('active'); openCh(null, el('v-seller').dataset.name, el('v-seller').dataset.av, curLst, el('v-tit').textContent); };
 
-    // 👤 ПРОФИЛЬ СОБЕСЕДНИКА (ДОБАВЛЕНО)
     async function viewProf(uid){
       try{
         const s=await getDoc(doc(db,'users',uid));
         if(!s.exists()) return alert('Пользователь не найден');
         const u=s.data();
-        const isMe=user?.uid===uid;
         
         const ov=document.createElement('div');
         ov.className='overlay active';
@@ -519,7 +504,6 @@
         document.getElementById('close-prof').onclick=()=>ov.remove();
         ov.querySelector('button.btn-sec').onclick=()=>ov.remove();
         
-        // Клик по рейтингу → отзывы
         const revBtn=document.getElementById('prof-rev');
         revBtn.onclick=async()=>{
           revBtn.innerHTML='⏳ Загрузка...';
@@ -533,7 +517,7 @@
           if(snaps.empty) box.innerHTML='<p class="empty">Нет отзывов</p>';
           snaps.forEach(d=>{
             const r=d.data();
-            const isOwner=user.uid===r.targetUserId; // Обжаловать может только получатель
+            const isOwner=user.uid===r.targetUserId;
             const menu=isOwner?`<div class="rev-menu" onclick="openDis('${d.id}','review')">⋮</div>`:'';
             const stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
             const c=document.createElement('div');
@@ -547,7 +531,7 @@
     }
     el('chat-hdr-click').onclick=()=>viewProf(curCh?.userId2||curCh?.userId1);
 
-    // 💬 ЧАТ (ДОБАВЛЕНО: поддержка, статус, галочки, уведомления, блок/разблок)
+    // 🔧 ИСПРАВЛЕНО: порядок загрузки chData и вызова updateChatMenu
     async function openCh(chatId, partner, av, lstId, lstTit, isSupport=false){
       curCh={id:chatId||'new',partner,av,lstId,lstTit,isSupport,userId1:user.uid,userId2:''};
       el('c-nick').textContent=partner;
@@ -575,19 +559,18 @@
             }
           }
         }catch(e){}
-        updateChatMenu();
       }
       
       if(chatId){
         curCh.id=chatId;
-        // Пометить как прочитанные
         await updateDoc(doc(db,'chats',chatId),{[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
         
         const snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`),orderBy('ts','asc')));
         curCh.msgCount=snap.size;
+        
+        // 🔧 chData загружается ДО использования
         chData=(await getDoc(doc(db,'chats',chatId))).data();
         
-        // Статус собеседника
         if(!isSupport && chData?.userId2){
           const other=await getDoc(doc(db,'users',chData.userId2));
           if(other.exists()){
@@ -602,7 +585,6 @@
         snap.forEach(d=>{
           const m=d.data();
           const isMe=m.uid===user.uid;
-          // Галочки: ✓ отправлено, ✅ прочитано
           const checks=m.read?.includes(user.uid)?'✅':'✓';
           const ts=new Date(m.ts?.toDate?.()||m.ts);
           const elM=document.createElement('div');
@@ -616,6 +598,9 @@
         });
         el('c-msgs').scrollTop=1e6;
       }
+      
+      // 🔧 updateChatMenu вызывается ПОСЛЕ загрузки chData
+      updateChatMenu();
     }
     
     function updateChatMenu(){
@@ -625,7 +610,6 @@
         return;
       }
       const blocked=chData?.blockedBy===user.uid;
-      const canUnblock=chData?.blockedBy===user.uid;
       m.innerHTML=`
         <button class="m-btn" id="m-notif">🔔 Уведомления: ${chData?.muted?.includes(user.uid)?'Выкл':'Вкл'}</button>
         <button class="m-btn" id="m-block">${blocked?'Разблокировать':'🚫 Заблокировать'}</button>
@@ -751,7 +735,6 @@
       el('ov-revf').classList.add('active');
     };
     
-    // Отправка отзыва (ФИКС: после одобрения рейтинг пересчитывается)
     document.querySelectorAll('#st-pick span').forEach(s=>{
       s.onclick=()=>{
         stSel=parseInt(s.dataset.v);
@@ -789,7 +772,6 @@
         createdAt: new Date().toISOString()
       });
       
-      // Пометить, что пользователь уже оставил отзыв этому собеседнику
       await updateDoc(doc(db,'chats',curCh.id),{reviewedByUser:{[user.uid]:true}});
       
       alert('✅ Отправлен на модерацию');
@@ -800,7 +782,6 @@
     };
     el('close-revf').onclick=()=>el('ov-revf').classList.remove('active');
 
-    // ⭐ ОТЗЫВЫ (ФИКС: после одобрения рейтинг пересчитывается)
     el('p-rate').onclick = async () => {
       if(!user) return;
       el('ov-rev').classList.add('active');
@@ -810,7 +791,7 @@
       el('no-rev').classList.add('hidden');
       snap.forEach(d=>{
         const r=d.data();
-        const isOwner=user.uid===r.targetUserId; // Обжаловать может только получатель
+        const isOwner=user.uid===r.targetUserId;
         const menu=isOwner?`<div class="rev-menu" onclick="openDis('${d.id}','review')">⋮</div>`:'';
         const stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
         const c=document.createElement('div');
@@ -822,7 +803,6 @@
     };
     el('close-rev').onclick=()=>el('ov-rev').classList.remove('active');
 
-    // ➕ ВИЗАРД (1:1 как у тебя)
     el('fab-add').onclick=()=>{wizData={files:[],data:{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
     el('close-wiz').onclick=()=>el('ov-wiz').classList.remove('active');
     const wNext=(cur,next)=>{ el(cur).classList.add('hidden'); el(next).classList.remove('hidden'); };
@@ -837,11 +817,9 @@
     window.editLst = async (id) => { const l=await getDoc(doc(db,'listings',id)); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [], data: { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await updateDoc(doc(db,'listings',id),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
     window.delLst = async (id) => { if(!confirm('⚠️ Удалить навсегда? Вернуть нельзя.')) return; await deleteDoc(doc(db,'listings',id)); alert('🗑 Удалено'); loadMy(); loadFeed(); };
 
-    // 👤 РЕДАКТИРОВАНИЕ ПРОФИЛЯ (1:1 как у тебя)
     el('p-nick').onclick = async () => { const n=prompt('Новый никнейм:', prof.nickname); if(!n || n===prof.nickname) return; if(n.length<3||n.length>20) return alert('Ник от 3 до 20 символов'); const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,''); if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова'); await setDoc(doc(db,'users',user.uid),{modNick:true, pendingNick:n},{merge:true}); alert('✅ Отправлен на модерацию.'); };
     el('p-av').onclick = async () => { const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange = async (e) => { const f=e.target.files[0]; if(!f) return; const u=await up(f); await setDoc(doc(db,'users',user.uid),{modAv:true, pendingAv:u},{merge:true}); alert('✅ Отправлена на модерацию.'); }; inp.click(); };
 
-    // ⚖️ ОБЖАЛОВАНИЕ / АПЕЛЛЯЦИИ (ДОБАВЛЕНО)
     window.openDis=(id,type)=>{
       el('ov-dis').dataset.id=id;
       el('ov-dis').dataset.type=type;
@@ -872,7 +850,6 @@
     };
     el('close-dis').onclick=()=>el('ov-dis').classList.remove('active');
 
-    // 🔧 АДМИН-ПАНЕЛЬ (ДОБАВЛЕНО: апелляции, разбан, чаты с сообщениями)
     el('adm-link').onclick=()=>el('ov-adm').classList.add('active');
     el('close-adm').onclick=()=>el('ov-adm').classList.remove('active');
     document.querySelectorAll('.adm-cat').forEach(cat=>{
@@ -1060,7 +1037,6 @@
       }catch(e){console.error('Ошибка пересчёта рейтинга:',e);}
     }
 
-    // 🔒 БАЛАНС / БАН-МОДАЛКА (ДОБАВЛЕНО)
     async function checkBlock(u){
       if(!u||!prof) return;
       if(prof.banned){
@@ -1086,7 +1062,6 @@
     el('blk-appeal').onclick=()=>{openDis(user.uid,prof.banned?'ban':'warn');el('modal-block').classList.add('hidden');};
     el('blk-close').onclick=()=>{if(!prof.banned)el('modal-block').classList.add('hidden');};
 
-    // 🔁 ГЛАВНЫЙ СЛУШАТЕЛЬ АВТОРИЗАЦИИ (1:1 как у тебя - НЕ ТРОГАЕМ)
     onAuthStateChanged(auth, async (u) => {
       user=u; 
       if(!u){ el('modal-block').classList.add('hidden'); show('scr-auth'); return; }
