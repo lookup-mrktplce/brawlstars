@@ -275,7 +275,6 @@
     const db = getFirestore(app);
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
-    // ✅ ИСПРАВЛЕНО: валидный синтаксис
     let user = null, prof = null;
     let curLst = null, curCh = null, chCnt = 0, chData = null;
     let galPh = [], galIdx = 0;
@@ -290,7 +289,6 @@
     function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
     function el(id){ return document.getElementById(id); }
 
-    // 🔐 АВТОРИЗАЦИЯ
     el('btn-login').onclick = async () => {
       const e=el('a-email').value.trim(), p=el('a-pass').value;
       if(!e||!p) return msg('Заполните поля');
@@ -441,6 +439,8 @@
     el('btn-chat').onclick=()=>{ el('ov-list').classList.remove('active'); openCh(null, el('v-seller').dataset.name, el('v-seller').dataset.av, curLst, el('v-tit').textContent); };
 
     async function viewProf(uid){
+      // 🔧 НЕ открывать профиль для поддержки
+      if(uid==='admin') return;
       try{
         const s=await getDoc(doc(db,'users',uid));
         if(!s.exists()) return alert('Пользователь не найден');
@@ -541,7 +541,12 @@
           const ts=new Date(m.ts?.toDate?.()||m.ts);
           const elM=document.createElement('div');
           elM.className='msg-it';
-          elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
+          // 🔧 Для поддержки: показываем данные отправителя
+          if(isSupport && !isMe){
+            elM.innerHTML=`<p class="m-meta">${m.senderNick||'Пользователь'} • ${m.senderUid?.slice(0,6)||'—'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
+          } else {
+            elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
+          }
           el('c-msgs').appendChild(elM);
         });
         el('c-msgs').scrollTop=1e6;
@@ -580,7 +585,37 @@
       const id=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
       const elM=document.createElement('div');
       elM.className='msg-it';
-      elM.innerHTML=`<p class="m-meta">ID: ${id.slice(0,6)} • ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub m-me">${txt}</div><p class="m-meta" style="justify-content:flex-end;">✓</p>`;
+      
+      // 🔧 Обработка чата поддержки: парсинг @UID для админа
+      if(chData?.type==='support' && user.email==='sobakastalina123@gmail.com'){
+        const match = txt.match(/^@([a-zA-Z0-9]+)\s+(.+)$/);
+        if(match){
+          const targetUid = match[1];
+          const message = match[2];
+          // Отправляем только целевому пользователю в его чат поддержки
+          const userChatRef = doc(db,'chats',`support_${targetUid}`);
+          await addDoc(collection(db,`chats/support_${targetUid}/msgs`),{
+            uid: 'admin',
+            text: message,
+            ts: new Date(),
+            read: [targetUid],
+            fromAdmin: true
+          });
+          await updateDoc(userChatRef, {
+            lastMsg: message,
+            lastMsgTime: new Date().toISOString(),
+            [`unread.${targetUid}`]: increment(1)
+          });
+          // Показываем у админа
+          elM.innerHTML=`<p class="m-meta">→ @${targetUid.slice(0,6)} • ${new Date().toLocaleTimeString()}</p><div class="m-bub m-me">${txt}</div>`;
+        } else {
+          // Обычное сообщение в поддержку (для тестов)
+          elM.innerHTML=`<p class="m-meta">ID: ${id.slice(0,6)} • ${new Date().toLocaleTimeString()}</p><div class="m-bub m-me">${txt}</div><p class="m-meta" style="justify-content:flex-end;">✓</p>`;
+        }
+      } else {
+        elM.innerHTML=`<p class="m-meta">ID: ${id.slice(0,6)} • ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub m-me">${txt}</div><p class="m-meta" style="justify-content:flex-end;">✓</p>`;
+      }
+      
       el('c-msgs').appendChild(elM);
       el('c-msgs').scrollTop=1e6;
       curCh.msgCount++;
@@ -605,8 +640,27 @@
           await addDoc(collection(db,`chats/${ref.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
           curCh.msgCount=0;
         }else{
-          await addDoc(collection(db,`chats/${curCh.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
-          await updateDoc(doc(db,'chats',curCh.id),{lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
+          // 🔧 Для поддержки: сохраняем данные отправителя
+          if(chData?.type==='support'){
+            await addDoc(collection(db,`chats/${curCh.id}/msgs`),{
+              uid: user.uid,
+              text: txt,
+              ts: new Date(),
+              read: [user.uid],
+              senderUid: user.uid,
+              senderNick: prof.nickname,
+              senderAv: prof.avatar
+            });
+            // Уведомляем админа (добавляем в его список чатов поддержки)
+            await updateDoc(doc(db,'chats',curCh.id),{
+              lastMsg: txt,
+              lastMsgTime: new Date().toISOString(),
+              [`unread.admin`]: increment(1)
+            });
+          } else {
+            await addDoc(collection(db,`chats/${curCh.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
+            await updateDoc(doc(db,'chats',curCh.id),{lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
+          }
         }
         if(curCh.msgCount>=10) updateChatMenu();
       }catch(e){alert('Ошибка отправки: '+e.message);}
