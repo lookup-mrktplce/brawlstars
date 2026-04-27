@@ -275,10 +275,11 @@
     const db = getFirestore(app);
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
+    // ✅ ИСПРАВЛЕНО: валидный синтаксис
     let user = null, prof = null;
     let curLst = null, curCh = null, chCnt = 0, chData = null;
     let galPh = [], galIdx = 0;
-    let wizData = { files: [],  {} };
+    let wizData = { files: [], data: {} };
     let stSel = 0;
 
     const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
@@ -289,6 +290,7 @@
     function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
     function el(id){ return document.getElementById(id); }
 
+    // 🔐 АВТОРИЗАЦИЯ
     el('btn-login').onclick = async () => {
       const e=el('a-email').value.trim(), p=el('a-pass').value;
       if(!e||!p) return msg('Заполните поля');
@@ -486,11 +488,7 @@
         };
       }catch(e){alert('Ошибка: '+e.message);}
     }
-    el('chat-hdr-click').onclick=()=>{
-      // 🔧 НЕ открывать профиль для чата поддержки
-      if(curCh?.isSupport) return;
-      viewProf(curCh?.userId2||curCh?.userId1);
-    };
+    el('chat-hdr-click').onclick=()=>{ if(curCh?.isSupport) return; viewProf(curCh?.userId2||curCh?.userId1); };
 
     async function openCh(chatId, partner, av, lstId, lstTit, isSupport=false){
       curCh={id:chatId||'new',partner,av,lstId,lstTit,isSupport,userId1:user.uid,userId2:''};
@@ -525,10 +523,7 @@
         const snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`),orderBy('ts','asc')));
         curCh.msgCount=snap.size;
         chData=(await getDoc(doc(db,'chats',chatId))).data();
-        // 🔧 Сохраняем userId2 для чата поддержки
-        if(isSupport && chData?.users){
-          curCh.userId2 = chData.users.find(u=>u!==user.uid);
-        }
+        if(isSupport && chData?.users) curCh.userId2 = chData.users.find(u=>u!==user.uid);
         if(!isSupport && chData?.userId2){
           const other=await getDoc(doc(db,'users',chData.userId2));
           if(other.exists()){
@@ -591,7 +586,6 @@
       curCh.msgCount++;
       try{
         if(curCh.id==='new'){
-          // 🔧 Фикс: устанавливаем partnerUid
           const sellerId = el('v-seller')?.dataset.uid || curCh.userId2;
           const ref=await addDoc(collection(db,'chats'),{
             users:[user.uid,sellerId],
@@ -740,7 +734,7 @@
     };
     el('close-rev').onclick=()=>el('ov-rev').classList.remove('active');
 
-    el('fab-add').onclick=()=>{wizData={files:[],{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
+    el('fab-add').onclick=()=>{wizData={files:[],data:{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
     el('close-wiz').onclick=()=>el('ov-wiz').classList.remove('active');
     const wNext=(cur,next)=>{ el(cur).classList.add('hidden'); el(next).classList.remove('hidden'); };
     el('w-btn1').onclick=()=>{ if(el('w-tit').value.trim().length<3)return; wizData.data.tit=el('w-tit').value; wNext('w1','w2'); };
@@ -751,7 +745,7 @@
     el('w-back6').onclick=()=>wNext('w6','w5');
     el('w-files').onchange=(e)=>{ wizData.files=Array.from(e.target.files).slice(0,10); const p=el('w-prev'); p.innerHTML=''; wizData.files.forEach(f=>{ const i=document.createElement('img'); i.src=URL.createObjectURL(f); p.appendChild(i); }); };
     el('w-submit').onclick=async()=>{ const desc=el('w-desc').value.trim(); if(desc.length<10)return alert('Описание мин. 10 символов'); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w-load').classList.remove('hidden'); try { const urls=await Promise.all(wizData.files.map(f=>up(f))); const shortId = Math.random().toString(36).slice(2,8).toUpperCase(); await addDoc(collection(db,'listings'),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:desc, photos:urls, authorId:user.uid, authorNick:prof?.nickname, status:'pending', views:0, createdAt:new Date().toISOString(), shortId}); alert('✅ Отправлено на модерацию'); el('ov-wiz').classList.remove('active'); tab('my'); } catch(e){ alert('Ошибка: '+e.message); el('w-load').classList.add('hidden'); el('w6').classList.remove('hidden'); } };
-    window.editLst = async (id) => { const l=await getDoc(doc(db,'listings',id)); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [],  { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await updateDoc(doc(db,'listings',id),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
+    window.editLst = async (id) => { const l=await getDoc(doc(db,'listings',id)); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [], data: { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await updateDoc(doc(db,'listings',id),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
     window.delLst = async (id) => { if(!confirm('⚠️ Удалить навсегда? Вернуть нельзя.')) return; await deleteDoc(doc(db,'listings',id)); alert('🗑 Удалено'); loadMy(); loadFeed(); };
 
     el('p-nick').onclick = async () => { const n=prompt('Новый никнейм:', prof.nickname); if(!n || n===prof.nickname) return; if(n.length<3||n.length>20) return alert('Ник от 3 до 20 символов'); const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,''); if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова'); await setDoc(doc(db,'users',user.uid),{modNick:true, pendingNick:n},{merge:true}); alert('✅ Отправлен на модерацию.'); };
