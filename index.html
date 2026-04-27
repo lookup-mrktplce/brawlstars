@@ -275,11 +275,10 @@
     const db = getFirestore(app);
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
-    // ✅ ИСПРАВЛЕНО: валидный синтаксис
     let user = null, prof = null;
     let curLst = null, curCh = null, chCnt = 0, chData = null;
     let galPh = [], galIdx = 0;
-    let wizData = { files: [], data: {} };
+    let wizData = { files: [],  {} };
     let stSel = 0;
 
     const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
@@ -290,7 +289,6 @@
     function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
     function el(id){ return document.getElementById(id); }
 
-    // 🔐 АВТОРИЗАЦИЯ
     el('btn-login').onclick = async () => {
       const e=el('a-email').value.trim(), p=el('a-pass').value;
       if(!e||!p) return msg('Заполните поля');
@@ -376,6 +374,7 @@
       if(!user)return;
       const box=el('chat-list'), emp=el('no-chat'); box.innerHTML='';
       try {
+        // 🔧 Чат поддержки через коллекцию support (как в старом проекте)
         const supRef=doc(db,'chats',`support_${user.uid}`);
         const supSnap=await getDoc(supRef);
         if(!supSnap.exists()){
@@ -525,9 +524,15 @@
       if(chatId){
         curCh.id=chatId;
         await updateDoc(doc(db,'chats',chatId),{[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
-        const snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`),orderBy('ts','asc')));
+        // 🔧 Для поддержки используем отдельную коллекцию 'support'
+        let snap;
+        if(isSupport){
+          snap=await getDocs(query(collection(db,'support'),where('uid','==',user.uid).orderBy('time','asc')));
+        }else{
+          snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`),orderBy('ts','asc')));
+        }
         curCh.msgCount=snap.size;
-        chData=(await getDoc(doc(db,'chats',chatId))).data();
+        if(!isSupport) chData=(await getDoc(doc(db,'chats',chatId))).data();
         if(!isSupport && chData?.users){
           curCh.userId2 = chData.users.find(u=>u!==user.uid);
           const other=await getDoc(doc(db,'users',curCh.userId2));
@@ -541,12 +546,19 @@
         }
         snap.forEach(d=>{
           const m=d.data();
-          const isMe=m.uid===user.uid;
+          const isMe=isSupport?(m.uid===user.uid):(m.uid===user.uid);
           const checks=m.read?.includes(user.uid)?'✅':'✓';
-          const ts=new Date(m.ts?.toDate?.()||m.ts);
+          const ts=new Date(m.ts?.toDate?.()||m.ts||m.time);
           const elM=document.createElement('div');
           elM.className='msg-it';
-          elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
+          // 🔧 Для поддержки показываем ник и время
+          if(isSupport && !isMe){
+            elM.innerHTML=`<p class="m-meta">${m.name||'Пользователь'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
+          }else if(isSupport && isMe){
+            elM.innerHTML=`<p class="m-meta">Вы • ${ts.toLocaleTimeString()}</p><div class="m-bub m-me">${m.text}</div>`;
+          }else{
+            elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
+          }
           el('c-msgs').appendChild(elM);
         });
         el('c-msgs').scrollTop=1e6;
@@ -610,8 +622,25 @@
           await addDoc(collection(db,`chats/${ref.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
           curCh.msgCount=0;
         }else{
-          await addDoc(collection(db,`chats/${curCh.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
-          await updateDoc(doc(db,'chats',curCh.id),{lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
+          // 🔧 Для поддержки: используем коллекцию 'support' как в старом проекте
+          if(curCh.isSupport){
+            await addDoc(collection(db,'support'),{
+              uid: user.uid,
+              name: prof.nickname,
+              avatar: prof.avatar,
+              text: txt,
+              time: new Date()
+            });
+            // Обновляем последнее сообщение в чате
+            await updateDoc(doc(db,'chats',curCh.id),{
+              lastMsg: txt,
+              lastMsgTime: new Date().toISOString(),
+              [`unread.admin`]: increment(1)
+            });
+          }else{
+            await addDoc(collection(db,`chats/${curCh.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
+            await updateDoc(doc(db,'chats',curCh.id),{lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
+          }
         }
         if(curCh.msgCount>=10) updateChatMenu();
       }catch(e){alert('Ошибка отправки: '+e.message);}
@@ -739,7 +768,7 @@
     };
     el('close-rev').onclick=()=>el('ov-rev').classList.remove('active');
 
-    el('fab-add').onclick=()=>{wizData={files:[],data:{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
+    el('fab-add').onclick=()=>{wizData={files:[],{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
     el('close-wiz').onclick=()=>el('ov-wiz').classList.remove('active');
     const wNext=(cur,next)=>{ el(cur).classList.add('hidden'); el(next).classList.remove('hidden'); };
     el('w-btn1').onclick=()=>{ if(el('w-tit').value.trim().length<3)return; wizData.data.tit=el('w-tit').value; wNext('w1','w2'); };
@@ -750,7 +779,7 @@
     el('w-back6').onclick=()=>wNext('w6','w5');
     el('w-files').onchange=(e)=>{ wizData.files=Array.from(e.target.files).slice(0,10); const p=el('w-prev'); p.innerHTML=''; wizData.files.forEach(f=>{ const i=document.createElement('img'); i.src=URL.createObjectURL(f); p.appendChild(i); }); };
     el('w-submit').onclick=async()=>{ const desc=el('w-desc').value.trim(); if(desc.length<10)return alert('Описание мин. 10 символов'); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w-load').classList.remove('hidden'); try { const urls=await Promise.all(wizData.files.map(f=>up(f))); const shortId = Math.random().toString(36).slice(2,8).toUpperCase(); await addDoc(collection(db,'listings'),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:desc, photos:urls, authorId:user.uid, authorNick:prof?.nickname, status:'pending', views:0, createdAt:new Date().toISOString(), shortId}); alert('✅ Отправлено на модерацию'); el('ov-wiz').classList.remove('active'); tab('my'); } catch(e){ alert('Ошибка: '+e.message); el('w-load').classList.add('hidden'); el('w6').classList.remove('hidden'); } };
-    window.editLst = async (id) => { const l=await getDoc(doc(db,'listings',id)); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [], data: { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await updateDoc(doc(db,'listings',id),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
+    window.editLst = async (id) => { const l=await getDoc(doc(db,'listings',id)); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [],  { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await updateDoc(doc(db,'listings',id),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
     window.delLst = async (id) => { if(!confirm('⚠️ Удалить навсегда? Вернуть нельзя.')) return; await deleteDoc(doc(db,'listings',id)); alert('🗑 Удалено'); loadMy(); loadFeed(); };
 
     el('p-nick').onclick = async () => { const n=prompt('Новый никнейм:', prof.nickname); if(!n || n===prof.nickname) return; if(n.length<3||n.length>20) return alert('Ник от 3 до 20 символов'); const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,''); if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова'); await setDoc(doc(db,'users',user.uid),{modNick:true, pendingNick:n},{merge:true}); alert('✅ Отправлен на модерацию.'); };
@@ -781,7 +810,7 @@
         reviewed: false,
         createdAt: new Date().toISOString()
       });
-      alert('✅ Отправлено');
+      alert('✅ Отправлено'); // 🔧 Добавлено подтверждение
       el('ov-dis').classList.remove('active');
     };
     el('close-dis').onclick=()=>el('ov-dis').classList.remove('active');
