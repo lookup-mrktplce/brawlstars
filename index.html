@@ -1,1910 +1,1085 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Lookup Маркетплейс</title>
-<!-- Firebase Compat SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<style>
-:root {
---bg: #f4f4f4; --card: #ffffff; --text: #222; --blue: #0077ff;
---green: #00cc66; --red: #ff3b30; --gray: #8e8e93; --border: #ddd;
-}
-body.dark { --bg: #121212; --card: #1e1e1e; --text: #efefef; --gray: #636366; --border: #333; }
-body {
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px;
-transition: 0.2s; -webkit-tap-highlight-color: transparent;
-overscroll-behavior: none;
--webkit-user-select: none;
--moz-user-select: none;
--ms-user-select: none;
-user-select: none;
-}
-header {
-background: var(--card); padding: 12px 15px; border-bottom: 1px solid var(--border);
-position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-.head-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.logo { font-size: 24px; font-weight: 900; color: var(--blue); cursor: pointer; letter-spacing: -1px; }
-.search-container input {
-width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border);
-background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 16px;
-}
-.bottom-nav {
-position: fixed; bottom: 15px; left: 15px; right: 15px; background: var(--card);
-display: flex; border-radius: 20px; height: 65px; z-index: 1001;
-box-shadow: 0 5px 20px rgba(0,0,0,0.2); border: 1px solid var(--border);
-}
-.nav-item {
-flex: 1; display: flex; flex-direction: column; align-items: center;
-justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer;
-color: var(--gray); position: relative; -webkit-tap-highlight-color: transparent;
-}
-.nav-item.active { color: var(--blue); }
-.nav-item i { font-style: normal; font-size: 22px; margin-bottom: 2px; }
-.badge {
-display: none; position: absolute; top: 10px; right: 25px;
-width: 10px; height: 10px; background: var(--red); border-radius: 50%;
-}
-.badge.show { display: block; }
-.page { display: none; padding: 15px; max-width: 1100px; margin: 0 auto; }
-.active-page { display: block; animation: fadeIn 0.3s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 15px; }
-.card {
-background: var(--card); border-radius: 15px; overflow: hidden;
-border: 1px solid var(--border); transition: 0.2s; cursor: pointer;
-display: flex; flex-direction: column; -webkit-tap-highlight-color: transparent;
-}
-.card:active { transform: scale(0.98); }
-.card img {
-width: 100%; height: 170px; object-fit: cover; background: #eee;
-pointer-events: none;
--webkit-user-drag: none;
-user-drag: none;
-}
-.card-body { padding: 12px; }
-.price { font-size: 18px; font-weight: 800; color: var(--text); }
-.admin-box {
-background: rgba(255, 149, 0, 0.1); border: 1px solid #ff9500;
-border-radius: 15px; padding: 15px; margin-bottom: 20px;
-}
-.mod-card {
-background: var(--card); border: 1px solid var(--border);
-padding: 15px; border-radius: 12px; margin-bottom: 10px; color: var(--text);
-}
-.mod-gallery { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 10px; }
-.mod-gallery img {
-height: 120px; border-radius: 5px; object-fit: contain; background: #000;
-pointer-events: none;
--webkit-user-drag: none;
-user-drag: none;
-}
-.admin-section {
-margin-top: 20px; padding: 15px; background: var(--card);
-border: 1px solid var(--border); border-radius: 12px;
-}
-.ad-full {
-background: var(--card); border-radius: 20px; overflow: hidden;
-border: 1px solid var(--border); margin-top: 10px;
-}
-.gallery-main {
-display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-background: #000; height: 40vh; min-height: 300px;
-}
-.gallery-main img {
-flex: 0 0 100%; object-fit: contain; scroll-snap-align: start;
-pointer-events: none;
--webkit-user-drag: none;
-user-drag: none;
-}
-.ad-details { padding: 20px; }
-.chat-list-item {
-display: flex; align-items: center; gap: 15px; padding: 15px;
-background: var(--card); border: 1px solid var(--border);
-border-radius: 12px; margin-bottom: 10px; cursor: pointer;
-position: relative; -webkit-tap-highlight-color: transparent;
-}
-.chat-list-item:active { transform: scale(0.99); }
-.chat-list-item.pinned { border-left: 5px solid var(--blue); }
-.chat-list-item.muted { opacity: 0.6; }
-.chat-avatar-wrapper { position: relative; flex-shrink: 0; }
-.chat-avatar {
-width: 50px; height: 50px; border-radius: 50%; background: var(--blue);
-color: white; display: flex; align-items: center; justify-content: center;
-font-size: 20px; object-fit: cover;
-}
-.online-dot {
-position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
-border-radius: 50%; border: 2px solid var(--card);
-}
-.online-dot.online { background: var(--green); }
-.online-dot.offline { background: var(--gray); }
-.chat-info { flex: 1; }
-.chat-pin-icon { font-size: 12px; margin-left: 5px; }
-.chat-menu-btn {
-position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-font-size: 20px; padding: 5px; cursor: pointer; color: var(--gray);
-}
-.chat-area {
-height: 60vh; overflow-y: auto; background: var(--bg);
-border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 8px;
-}
-.m {
-padding: 10px 14px; border-radius: 18px; max-width: 80%;
-font-size: 14px; line-height: 1.4; word-wrap: break-word; position: relative;
-}
-.m.my { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 4px; }
-.m.other { align-self: flex-start; background: var(--card); color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-.m-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
-.m.other .m-time { text-align: left; }
-.m-name { font-size: 10px; opacity: 0.7; margin-bottom: 2px; }
-.chat-header {
-display: flex; justify-content: space-between; align-items: center;
-padding-bottom: 10px; border-bottom: 1px solid var(--border);
-margin-bottom: 10px; position: relative;
-}
-.chat-header-profile {
-display: flex; align-items: center; gap: 10px; cursor: pointer;
--webkit-tap-highlight-color: transparent;
-}
-.chat-ad-context {
-display: flex; align-items: center; gap: 10px; padding: 10px;
-background: var(--bg); border-radius: 10px; margin-top: 10px;
-cursor: pointer; -webkit-tap-highlight-color: transparent;
-border: 1px solid var(--border);
-}
-.chat-ad-context:hover { background: var(--card); }
-.chat-ad-context img {
-width: 50px; height: 50px; border-radius: 8px; object-fit: cover;
-pointer-events: none;
--webkit-user-drag: none;
-}
-.chat-ad-context .ad-info { flex: 1; }
-.chat-ad-context .ad-info .title { font-size: 13px; font-weight: bold; margin-bottom: 3px; }
-.chat-ad-context .ad-info .price { font-size: 12px; color: var(--blue); font-weight: bold; }
-.dropdown {
-display: none; position: absolute; top: 40px; right: 0;
-background: var(--card); border: 1px solid var(--border);
-border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-z-index: 2500; overflow: hidden; width: 250px;
-}
-.dropdown.show { display: block; }
-.drop-item {
-padding: 12px 15px; font-size: 14px; border-bottom: 1px solid var(--border);
-cursor: pointer; -webkit-tap-highlight-color: transparent;
-}
-.drop-item:last-child { border-bottom: none; }
-.drop-item:hover { background: var(--bg); }
-.btn {
-padding: 14px; border: none; border-radius: 12px; font-weight: bold;
-cursor: pointer; width: 100%; transition: 0.2s; font-size: 15px;
--webkit-tap-highlight-color: transparent;
-}
-.btn:active { transform: scale(0.98); }
-.btn-blue { background: var(--blue); color: white; }
-.btn-red { background: #ffe5e5; color: var(--red); }
-.btn-green { background: var(--green); color: white; }
-input, textarea, select {
-width: 100%; padding: 12px; margin: 8px 0; border: 1px solid var(--border);
-border-radius: 12px; background: var(--bg); color: var(--text);
-font-size: 16px; box-sizing: border-box;
-}
-.modal {
-display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-background: rgba(0,0,0,0.8); z-index: 2000; align-items: center;
-justify-content: center; padding: 15px; box-sizing: border-box;
-}
-.modal-content {
-background: var(--card); width: 100%; max-width: 600px; padding: 25px;
-border-radius: 25px; max-height: 90vh; overflow-y: auto; position: relative;
-}
-.modal-blocking { z-index: 9999; background: rgba(0,0,0,0.95); }
-.modal-blocking .modal-content { text-align: center; border: 2px solid var(--red); }
-.modal-warning { z-index: 9998; background: rgba(0,0,0,0.9); }
-.modal-warning .modal-content { text-align: center; border: 2px solid #ff9500; }
-.stars {
-display: flex; gap: 10px; justify-content: center; font-size: 30px;
-cursor: pointer; color: var(--gray); margin: 15px 0;
-}
-.stars span { -webkit-tap-highlight-color: transparent; }
-.stars span.active { color: #ff9500; }
-.review-item {
-background: var(--bg); padding: 15px; border-radius: 12px;
-margin-bottom: 10px; position: relative;
-}
-.review-menu-btn {
-position: absolute; top: 10px; right: 10px; font-size: 20px;
-cursor: pointer; font-weight: bold; padding: 0 10px;
--webkit-tap-highlight-color: transparent;
-}
-#mobile-debug {
-position:fixed; bottom:0; left:0; right:0; background:#000; color:#0f0;
-font:11px monospace; max-height:200px; overflow:auto; z-index:9999;
-padding:10px; display:none;
-}
-#tech-break-overlay {
-display: none;
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background: rgba(0, 0, 0, 0.95);
-z-index: 99999;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-color: white;
-pointer-events: all;
-padding: 20px;
-text-align: center;
-}
-#tech-break-overlay.active {
-display: flex;
-}
-.tech-break-icon {
-font-size: 80px;
-margin-bottom: 20px;
-}
-.tech-break-title {
-font-size: 32px;
-font-weight: bold;
-margin-bottom: 20px;
-color: #ff9500;
-}
-.tech-break-desc {
-font-size: 18px;
-max-width: 600px;
-text-align: center;
-line-height: 1.6;
-}
-@media (min-width: 768px) {
-.bottom-nav { width: 400px; left: 50%; transform: translateX(-50%); }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viosell</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root { --primary: #2563eb; --bg: #f8fafc; --card: #fff; --text: #0f172a; --border: #cbd5e1; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 14px; }
+    body.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; --shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; min-height: 100vh; transition: 0.3s; padding-bottom: 75px; }
+    .hidden { display: none !important; }
+    .wrap { max-width: 500px; margin: 0 auto; padding: 1rem; }
+    .auth-box { max-width: 400px; margin: 3rem auto; padding: 2rem; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+    input, select, textarea { width: 100%; padding: 0.85rem; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; margin: 0.4rem 0; background: var(--bg); color: var(--text); }
+    button { width: 100%; padding: 0.85rem; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin: 0.4rem 0; background: var(--primary); color: #fff; font-weight: 500; transition: 0.2s; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-sec { background: var(--border); color: var(--text); }
+    .btn-google { background: var(--card); color: var(--text); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .msg { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.9rem; }
+    .msg.ok { background: #dcfce7; color: #15803d; }
+    .msg.err { background: #fee2e2; color: #b91c1c; }
+    .divider { display: flex; align-items: center; margin: 1rem 0; color: #94a3b8; font-size: 0.85rem; }
+    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+    .divider span { padding: 0 12px; }
+    .avatar { width: 100px; height: 100px; border-radius: 50%; margin: 1rem auto; background: var(--border); border: 3px solid var(--primary); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 50%; }
+    .avatar::after { content: "📷"; font-size: 1.8rem; opacity: 0.6; }
+    .avatar.has-img::after { display: none; }
+    .avatar.has-img img { display: block; }
+    .rules { background: rgba(37,99,235,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin: 0.8rem 0; font-size: 0.85rem; max-height: 160px; overflow-y: auto; }
+    .check { display: flex; align-items: center; gap: 0.5rem; margin: 0.8rem 0; }
+    .check input { width: auto; margin: 0; }
+    .header { position: sticky; top: 0; z-index: 50; background: var(--card); padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .logo { color: var(--primary); font-weight: 700; font-size: 1.25rem; cursor: pointer; }
+    .theme-btn { background: none; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.2rem; }
+    .search-bar { padding: 0.7rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 56px; z-index: 40; }
+    .card { background: var(--card); border-radius: var(--radius); padding: 0.8rem; margin: 0.6rem 0; box-shadow: var(--shadow); cursor: pointer; display: grid; grid-template-columns: 65px 1fr auto; gap: 0.7rem; align-items: start; }
+    .card-img { width: 65px; height: 65px; border-radius: 10px; background: var(--border); background-size: cover; background-position: center; }
+    .card h3 { margin: 0 0 0.2rem; font-size: 1rem; }
+    .price { color: var(--primary); font-weight: 600; font-size: 1.05rem; margin: 0; }
+    .city { font-size: 0.8rem; color: #64748b; margin: 0.1rem 0; }
+    .id { font-size: 0.7rem; color: #94a3b8; }
+    .actions { display: flex; flex-direction: column; gap: 0.3rem; }
+    .act { background: none; border: none; font-size: 1rem; cursor: pointer; padding: 0.2rem; }
+    .badge { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 5px; font-size: 0.65rem; margin-top: 0.2rem; }
+    .b-pend { background: #fef3c7; color: #92400e; }
+    .b-active { background: #dcfce7; color: #15803d; }
+    .b-block { background: #fee2e2; color: #b91c1c; }
+    .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 100; overflow-y: auto; display: none; padding: 1rem; }
+    .overlay.active { display: block; }
+    .back { background: none; border: none; color: var(--primary); font-size: 0.95rem; cursor: pointer; padding: 0.4rem 0; margin-bottom: 0.4rem; }
+    .gallery { position: relative; width: 100%; height: 200px; border-radius: var(--radius); background: var(--border); margin: 0.5rem 0; overflow: hidden; }
+    .gal-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .gal-img.active { display: block; }
+    .gal-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; padding: 0 0.5rem; transform: translateY(-50%); }
+    .gal-btn { background: rgba(0,0,0,0.5); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+    .gal-dots { position: absolute; bottom: 0.5rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.3rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
+    .dot.active { background: #fff; }
+    .info { background: var(--card); padding: 0.9rem; border-radius: var(--radius); margin-top: 0.5rem; }
+    .seller { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem; background: var(--bg); border-radius: 10px; margin-top: 0.8rem; cursor: pointer; }
+    .s-av { width: 42px; height: 42px; border-radius: 50%; background: var(--border); background-size: cover; background-position: center; border: 2px solid var(--primary); cursor: pointer; }
+    .step { animation: fadeIn 0.25s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .photos { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.4rem 0; }
+    .photos img { width: 58px; height: 58px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
+    .chat-list { max-height: 65vh; overflow-y: auto; }
+    .chat-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.9rem; background: var(--card); margin: 0.4rem 0; border-radius: 10px; cursor: pointer; position: relative; }
+    .chat-item.muted { opacity: 0.5; }
+    .chat-item.pinned { border-left: 3px solid var(--primary); }
+    .badge-unread { position: absolute; right: 0.8rem; top: 0.8rem; background: #ef4444; color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+    .chat-win { display: flex; flex-direction: column; height: calc(100vh - 95px); }
+    .chat-hdr { padding: 0.7rem; background: var(--card); border-radius: 10px; margin-bottom: 0.4rem; }
+    .status { font-size: 0.8rem; margin-top: 0.15rem; }
+    .st-online { color: #22c55e; }
+    .st-offline { color: #64748b; }
+    .st-banned { color: #ef4444; font-weight: 600; }
+    .lst-prev { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg); border-radius: 8px; margin: 0.4rem 0; cursor: pointer; }
+    .lst-prev img { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; }
+    .msgs { flex: 1; overflow-y: auto; padding: 0.4rem; background: var(--bg); border-radius: 10px; margin-bottom: 0.4rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .msg-it { margin: 0; }
+    .m-meta { font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.1rem; display: flex; align-items: center; gap: 0.3rem; }
+    .m-bub { max-width: 75%; padding: 0.6rem 0.8rem; border-radius: 12px; word-break: break-word; line-height: 1.4; }
+    .m-me { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .m-them { background: var(--card); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .inp-row { display: flex; gap: 0.4rem; }
+    .inp-row input { flex: 1; margin: 0; }
+    .inp-row button { width: auto; margin: 0; padding: 0.7rem 1rem; }
+    .c-menu { position: absolute; top: 60px; right: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.4rem; z-index: 110; display: none; width: 170px; box-shadow: var(--shadow); }
+    .c-menu.active { display: block; }
+    .m-btn { display: block; width: 100%; padding: 0.5rem; background: none; border: none; text-align: left; cursor: pointer; font-size: 0.85rem; border-radius: 6px; }
+    .m-btn:hover { background: var(--bg); }
+    .prof-hdr { text-align: center; padding: 1.3rem; background: var(--card); border-radius: var(--radius); margin: 0.8rem 0; }
+    .prof-av { width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 0.7rem; background: var(--border); background-size: cover; background-position: center; border: 3px solid var(--primary); cursor: pointer; }
+    .prof-nick { margin: 0.4rem 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .prof-rate { color: #64748b; margin: 0; cursor: pointer; }
+    .stats { display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.8rem; font-size: 0.85rem; }
+    .stats b { display: block; font-size: 1.1rem; color: var(--primary); }
+    .prof-uid { font-size: 0.7rem; color: #94a3b8; margin-top: 0.7rem; word-break: break-all; background: var(--bg); padding: 0.4rem; border-radius: 6px; }
+    .rev-card { background: var(--card); padding: 0.8rem; border-radius: 10px; margin: 0.4rem 0; border-left: 3px solid var(--primary); position: relative; }
+    .rev-menu { position: absolute; top: 0.5rem; right: 0.5rem; cursor: pointer; font-size: 1.2rem; padding: 0 0.2rem; }
+    .stars { color: #f59e0b; font-size: 1rem; letter-spacing: 1px; }
+    .rev-type { font-size: 0.75rem; color: #64748b; margin: 0.2rem 0; }
+    .adm-cat { background: var(--card); padding: 0.8rem; margin: 0.4rem 0; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); }
+    .adm-cat.active { border-color: var(--primary); background: rgba(37,99,235,0.05); }
+    .adm-content { background: var(--card); padding: 0.8rem; border-radius: 10px; margin-top: 0.5rem; max-height: 65vh; overflow-y: auto; }
+    .adm-it { padding: 0.7rem; border-bottom: 1px solid var(--border); }
+    .adm-it:last-child { border-bottom: none; }
+    .adm-it img { width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; margin-top: 0.4rem; }
+    .adm-acts { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+    .btn-ok { background: #22c55e; padding: 0.3rem 0.7rem; font-size: 0.8rem; width: auto; margin: 0; }
+    .btn-no { background: #ef4444; padding: 0.3rem 0.7rem; font-size: 0.8rem; width: auto; margin: 0; }
+    .adm-inp { margin: 0.4rem 0; }
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 0.6rem 0; z-index: 60; }
+    .nav-it { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; cursor: pointer; opacity: 0.6; }
+    .nav-it.active { opacity: 1; color: var(--primary); }
+    .fab { position: fixed; bottom: 85px; right: 18px; width: 54px; height: 54px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.7rem; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; z-index: 55; }
+    .empty { text-align: center; padding: 2.5rem 1rem; color: #64748b; font-size: 0.9rem; }
+    .block-modal { position: fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index: 200; display:flex; align-items:center; justify-content:center; padding:1rem; }
+    .block-box { background:var(--card); padding:2rem; border-radius:var(--radius); max-width:400px; width:100%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+    .block-icon { font-size:4rem; margin-bottom:1rem; }
+    .block-title { font-size:1.5rem; margin:0 0 0.5rem; font-weight:700; }
+    .block-reason { background:var(--bg); padding:0.8rem; border-radius:8px; margin:1rem 0; font-size:0.9rem; text-align:left; border:1px solid var(--border); }
+  </style>
 </head>
-<body oncontextmenu="return false">
-<div id="tech-break-overlay">
-<div class="tech-break-icon">🔧</div>
-<div class="tech-break-title">Технический перерыв</div>
-<div class="tech-break-desc" id="tech-break-desc">
-Сайт временно недоступен. Приносим извинения за неудобства.
-</div>
-</div>
-<header>
-<div class="head-top">
-<div class="logo" onclick="location.reload()">Lookup</div>
-<div style="display: flex; gap: 15px; align-items: center;">
-<span style="cursor:pointer; font-size: 20px;" onclick="toggleTheme()">🌓</span>
-<span id="auth-btn" style="cursor:pointer; font-size: 14px; font-weight:bold; color:var(--blue);" onclick="login()">Войти</span>
-</div>
-</div>
-<div class="search-container">
-<input type="text" id="mainSearch" placeholder="Поиск (например: Телефон)..." oninput="runSearch()">
-</div>
-</header>
-<div id="page-home" class="page active-page">
-<div id="admin-zone" class="admin-box" style="display:none;">
-<h3 style="margin-top:0;">🛡️ Панель управления</h3>
-<button class="btn btn-blue" style="margin-bottom:10px;" onclick="showPage('admin')">Открыть модерацию</button>
-</div>
-<h2 id="feed-title">Рекомендации</h2>
-<div id="ads-grid" class="grid"></div>
-</div>
-<div id="page-view" class="page">
-<button onclick="showPage('home')" style="background:none; border:none; color:var(--blue); font-weight:bold; padding:10px 0; cursor:pointer; font-size: 16px;">← Назад к поиску</button>
-<div id="ad-full-content" class="ad-full"></div>
-</div>
-<div id="page-public-profile" class="page">
-<button onclick="showPage('home')" style="background:none; border:none; color:var(--blue); font-weight:bold; padding:10px 0; cursor:pointer; font-size: 16px;">← Назад</button>
-<div style="text-align:center; margin-top: 10px;">
-<img id="pub-avatar" src="" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border: 3px solid var(--blue);">
-<h2 id="pub-name" style="margin:10px 0;">...</h2>
-<small id="pub-uid" style="color:var(--gray);"></small><br>
-<div id="pub-rating" style="margin-top:5px; font-weight:bold; color:#ff9500; font-size:18px; cursor:pointer; text-decoration: underline;" onclick="openReviewsList(currentPublicUid)">⭐ 0.0 (0 отзывов)</div>
-</div>
-<hr style="margin:25px 0; opacity:0.1;">
-<h3>Объявления пользователя</h3>
-<div id="pub-ads-container" class="grid"></div>
-</div>
-<div id="page-chats" class="page">
-<h2>Сообщения</h2>
-<div class="chat-list-item" onclick="openSupport()" style="border-left: 5px solid #ff9500;">
-<div class="chat-avatar-wrapper">
-<div class="chat-avatar" style="background: #ff9500;">🆘</div>
-</div>
-<div class="chat-info">
-<b>Служба поддержки</b><br>
-<small style="color:var(--gray);">Связь с администрацией</small>
-</div>
-</div>
-<h3>Ваши диалоги:</h3>
-<div id="user-chats-list">Загрузка чатов...</div>
-</div>
-<div id="page-profile" class="page">
-<div style="text-align:center;">
-<label>
-<img id="u-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border: 3px solid var(--blue); cursor:pointer;">
-<input type="file" id="ava-file" style="display:none" onchange="uploadNewAvatar(this)">
-</label>
-<div id="ava-status" style="font-size:12px; color:#ff9500; margin-top:5px; font-weight:bold;"></div>
-<h2 id="u-name" style="margin:10px 0;">...</h2>
-<div id="name-status" style="font-size:12px; color:#ff9500; margin-top:5px; font-weight:bold;"></div>
-<small id="my-uid-label" style="color:var(--gray);"></small><br>
-<button class="btn" style="width:auto; padding:8px 20px; font-size:14px; display:inline-block; margin-top:5px;" onclick="changeName()">Сменить имя</button>
-<div id="u-rating" style="margin-top:15px; font-weight:bold; color:#ff9500; font-size:18px; cursor:pointer; text-decoration: underline;" onclick="openReviewsList(user.uid)">⭐ 0.0 (0 отзывов)</div>
-</div>
-<hr style="margin:25px 0; opacity:0.1;">
-<h3>Мои товары</h3>
-<div id="my-ads-container"></div>
-<button class="btn btn-red" style="margin-top:40px;" onclick="logout()">Выйти из аккаунта</button>
-</div>
-<div id="page-admin" class="page">
-<button onclick="showPage('home')" style="background:none; border:none; color:var(--blue); font-weight:bold; padding:10px 0; cursor:pointer;">← Назад</button>
-<h2>🛡️ Панель Модератора</h2>
-<div class="admin-section" style="border: 2px solid #ff9500;">
-<h3 style="color: #ff9500; margin-top:0;">🔧 Технический перерыв</h3>
-<div id="tech-break-status" style="padding: 15px; background: var(--bg); border-radius: 8px; margin-bottom: 15px;">
-<b>Статус:</b> <span id="tech-break-status-text" style="color: var(--gray);">Загрузка...</span>
-</div>
-<div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-<button class="btn btn-blue" id="btn-enable-break" onclick="enableTechBreak()">▶️ Включить перерыв</button>
-<button class="btn btn-red" id="btn-disable-break" onclick="disableTechBreak()" style="display:none;">⏹️ Выключить перерыв</button>
-</div>
-<div id="tech-break-settings" style="display:none; border-top: 1px solid var(--border); padding-top: 15px;">
-<h4>⚙️ Настройки перерыва:</h4>
-<label>📝 Описание (что видят пользователи):</label>
-<textarea id="tech-break-description" rows="3" placeholder="Например: Технические работы с 18:00 до 10:00. Приносим извинения за неудобства."></textarea>
-<label>⏰ Время начала (МСК):</label>
-<input type="time" id="tech-break-start-time">
-<label>⏰ Время окончания (МСК) — для авто-выключения:</label>
-<input type="time" id="tech-break-end-time">
-<label>📅 Дни недели (оставьте пустым для ежедневного):</label>
-<select id="tech-break-days" multiple style="height: 100px; width: 100%;">
-<option value="1">Понедельник</option>
-<option value="2">Вторник</option>
-<option value="3">Среда</option>
-<option value="4">Четверг</option>
-<option value="5">Пятница</option>
-<option value="6">Суббота</option>
-<option value="0">Воскресенье</option>
-</select>
-<small style="color: var(--gray);">💡 Удерживайте Ctrl/Cmd для выбора нескольких дней</small>
-<button class="btn btn-green" style="margin-top: 15px;" onclick="saveTechBreakSettings()">💾 Сохранить настройки</button>
-</div>
-</div>
-<div class="admin-section" style="border: 2px solid var(--red);">
-<h3 style="color: var(--red); margin-top:0;">🚫 Блокировка объявлений по ID</h3>
-<input type="text" id="admin-block-ad-id" placeholder="Введите ID объявления...">
-<textarea id="admin-block-ad-reason" rows="2" placeholder="Причина блокировки (обязательно)..."></textarea>
-<div style="display:flex; gap:10px; margin-top:10px;">
-<button class="btn btn-red" onclick="adminBlockAd()">🔒 Заблокировать</button>
-<button class="btn btn-green" onclick="adminUnblockAd()">🔓 Разблокировать</button>
-</div>
-<div id="admin-block-ad-status" style="margin-top:10px; font-size:14px;"></div>
-</div>
-<div class="admin-section">
-<h3 style="color: var(--red); margin-top:0;">Управление пользователями</h3>
-<input type="text" id="admin-target-uid" placeholder="Введите UID пользователя...">
-<input type="text" id="admin-punish-reason" placeholder="Причина наказания (обязательно)...">
-<div style="display:flex; gap:10px; margin-top:10px;">
-<button class="btn btn-blue" style="background:#ff9500;" onclick="adminIssueWarning()">Выдать варн</button>
-<button class="btn btn-red" style="background:var(--red); color:white;" onclick="adminBanUser()">Заблокировать</button>
-<button class="btn" onclick="adminUnbanUser()">Разбанить</button>
-</div>
-<button class="btn btn-blue" style="margin-top:10px;" onclick="adminViewUserChats()">Посмотреть диалоги пользователя</button>
-</div>
-<div class="admin-section" id="admin-chats-view" style="display:none;">
-<h3 style="margin-top:0;">Диалоги пользователя (UID: <span id="admin-watch-uid"></span>)</h3>
-<div id="admin-user-chats-list"></div>
-<button class="btn" onclick="document.getElementById('admin-chats-view').style.display='none'">Свернуть</button>
-</div>
-<div class="admin-section"><h3>Жалобы на пользователей</h3><div id="mod-user-reports"></div></div>
-<div class="admin-section"><h3>Новые отзывы на проверку</h3><div id="mod-reviews-verify"></div></div>
-<div class="admin-section"><h3>Жалобы на отзывы</h3><div id="mod-review-reports"></div></div>
-<div class="admin-section"><h3>Фото профилей на модерации</h3><div id="mod-avas"></div></div>
-<div class="admin-section"><h3>Никнеймы на модерации</h3><div id="mod-names"></div></div>
-<div class="admin-section"><h3>Объявления</h3><div id="mod-ads"></div></div>
-</div>
-<div id="modal-post" class="modal">
-<div class="modal-content">
-<h2 id="modal-post-title">Новое объявление</h2>
-<input type="file" id="post-images" multiple accept="image/*">
-<small id="post-img-hint" style="color:var(--gray); display:none;">(Оставьте пустым, чтобы не менять фото)</small>
-<input type="text" id="post-title" placeholder="Название">
-<input type="number" id="post-price" placeholder="Цена (₽)">
-<select id="post-cat">
-<option value="Одежда">Одежда / Обувь</option>
-<option value="Электроника">Электроника</option>
-<option value="Аксессуары">Аксессуары</option>
-<option value="Авто">Авто</option>
-<option value="Другое">Другое</option>
-</select>
-<input type="text" id="post-loc" placeholder="Город">
-<textarea id="post-desc" rows="5" placeholder="Описание товара..."></textarea>
-<button class="btn btn-blue" id="sendAdBtn" onclick="submitAd()">Опубликовать</button>
-<button class="btn" onclick="closeModal('modal-post'); editingAdId = null;" style="margin-top:10px;">Отмена</button>
-</div>
-</div>
-<div id="modal-chat" class="modal">
-<div class="modal-content" style="padding:15px; display:flex; flex-direction:column; max-width: 600px; height: 85vh;">
-<div class="chat-header">
-<div class="chat-header-profile" onclick="if(!isSupportMode) openPublicProfileFromChat()">
-<div class="chat-avatar-wrapper">
-<img id="chat-with-avatar" src="" style="width:40px; height:40px; border-radius:50%; object-fit:cover; display:none;">
-<div id="chat-online-dot" class="online-dot offline" style="display:none;"></div>
-</div>
-<div>
-<h3 id="chat-with-name" style="margin:0;">Чат</h3>
-<small id="chat-status" style="color:var(--gray);"></small>
-<small id="chat-last-seen" style="color:var(--gray); font-size:11px;"></small>
-</div>
-</div>
-<div style="display:flex; gap:10px;">
-<button class="btn" id="btn-review" style="display:none; padding:8px 15px; font-size:12px; width:auto; background:#ff9500; color:white;" onclick="openReviewModal()">Оставить отзыв</button>
-<div style="font-size:24px; cursor:pointer; padding: 0 10px;" onclick="toggleDropdown()">⋮</div>
-</div>
-<div id="chat-dropdown" class="dropdown">
-<div class="drop-item" onclick="actionChat('pin')">📌 Закрепить / Открепить</div>
-<div class="drop-item" onclick="actionChat('mute')">🔕 Вкл/Выкл уведомления</div>
-<div class="drop-item" onclick="openReportUserModal()" style="color:#ff9500;">🚨 Пожаловаться</div>
-<div class="drop-item" onclick="actionChat('block')" style="color:var(--red);">🚫 Заблокировать / Разблокировать</div>
-<div class="drop-item" onclick="actionChat('delete')" style="color:var(--red);">🗑️ Удалить чат навсегда</div>
-</div>
-</div>
-<div id="chat-ad-context" class="chat-ad-context" style="display:none;" onclick="openAdFromChat()">
-<img id="chat-ad-img" src="" alt="">
-<div class="ad-info">
-<div class="title" id="chat-ad-title"></div>
-<div class="price" id="chat-ad-price"></div>
-</div>
-<span style="font-size:18px;">→</span>
-</div>
-<div id="chat-messages" class="chat-area"></div>
-<div style="display:flex; gap:8px; margin-top:15px;">
-<input type="text" id="msg-input" placeholder="Сообщение..." style="margin:0; flex:1;">
-<button id="msg-send-btn" class="btn btn-blue" style="width:60px; margin:0;" onclick="sendChatMessage()">➤</button>
-</div>
-<button class="btn btn-red" onclick="closeModal('modal-chat')" style="margin-top:10px; padding: 10px;">Закрыть</button>
-</div>
-</div>
-<div id="modal-review" class="modal">
-<div class="modal-content">
-<h2>Оцените сделку</h2>
-<div class="stars" id="review-stars">
-<span onclick="setStar(1)">★</span><span onclick="setStar(2)">★</span><span onclick="setStar(3)">★</span><span onclick="setStar(4)">★</span><span onclick="setStar(5)">★</span>
-</div>
-<select id="review-status">
-<option value="Сделка состоялась">Сделка состоялась</option>
-<option value="Не договорились">Не договорились</option>
-<option value="Продавец не пришел">Продавец не пришел</option>
-<option value="Мошенничество">Обман / Мошенничество</option>
-<option value="Товар с дефектом">Товар с дефектом</option>
-</select>
-<textarea id="review-text" rows="4" placeholder="Напишите подробнее..."></textarea>
-<button class="btn btn-blue" onclick="submitReview()">Отправить на проверку</button>
-<button class="btn" onclick="closeModal('modal-review')" style="margin-top:10px;">Отмена</button>
-</div>
-</div>
-<div id="modal-reviews-list" class="modal">
-<div class="modal-content">
-<h2>Отзывы пользователя</h2>
-<div id="reviews-list-container" style="max-height: 60vh; overflow-y:auto; margin-bottom: 15px;">Загрузка...</div>
-<button class="btn" onclick="closeModal('modal-reviews-list')">Закрыть</button>
-</div>
-</div>
-<div id="modal-report-review" class="modal">
-<div class="modal-content">
-<h2>Жалоба на отзыв</h2>
-<textarea id="report-review-reason" rows="4" placeholder="Укажите причину (обязательно)..."></textarea>
-<p style="margin-bottom: 5px;">Прикрепить фото:</p>
-<input type="file" id="report-review-photos" multiple accept="image/*">
-<button class="btn btn-blue" id="btn-send-review-report" style="margin-top: 15px;" onclick="submitReviewReport()">Отправить жалобу</button>
-<button class="btn" onclick="closeModal('modal-report-review')" style="margin-top:10px;">Отмена</button>
-</div>
-</div>
-<div id="modal-report-user" class="modal">
-<div class="modal-content">
-<h2>Жалоба на пользователя</h2>
-<p>Вы жалуетесь на: <b id="report-user-target-name">...</b></p>
-<textarea id="report-user-reason" rows="4" placeholder="Опишите причину жалобы..."></textarea>
-<button class="btn btn-blue" style="margin-top:15px; background:var(--red);" onclick="submitUserReport()">Отправить админу</button>
-<button class="btn" onclick="closeModal('modal-report-user')" style="margin-top:10px;">Отмена</button>
-</div>
-</div>
-<div id="modal-banned" class="modal modal-blocking">
-<div class="modal-content">
-<div style="font-size: 50px; color: var(--red);">❌</div>
-<h2 style="color: var(--red);">Ваш аккаунт заблокирован!</h2>
-<p>Причина: <b id="ban-reason-text">...</b></p>
-<button class="btn btn-red" style="margin-top: 20px;" onclick="logout()">Выйти из аккаунта</button>
-</div>
-</div>
-<div id="modal-warning" class="modal modal-warning">
-<div class="modal-content">
-<div style="font-size: 50px; color: #ff9500;">⚠️</div>
-<h2 style="color: #ff9500;">Предупреждение от Модератора</h2>
-<p>Вы нарушили правила площадки.</p>
-<p>Причина: <b id="warn-reason-text">...</b></p>
-<button class="btn btn-blue" style="margin-top: 20px;" onclick="acceptWarning()">Понял</button>
-</div>
-</div>
-<nav class="bottom-nav">
-<div class="nav-item active" onclick="showPage('home')"><i>🏠</i>Главная</div>
-<div class="nav-item" onclick="requireAuth(() => openModal('modal-post'))"><i>➕</i>Выложить</div>
-<div class="nav-item" onclick="requireAuth(() => showPage('chats'))"><div id="chat-badge" class="badge"></div><i>💬</i>Чаты</div>
-<div class="nav-item" onclick="requireAuth(() => showPage('profile'))"><i>👤</i>Профиль</div>
-</nav>
-<div id="mobile-debug"></div>
-<script>
-const debugEl = document.getElementById('mobile-debug');
-const isDebug = location.search.includes('debug=1');
-if(isDebug) {
-debugEl.style.display = 'block';
-const oldLog = console.log;
-const oldError = console.error;
-console.log = (...args) => { oldLog(...args); debugEl.innerHTML += '📝 ' + args.join(' ') + '<br>'; debugEl.scrollTop = debugEl.scrollHeight; };
-console.error = (...args) => { oldError(...args); debugEl.innerHTML += '❌ ' + args.join(' ') + '<br>'; debugEl.scrollTop = debugEl.scrollHeight; };
-console.log('📱 Device:', navigator.userAgent);
-console.log('🔗 URL:', location.href);
-console.log('🔒 Protocol:', location.protocol);
-}
-const firebaseConfig = {
-apiKey: "AIzaSyClUclRijtD4zQaJCqyOY6cU5db6eh_BgA",
-authDomain: "yavito-7930e.firebaseapp.com",
-projectId: "yavito-7930e",
-storageBucket: "yavito-7930e.firebasestorage.app",
-messagingSenderId: "560885508854",
-appId: "1:560885508854:web:f7c22cebdfde2279dedad7"
-};
-const IMGBB_API = 'd3e0d626da4b69b9cadd392fe36efeac';
-const ADMIN_ID = "sobakastalina123@gmail.com";
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-db.enablePersistence().catch(err => {
-console.log('ℹ️ Persistence не поддерживается:', err.code);
-});
-let user = null;
-let userData = null;
-let rawAds = [];
-let currentChatId = null;
-let isSupportMode = false;
-let chatTargetUid = null;
-let chatTargetName = "";
-let chatTargetAvatar = "";
-let currentChatBlocked = false;
-let currentChatMsgCount = 0;
-let currentChatData = null;
-let currentAdId = null;
-let selectedStars = 0;
-let currentPublicUid = null;
-let editingAdId = null;
-let reviewReportTargetId = null;
-let supportNameMap = {};
-function login() {
-console.log('🔐 Вход через Google...');
-const provider = new firebase.auth.GoogleAuthProvider();
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-if (isMobile) {
-console.log('📱 Мобильное устройство → signInWithRedirect');
-auth.signInWithRedirect(provider);
-} else {
-console.log('💻 ПК → signInWithPopup');
-auth.signInWithPopup(provider);
-}
-}
-auth.getRedirectResult().then(result => {
-if (result.user) {
-console.log('✅ Успешный вход после редиректа:', result.user.email);
-}
-}).catch(error => {
-console.error('❌ Ошибка входа:', error.code, error.message);
-alert('Ошибка входа: ' + error.message);
-});
-auth.onAuthStateChanged(async u => {
-console.log('🔄 authStateChanged:', u ? u.uid : 'null');
-if(u) {
-user = u;
-document.getElementById('auth-btn').style.display = 'none';
-await checkUserDb();
-updateUserOnlineStatus(true);
-checkTechBreak();
-if(u.email === ADMIN_ID) {
-document.getElementById('admin-zone').style.display = 'block';
-initAdminMod();
-updateTechBreakStatus();
-}
-loadChatsList();
-loadUnreadNotifications();
-} else {
-user = null;
-userData = null;
-document.getElementById('auth-btn').style.display = 'block';
-}
-loadFeed();
-});
-function logout() {
-if(user) updateUserOnlineStatus(false);
-auth.signOut().then(() => { location.reload(); });
-}
-function requireAuth(action) {
-if(!user) {
-if(confirm("Для этого действия нужно войти в аккаунт. Войти сейчас?")) login();
-return;
-}
-if(userData && userData.banned) return;
-action();
-}
-async function checkUserDb() {
-console.log('👤 Проверка пользователя:', user.uid);
-const ref = db.collection('users').doc(user.uid);
-try {
-const doc = await ref.get();
-if(!doc.exists) {
-console.log('📝 Создаём профиль пользователя');
-await ref.set({
-name: user.displayName || 'Пользователь',
-avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-ratingSum: 0, reviewCount: 0, banned: false, warned: false,
-lastSeen: new Date(),
-online: false
-});
-}
-} catch(e) {
-console.error('❌ Ошибка проверки пользователя:', e);
-try {
-await ref.set({
-name: user.displayName || 'Пользователь',
-avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-ratingSum: 0, reviewCount: 0, banned: false, warned: false,
-lastSeen: new Date(),
-online: false
-}, { merge: true });
-} catch(e2) {
-console.error('❌ Не удалось создать профиль:', e2);
-}
-}
-ref.onSnapshot(s => {
-if(!s.exists) return;
-userData = s.data();
-if(userData.banned) {
-document.getElementById('ban-reason-text').innerText = userData.banReason || "Нарушение правил";
-document.getElementById('modal-banned').style.display = 'flex';
-return;
-} else {
-document.getElementById('modal-banned').style.display = 'none';
-}
-if(userData.warned) {
-document.getElementById('warn-reason-text').innerText = userData.warnReason || "Нарушение правил";
-document.getElementById('modal-warning').style.display = 'flex';
-}
-document.getElementById('u-name').innerText = userData.name || 'Пользователь';
-document.getElementById('u-avatar').src = userData.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-document.getElementById('my-uid-label').innerText = `Ваш UID: ${user.uid}`;
-document.getElementById('ava-status').innerText = userData.pendingAva ? "⌛ Фото на модерации" : "";
-document.getElementById('name-status').innerText = userData.pendingName ? "⌛ Никнейм на модерации: " + userData.pendingName : "";
-let rCount = userData.reviewCount || 0;
-let rAvg = rCount > 0 ? (userData.ratingSum / rCount).toFixed(1) : "0.0";
-document.getElementById('u-rating').innerText = `⭐ ${rAvg} (${rCount} отзывов)`;
-loadProfileAds();
-});
-}
-async function updateUserOnlineStatus(isOnline) {
-if(!user) return;
-try {
-await db.collection('users').doc(user.uid).update({
-online: isOnline,
-lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-});
-} catch(e) {
-console.log('ℹ️ Не удалось обновить статус онлайн');
-}
-}
-window.addEventListener('beforeunload', () => {
-if(user) updateUserOnlineStatus(false);
-});
-function acceptWarning() {
-db.collection('users').doc(user.uid).update({ warned: false });
-document.getElementById('modal-warning').style.display = 'none';
-}
-function toggleTheme() {
-document.body.classList.toggle('dark');
-localStorage.setItem('yv_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-}
-if(localStorage.getItem('yv_theme') === 'dark') document.body.classList.add('dark');
-function showPage(id) {
-console.log('📄 Переход на страницу:', id);
-document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-document.getElementById('page-' + id).classList.add('active-page');
-document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-if(id === 'home' || id === 'chats' || id === 'profile') {
-document.querySelectorAll('.nav-item').forEach(n => {
-if(n.innerText.toLowerCase().includes(id === 'home' ? 'главная' : id === 'chats' ? 'чаты' : 'профиль')) n.classList.add('active');
-});
-}
-if(id === 'chats') loadUnreadNotifications();
-window.scrollTo(0, 0);
-}
-function openModal(id) {
-console.log('🪟 Открытие модального окна:', id);
-if(id === 'modal-post') {
-editingAdId = null;
-document.getElementById('modal-post-title').innerText = "Новое объявление";
-document.getElementById('sendAdBtn').innerText = "Опубликовать";
-document.getElementById('post-img-hint').style.display = 'none';
-document.getElementById('post-title').value = '';
-document.getElementById('post-price').value = '';
-document.getElementById('post-desc').value = '';
-}
-document.getElementById(id).style.display = 'flex';
-}
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-async function upImg(file) {
-if(!file) return '';
-let fd = new FormData();
-fd.append("image", file);
-try {
-let r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API}`, {
-method: "POST",
-body: fd
-});
-if(!r.ok) {
-console.error('❌ Ошибка HTTP:', r.status);
-return '';
-}
-let d = await r.json();
-if(d.data && d.data.url) {
-return String(d.data.url).trim();
-}
-console.error('❌ Нет URL в ответе:', d);
-return '';
-} catch(e) {
-console.error('❌ Ошибка upImg:', e);
-return '';
-}
-}
-async function uploadNewAvatar(input) {
-if(!user) { alert('Сначала войдите в аккаунт!'); return; }
-if(!input.files || input.files.length === 0) return;
-const file = input.files[0];
-document.getElementById('ava-status').innerText = "⏳ Загрузка фото...";
-let fd = new FormData();
-fd.append("image", file);
-try {
-let r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API}`, {method:"POST", body:fd});
-let d = await r.json();
-if(d.data && d.data.url) {
-await db.collection('users').doc(user.uid).update({ pendingAva: d.data.url });
-alert("✅ Фото отправлено на модерацию!");
-document.getElementById('ava-status').innerText = "⌛ Фото на модерации";
-} else {
-alert("❌ Ошибка загрузки фото.");
-document.getElementById('ava-status').innerText = "";
-}
-} catch(e) {
-console.error('Ошибка:', e);
-alert("❌ Ошибка: " + e.message);
-document.getElementById('ava-status').innerText = "";
-}
-input.value = '';
-}
-function changeName() {
-if(!user) { alert('Сначала войдите в аккаунт!'); return; }
-const currentName = userData?.name || '';
-const newName = prompt("Введите новое имя:", currentName);
-if(newName && newName.trim() !== '' && newName.trim() !== currentName) {
-db.collection('users').doc(user.uid).update({ pendingName: newName.trim() }).then(() => {
-alert("✅ Имя отправлено на модерацию!");
-document.getElementById('name-status').innerText = "⌛ Никнейм на модерации: " + newName.trim();
-}).catch(e => {
-alert("❌ Ошибка: " + e.message);
-});
-} else if(newName && newName.trim() === currentName) {
-alert("ℹ️ Вы ввели то же самое имя.");
-}
-}
-async function submitAd() {
-console.log('📤 Публикация объявления...');
-const btn = document.getElementById('sendAdBtn');
-btn.disabled = true;
-btn.innerText = "Загрузка фото...";
-const files = document.getElementById('post-images').files;
-let urls = [];
-if(files && files.length > 0) {
-for(let i = 0; i < files.length; i++) {
-btn.innerText = `Загрузка фото ${i+1}/${files.length}...`;
-const url = await upImg(files[i]);
-if(url) {
-urls.push(url);
-console.log('✅ Фото загружено:', url);
-} else {
-console.warn('⚠️ Не удалось загрузить фото:', files[i].name);
-}
-}
-}
-if(urls.length === 0) {
-alert("❌ Не удалось загрузить ни одного фото. Проверьте файлы и интернет.");
-btn.disabled = false;
-btn.innerText = "Опубликовать";
-return;
-}
-let adData = {
-title: document.getElementById('post-title').value.trim(),
-price: document.getElementById('post-price').value,
-cat: document.getElementById('post-cat').value,
-loc: document.getElementById('post-loc').value.trim(),
-desc: document.getElementById('post-desc').value.trim(),
-status: 'pending',
-photos: urls,
-createdAt: new Date(),
-updatedAt: new Date()
-};
-try {
-if(editingAdId) {
-await db.collection('ads').doc(editingAdId).update(adData);
-alert("✅ Изменения отправлены на модерацию!");
-} else {
-adData.authorId = user.uid;
-await db.collection('ads').add(adData);
-alert("✅ Объявление отправлено на модерацию!");
-}
-location.reload();
-} catch(e) {
-console.error('❌ Ошибка сохранения:', e);
-alert('Ошибка: ' + e.message);
-btn.disabled = false;
-btn.innerText = "Опубликовать";
-}
-}
-function editAd(adId) {
-db.collection('ads').doc(adId).get().then(doc => {
-let ad = doc.data();
-editingAdId = adId;
-document.getElementById('modal-post-title').innerText = "Изменить объявление";
-document.getElementById('sendAdBtn').innerText = "Сохранить изменения";
-document.getElementById('post-img-hint').style.display = 'block';
-document.getElementById('post-title').value = ad.title;
-document.getElementById('post-price').value = ad.price;
-document.getElementById('post-cat').value = ad.cat;
-document.getElementById('post-loc').value = ad.loc;
-document.getElementById('post-desc').value = ad.desc;
-openModal('modal-post');
-});
-}
-function loadFeed() {
-console.log('🔄 Загрузка объявлений...');
-db.collection('ads').where('status','==','active')
-.orderBy('createdAt','desc')
-.onSnapshot(snap => {
-console.log('📦 Получено объявлений:', snap.size);
-rawAds = [];
-snap.forEach(d => {
-const data = d.data();
-rawAds.push({id: d.id, ...data});
-});
-renderAds(rawAds.sort(() => Math.random() - 0.5));
-}, error => {
-console.error('❌ Ошибка загрузки объявлений:', error.code, error.message);
-document.getElementById('ads-grid').innerHTML =
-`<p style="color:var(--red);padding:20px;text-align:center;">
-❌ Ошибка: ${error.code}<br>${error.message}<br>
-<small>Проверь индекс для ads (status + createdAt)</small>
-</p>`;
-});
-}
-function renderAds(arr) {
-let h = '';
-arr.forEach(ad => {
-const photos = ad.photos && Array.isArray(ad.photos) ? ad.photos : [];
-const imgUrl = photos[0] || '';
-const placeholder = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22165%22 height=%22170%22%3E%3Crect fill=%22%23eee%22 width=%22165%22 height=%22170%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo+Photo%3C/text%3E%3C/svg%3E';
-h += `
-<div class="card" onclick="openAd('${ad.id}')">
-<img src="${imgUrl || placeholder}"
-onerror="this.src='${placeholder}'; this.onerror=null;"
-alt="${ad.title}"
-style="width:100%;height:170px;object-fit:cover;background:#eee;pointer-events:none;-webkit-user-drag:none;"
-oncontextmenu="return false"
-ondragstart="return false">
-<div class="card-body">
-<div class="price">${ad.price} ₽</div>
-<div style="font-size:14px; margin:4px 0; height:38px; overflow:hidden;">${ad.title}</div>
-<div style="font-size:12px; color:var(--gray);">${ad.loc}</div>
-</div>
-</div>`;
-});
-document.getElementById('ads-grid').innerHTML = h || '<p>Ничего не найдено</p>';
-}
-function runSearch() {
-const q = document.getElementById('mainSearch').value.toLowerCase();
-const filtered = rawAds.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q));
-document.getElementById('feed-title').innerText = q ? `Результаты: ${q}` : "Рекомендации";
-renderAds(filtered);
-}
-async function openAd(id) {
-console.log('👁 Открытие объявления:', id);
-const d = await db.collection('ads').doc(id).get();
-const ad = d.data();
-const authorDoc = await db.collection('users').doc(ad.authorId).get();
-const authorData = authorDoc.exists ? authorDoc.data() : {name: "Неизвестен", avatar: "", reviewCount: 0};
-let rAvg = authorData.reviewCount > 0 ? (authorData.ratingSum / authorData.reviewCount).toFixed(1) : "0.0";
-showPage('view');
-const photos = ad.photos && Array.isArray(ad.photos) ? ad.photos : [];
-const placeholder = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23222%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23666%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3ENo+Photos%3C/text%3E%3C/svg%3E';
-let imgs = '';
-if(photos.length > 0) {
-imgs = photos.map(p => {
-const watermark = ad.status === 'active'
-? `<div style="position:absolute;bottom:10px;right:10px;color:rgba(255,255,255,0.5);font-weight:bold;font-size:14px;text-shadow:1px 1px 2px rgba(0,0,0,0.8);pointer-events:none;z-index:10;">LookUp</div>`
-: '';
-return `<div style="position:relative;flex:0 0 100%;height:100%;">
-<img src="${p}"
-onerror="this.src='${placeholder}'; this.onerror=null;"
-style="width:100%;height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none;"
-oncontextmenu="return false"
-ondragstart="return false">
-${watermark}
-</div>`;
-}).join('');
-} else {
-imgs = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;background:#000;">Нет фото</div>`;
-}
-document.getElementById('ad-full-content').innerHTML = `
-<div class="gallery-main">${imgs}</div>
-<div class="ad-details">
-<h1 style="margin:0;">${ad.price} ₽</h1>
-<h2 style="font-weight:normal; margin:10px 0;">${ad.title}</h2>
-<p style="color:var(--gray); margin-bottom:20px;">${ad.loc} • ${ad.cat}</p>
-<div style="white-space:pre-wrap; line-height:1.5;">${ad.desc}</div>
-<div class="mod-card" style="margin-top:25px; display:flex; align-items:center; gap:15px; cursor:pointer;" onclick="showPublicProfile('${ad.authorId}')">
-<img src="${authorData.avatar || placeholder}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; background:#eee;pointer-events:none;" oncontextmenu="return false">
-<div><b>${authorData.name}</b><br><small style="color:#ff9500; font-weight:bold;">⭐ ${rAvg} (${authorData.reviewCount || 0} отз.)</small></div>
-</div>
-<button class="btn btn-blue" style="margin-top:15px;" onclick="requireAuth(() => startNewChat('${ad.authorId}', '${authorData.name}', '${authorData.avatar}', '${ad.id}'))">Написать продавцу</button>
-</div>
-`;
-}
-function openAdFromChat() {
-if(currentAdId) {
-closeModal('modal-chat');
-openAd(currentAdId);
-}
-}
-async function showPublicProfile(uid) {
-currentPublicUid = uid;
-const doc = await db.collection('users').doc(uid).get();
-if(!doc.exists) return;
-const d = doc.data();
-document.getElementById('pub-avatar').src = d.avatar;
-document.getElementById('pub-name').innerText = d.name;
-document.getElementById('pub-uid').innerText = `UID: ${uid}`;
-let rAvg = d.reviewCount > 0 ? (d.ratingSum / d.reviewCount).toFixed(1) : "0.0";
-document.getElementById('pub-rating').innerText = `⭐ ${rAvg} (${d.reviewCount || 0} отзывов)`;
-showPage('public-profile');
-db.collection('ads').where('authorId','==',uid).where('status','==','active').get().then(snap => {
-let h = '';
-snap.forEach(adDoc => {
-let ad = adDoc.data();
-const photos = ad.photos && Array.isArray(ad.photos) ? ad.photos : [];
-const imgUrl = photos[0] || '';
-const placeholder = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22165%22 height=%22170%22%3E%3Crect fill=%22%23eee%22 width=%22165%22 height=%22170%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo+Photo%3C/text%3E%3C/svg%3E';
-h += `
-<div class="card" onclick="openAd('${adDoc.id}')">
-<img src="${imgUrl || placeholder}"
-onerror="this.src='${placeholder}'; this.onerror=null;"
-style="width:100%;height:170px;object-fit:cover;background:#eee;pointer-events:none;-webkit-user-drag:none;"
-oncontextmenu="return false"
-ondragstart="return false">
-<div class="card-body">
-<div class="price">${ad.price} ₽</div>
-<div style="font-size:14px; margin:4px 0;">${ad.title}</div>
-</div>
-</div>`;
-});
-document.getElementById('pub-ads-container').innerHTML = h || '<p>Нет активных объявлений</p>';
-});
-}
-function loadProfileAds() {
-if(!user) return;
-db.collection('ads').where('authorId','==',user.uid).onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-const ad = doc.data();
-let st = ad.status === 'active' ? 'Активно' : (ad.status === 'pending' ? 'На проверке' : 'Отклонено');
-let clr = ad.status === 'active' ? 'var(--green)' : (ad.status === 'pending' ? '#ff9500' : 'red');
-let reasonText = '';
-if(ad.status === 'rejected' && ad.rejectReason) {
-reasonText = ` <span style="color:var(--red);font-size:11px;">(${ad.rejectReason})</span>`;
-}
-const photos = ad.photos && Array.isArray(ad.photos) ? ad.photos : [];
-const imgUrl = photos[0] || '';
-const placeholder = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect fill=%22%23ddd%22 width=%2250%22 height=%2250%22/%3E%3C/svg%3E';
-h += `
-<div class="mod-card" style="display:flex; justify-content:space-between; align-items:center;">
-<div style="display:flex; gap:10px; align-items:center;">
-<img src="${imgUrl || placeholder}"
-onerror="this.src='${placeholder}'; this.onerror=null;"
-style="width:50px; height:50px; border-radius:8px; object-fit:cover;pointer-events:none;"
-oncontextmenu="return false">
-<div><b>${ad.title}</b><br><small style="color:${clr}">${st}${reasonText}</small></div>
-</div>
-<div>
-<button class="btn btn-blue" style="width:auto; padding:8px; margin-right:5px;" onclick="editAd('${doc.id}')">✏️</button>
-<button class="btn btn-red" style="width:auto; padding:8px;" onclick="if(confirm('Удалить?')) db.collection('ads').doc('${doc.id}').delete();">🗑️</button>
-</div>
-</div>`;
-});
-document.getElementById('my-ads-container').innerHTML = h || '<p>У вас пока нет объявлений</p>';
-});
-}
-async function startNewChat(otherId, otherName, otherAvatar, adId = null) {
-console.log('💬 Новый чат:', otherId, adId);
-if(otherId === user.uid) { alert("Это ваше объявление."); return; }
-const uniqueChatId = 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-const chatRef = db.collection('chat_list').doc(uniqueChatId);
-let chatData = {
-participants: [user.uid, otherId],
-lastUpdate: new Date(),
-blocked: false,
-muted: {},
-pinned: {},
-adId: adId || null,
-createdAt: new Date()
-};
-try {
-await chatRef.set(chatData);
-console.log('✅ Чат создан:', uniqueChatId);
-currentAdId = adId;
-openChatWindow(uniqueChatId, otherName, otherId, false, otherAvatar, adId);
-} catch(e) {
-console.error('❌ Ошибка создания чата:', e);
-alert('Ошибка: ' + e.message);
-}
-}
-function openSupport() {
-openChatWindow('support_chat', 'Служба поддержки', 'admin', true, '');
-}
-async function checkIfReviewed(targetId) {
-try {
-const snap = await db.collection('reviews').where('authorId','==',user.uid).where('targetId','==',targetId).get();
-const snapMod = await db.collection('reviews_mod').where('authorId','==',user.uid).where('targetId','==',targetId).get();
-return !snap.empty || !snapMod.empty;
-} catch(e) {
-return false;
-}
-}
-function openPublicProfileFromChat() {
-if(chatTargetUid && !isSupportMode) {
-closeModal('modal-chat');
-showPublicProfile(chatTargetUid);
-}
-}
-function formatMoscowTime(timestamp) {
-if(!timestamp) return '';
-const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-return date.toLocaleString('ru-RU', {
-timeZone: 'Europe/Moscow',
-day: '2-digit',
-month: '2-digit',
-hour: '2-digit',
-minute: '2-digit'
-});
-}
-function formatLastSeen(timestamp) {
-if(!timestamp) return '';
-const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-const now = new Date();
-const diffMs = now - date;
-const diffMins = Math.floor(diffMs / 60000);
-const diffHours = Math.floor(diffMins / 60);
-if(diffMins < 1) return 'Был в сети только что';
-if(diffMins < 60) return `Был в сети ${diffMins} мин. назад`;
-if(diffHours < 24) return `Был в сети ${diffHours} ч. назад`;
-return `Был в сети ${date.toLocaleDateString('ru-RU')}`;
-}
-function openChatWindow(chatId, title, targetUid, isSupport, avatarUrl = '', adId = null) {
-console.log('🪟 Открытие чата:', chatId);
-currentChatId = chatId;
-chatTargetUid = targetUid;
-chatTargetName = title;
-chatTargetAvatar = avatarUrl;
-isSupportMode = isSupport;
-currentAdId = adId;
-document.getElementById('chat-with-name').innerText = title;
-document.getElementById('chat-dropdown').classList.remove('show');
-const avatarEl = document.getElementById('chat-with-avatar');
-const onlineDot = document.getElementById('chat-online-dot');
-if(!isSupport && avatarUrl) {
-avatarEl.src = avatarUrl;
-avatarEl.style.display = 'block';
-onlineDot.style.display = 'block';
-} else {
-avatarEl.style.display = 'none';
-onlineDot.style.display = 'none';
-}
-document.getElementById('btn-review').style.display = 'none';
-document.getElementById('chat-status').innerText = "";
-document.getElementById('chat-last-seen').innerText = "";
-openModal('modal-chat');
-if(adId && !isSupport) {
-db.collection('ads').doc(adId).get().then(doc => {
-if(doc.exists) {
-const ad = doc.data();
-const photos = ad.photos && Array.isArray(ad.photos) ? ad.photos : [];
-document.getElementById('chat-ad-context').style.display = 'flex';
-document.getElementById('chat-ad-img').src = photos[0] || '';
-document.getElementById('chat-ad-title').innerText = ad.title;
-document.getElementById('chat-ad-price').innerText = `${ad.price} ₽`;
-}
-}).catch(e => console.log('ℹ️ Не удалось загрузить контекст объявления'));
-} else {
-document.getElementById('chat-ad-context').style.display = 'none';
-}
-if(!isSupport && targetUid) {
-db.collection('users').doc(targetUid).onSnapshot(doc => {
-if(doc.exists) {
-const d = doc.data();
-onlineDot.className = `online-dot ${d.online ? 'online' : 'offline'}`;
-if(!d.online && d.lastSeen) {
-document.getElementById('chat-last-seen').innerText = formatLastSeen(d.lastSeen);
-} else if(d.online) {
-document.getElementById('chat-last-seen').innerText = "В сети";
-}
-}
-}, e => console.log('ℹ️ Не удалось отслеживать статус пользователя'));
-}
-let msgRef = isSupport
-? db.collection('support').orderBy('time')
-: db.collection('chat_list').doc(currentChatId).collection('messages').orderBy('time');
-if(window.currentChatListener) window.currentChatListener();
-if(!isSupport) {
-db.collection('chat_list').doc(chatId).onSnapshot(s => {
-if(!s.exists) { closeModal('modal-chat'); alert("Чат удален."); return; }
-currentChatData = s.data();
-const blockedBy = currentChatData?.blockedBy || null;
-const isBlockedByMe = blockedBy === user.uid;
-const isBlockedByOther = blockedBy && blockedBy !== user.uid;
-const canWrite = !isBlockedByMe && !isBlockedByOther;
-currentChatBlocked = !canWrite;
-document.getElementById('msg-input').disabled = currentChatBlocked;
-document.getElementById('msg-send-btn').disabled = currentChatBlocked;
-if(isBlockedByMe) {
-document.getElementById('chat-status').innerText = "🚫 Вы заблокировали этот чат";
-} else if(isBlockedByOther) {
-document.getElementById('chat-status').innerText = "🚫 Чат заблокирован собеседником";
-} else {
-document.getElementById('chat-status').innerText = "";
-}
-}, e => console.log('ℹ️ Ошибка отслеживания чата:', e));
-}
-window.currentChatListener = msgRef.onSnapshot(async snap => {
-let h = '';
-let count = 0;
-snap.forEach(m => {
-const d = m.data();
-if(isSupportMode) {
-if(user.email !== ADMIN_ID) {
-if(d.uid !== user.uid && d.targetUid !== user.uid) return;
-} else {
-if(d.uid) supportNameMap[d.name] = d.uid;
-}
-}
-count++;
-const isMe = isSupportMode ? (user.email === ADMIN_ID ? d.fromAdmin : d.uid === user.uid) : (d.senderId === user.uid);
-let nameTag = '';
-if(isSupportMode && user.email === ADMIN_ID && !isMe) {
-nameTag = `<div class="m-name">${d.name} (UID: ${d.uid})</div>`;
-}
-const timeStr = formatMoscowTime(d.time);
-h += `<div class="m ${isMe ? 'my' : 'other'}">${nameTag}${d.text}<div class="m-time">${timeStr}</div></div>`;
-});
-const box = document.getElementById('chat-messages');
-box.innerHTML = h;
-box.scrollTop = box.scrollHeight;
-currentChatMsgCount = count;
-if(!isSupportMode && count >= 10 && user.email !== ADMIN_ID) {
-let hasRev = await checkIfReviewed(chatTargetUid);
-if(!hasRev) document.getElementById('btn-review').style.display = 'block';
-else document.getElementById('btn-review').style.display = 'none';
-}
-}, e => console.log('ℹ️ Ошибка загрузки сообщений:', e));
-}
-function toggleDropdown() {
-document.getElementById('chat-dropdown').classList.toggle('show');
-}
-async function actionChat(action) {
-if(!currentChatId || isSupportMode) return;
-document.getElementById('chat-dropdown').classList.remove('show');
-const chatRef = db.collection('chat_list').doc(currentChatId);
-if(action === 'pin') {
-const current = currentChatData?.pinned?.[user.uid] || false;
-await chatRef.update({ [`pinned.${user.uid}`]: !current });
-loadChatsList();
-}
-else if(action === 'mute') {
-const current = currentChatData?.muted?.[user.uid] || false;
-await chatRef.update({ [`muted.${user.uid}`]: !current });
-loadChatsList();
-}
-else if(action === 'block') {
-const blockedBy = currentChatData?.blockedBy || null;
-if(blockedBy === user.uid) {
-await chatRef.update({ blockedBy: null, blockedAt: null });
-alert('✅ Чат разблокирован');
-} else if(!blockedBy) {
-await chatRef.update({ blockedBy: user.uid, blockedAt: new Date() });
-alert('🚫 Чат заблокирован. Только вы можете его разблокировать.');
-} else {
-alert('ℹ️ Чат уже заблокирован другим участником');
-}
-loadChatsList();
-}
-else if(action === 'delete') {
-if(confirm('Вы точно хотите удалить чат? Его невозможно будет восстановить. Все сообщения будут удалены у обоих собеседников.')) {
-try {
-const messagesRef = db.collection('chat_list').doc(currentChatId).collection('messages');
-const messagesSnap = await messagesRef.get();
-for(let doc of messagesSnap.docs) {
-await doc.ref.delete();
-}
-await chatRef.delete();
-closeModal('modal-chat');
-loadChatsList();
-alert('✅ Чат полностью удален. При новом сообщении начнется новый диалог.');
-} catch(e) {
-console.error('Ошибка удаления:', e);
-alert('Ошибка: ' + e.message + '\nПроверь Firestore Rules!');
-}
-}
-}
-}
-async function sendChatMessage() {
-const inp = document.getElementById('msg-input');
-const text = inp.value.trim();
-if(!text) return;
-console.log('📤 Отправка сообщения...', text);
-if(isSupportMode) {
-if(user.email === ADMIN_ID) {
-let match = text.match(/^@([^\s]+)\s+(.*)$/);
-if(match) {
-let tName = match[1];
-let msgText = match[2];
-let tUid = supportNameMap[tName];
-if(!tUid) { alert("Пользователь не найден."); return; }
-try {
-await db.collection('support').add({
-text: msgText, fromAdmin: true, targetUid: tUid, time: new Date()
-});
-console.log('✅ Сообщение поддержки отправлено');
-} catch(e) {
-console.error('❌ Ошибка:', e);
-alert('Ошибка: ' + e.message);
-}
-} else {
-alert("Формат ответа: @Ник Ваш текст"); return;
-}
-} else {
-try {
-await db.collection('support').add({
-text: text, uid: user.uid, name: userData.name, time: new Date()
-});
-console.log('✅ Сообщение в поддержку отправлено');
-} catch(e) {
-console.error('❌ Ошибка:', e);
-alert('Ошибка: ' + e.message);
-}
-}
-} else {
-if(currentChatBlocked) {
-alert('❌ Чат заблокирован. Вы не можете отправлять сообщения.');
-return;
-}
-try {
-await db.collection('chat_list').doc(currentChatId).collection('messages').add({
-text: text,
-senderId: user.uid,
-senderName: userData.name,
-time: new Date()
-});
-await db.collection('chat_list').doc(currentChatId).update({
-lastUpdate: new Date()
-});
-console.log('✅ Сообщение отправлено');
-} catch(e) {
-console.error('❌ Ошибка отправки:', e);
-alert('Ошибка отправки: ' + e.message + '\nПроверь консоль (?debug=1)');
-}
-}
-inp.value = '';
-}
-function loadChatsList() {
-if(!user) return;
-db.collection('chat_list').where('participants', 'array-contains', user.uid)
-.orderBy('lastUpdate', 'desc').onSnapshot(async snap => {
-let pinned = [];
-let normal = [];
-for(let docSnap of snap.docs) {
-let d = docSnap.data();
-let otherId = d.participants.find(id => id !== user.uid);
-let uDoc = await db.collection('users').doc(otherId).get();
-let uName = uDoc.exists ? uDoc.data().name : "Неизвестный";
-let uAva = uDoc.exists ? uDoc.data().avatar : "";
-let uOnline = uDoc.exists ? uDoc.data().online : false;
-let isPinned = d.pinned?.[user.uid] || false;
-let isMuted = d.muted?.[user.uid] || false;
-let isBlocked = d.blockedBy === user.uid || d.blockedBy === otherId;
-let blockIcon = isBlocked ? ' 🚫' : '';
-let html = `
-<div class="chat-list-item ${isPinned ? 'pinned' : ''} ${isMuted ? 'muted' : ''}" onclick="openChatWindow('${docSnap.id}', '${uName}', '${otherId}', false, '${uAva}', '${d.adId || ''}')">
-<div class="chat-avatar-wrapper">
-<img class="chat-avatar" src="${uAva || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
-<div class="online-dot ${uOnline ? 'online' : 'offline'}"></div>
-</div>
-<div class="chat-info">
-<b>${uName}${blockIcon}</b>
-${isPinned ? '<span class="chat-pin-icon">📌</span>' : ''}
-</div>
-<span class="chat-menu-btn" onclick="event.stopPropagation(); openChatMenu(event, '${docSnap.id}')">⋮</span>
-</div>`;
-if(isPinned) pinned.push(html);
-else normal.push(html);
-}
-document.getElementById('user-chats-list').innerHTML = (pinned.join('') + normal.join('')) || '<p>Нет активных диалогов</p>';
-}, error => {
-console.error('Ошибка загрузки чатов:', error);
-document.getElementById('user-chats-list').innerHTML = '<p style="color:var(--red)">Ошибка: ' + error.message + '</p>';
-});
-}
-function openChatMenu(e, chatId) {
-e.stopPropagation();
-document.querySelectorAll('.dropdown').forEach(d => {
-if(d.id !== 'chat-dropdown') d.classList.remove('show');
-});
-}
-function loadUnreadNotifications() {
-if(!user) return;
-db.collection('chat_list').where('participants', 'array-contains', user.uid).onSnapshot(snap => {
-let count = 0;
-snap.forEach(doc => {
-const d = doc.data();
-const isMuted = d.muted?.[user.uid] || false;
-if(!isMuted && !d.isSupport) count++;
-});
-const badge = document.getElementById('chat-badge');
-if(count > 0) {
-badge.classList.add('show');
-} else {
-badge.classList.remove('show');
-}
-});
-}
-function openReviewModal() {
-selectedStars = 0;
-document.querySelectorAll('#review-stars span').forEach(s => s.classList.remove('active'));
-document.getElementById('review-text').value = '';
-openModal('modal-review');
-}
-function setStar(n) {
-selectedStars = n;
-document.querySelectorAll('#review-stars span').forEach((s, i) => {
-if(i < n) s.classList.add('active'); else s.classList.remove('active');
-});
-}
-async function submitReview() {
-if(selectedStars === 0) { alert("Выберите оценку!"); return; }
-const text = document.getElementById('review-text').value;
-const reason = document.getElementById('review-status').value;
-await db.collection('reviews_mod').add({
-authorId: user.uid, authorName: userData.name,
-targetId: chatTargetUid,
-rating: selectedStars, text: text, reason: reason,
-time: new Date()
-});
-alert("Отзыв отправлен на проверку модератору!");
-document.getElementById('btn-review').style.display = 'none';
-closeModal('modal-review');
-}
-function openReviewsList(uid) {
-openModal('modal-reviews-list');
-document.getElementById('reviews-list-container').innerHTML = 'Загрузка...';
-db.collection('reviews').where('targetId', '==', uid).get().then(snap => {
-let h = '';
-const isOwner = user && user.uid === uid;
-snap.forEach(doc => {
-let r = doc.data();
-let stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-let menuBtn = isOwner
-? `<div class="review-menu-btn" onclick="openReportReviewModal('${doc.id}', '${r.authorId}')">⋮</div>`
-: '';
-h += `
-<div class="review-item">
-${menuBtn}
-<div style="color:#ff9500; font-size:18px;">${stars}</div>
-<b>${r.authorName}</b> <small style="color:var(--gray);">(${r.reason})</small><br>
-<small style="color:var(--gray);">UID автора: ${r.authorId}</small>
-<p style="margin:5px 0;">${r.text}</p>
-</div>`;
-});
-document.getElementById('reviews-list-container').innerHTML = h || '<p>Отзывов пока нет.</p>';
-});
-}
-function openReportUserModal() {
-document.getElementById('chat-dropdown').classList.remove('show');
-document.getElementById('report-user-target-name').innerText = chatTargetName;
-document.getElementById('report-user-reason').value = '';
-openModal('modal-report-user');
-}
-async function submitUserReport() {
-let reason = document.getElementById('report-user-reason').value.trim();
-if(!reason) return alert("Укажите причину!");
-await db.collection('reports_user').add({
-reporterId: user.uid, reporterName: userData.name,
-reportedId: chatTargetUid, reportedName: chatTargetName,
-reason: reason, time: new Date(), status: 'new'
-});
-alert("Жалоба отправлена модератору!");
-closeModal('modal-report-user');
-}
-let currentReportingReviewAuthorId = "";
-function openReportReviewModal(revId, authorId) {
-reviewReportTargetId = revId;
-currentReportingReviewAuthorId = authorId;
-document.getElementById('report-review-reason').value = '';
-document.getElementById('report-review-photos').value = '';
-openModal('modal-report-review');
-}
-async function submitReviewReport() {
-let btn = document.getElementById('btn-send-review-report');
-let reason = document.getElementById('report-review-reason').value.trim();
-if(!reason) return alert("Укажите причину!");
-btn.disabled = true; btn.innerText = "Отправка...";
-let files = document.getElementById('report-review-photos').files;
-let urls = [];
-for(let f of files) urls.push(await upImg(f));
-await db.collection('reports_review').add({
-reporterId: user.uid,
-reviewAuthorId: currentReportingReviewAuthorId,
-reviewId: reviewReportTargetId,
-reason: reason, photos: urls, time: new Date(), status: 'new'
-});
-alert("Заявка на удаление отзыва отправлена!");
-btn.disabled = false; btn.innerText = "Отправить жалобу";
-closeModal('modal-report-review');
-}
-function initAdminMod() {
-db.collection('users').where('pendingAva', '!=', null).onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-let d = doc.data();
-h += `<div class="mod-card">
-<b>${d.name}</b> (UID: ${doc.id})<br><img src="${d.pendingAva}" style="height:100px; margin:10px 0; border-radius:50%;pointer-events:none;" oncontextmenu="return false">
-<br><button class="btn btn-blue" onclick="approveAva('${doc.id}', '${d.pendingAva}')">✅ Одобрить</button>
-<button class="btn btn-red" onclick="rejectAva('${doc.id}')" style="margin-top:5px;">❌ Отклонить</button>
-</div>`;
-});
-document.getElementById('mod-avas').innerHTML = h || 'Нет фото на проверке';
-});
-db.collection('users').where('pendingName', '!=', null).onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-let d = doc.data();
-h += `<div class="mod-card">
-<b>Текущий:</b> ${d.name}<br>
-<b>Новый:</b> ${d.pendingName}<br>
-<small>UID: ${doc.id}</small><br>
-<button class="btn btn-blue" onclick="approveName('${doc.id}', '${d.pendingName}')">✅ Одобрить</button>
-<button class="btn btn-red" onclick="rejectName('${doc.id}')" style="margin-top:5px;">❌ Отклонить</button>
-</div>`;
-});
-document.getElementById('mod-names').innerHTML = h || 'Нет никнеймов на проверке';
-});
-db.collection('ads').where('status', '==', 'pending').onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-let d = doc.data();
-const photos = d.photos && Array.isArray(d.photos) ? d.photos : [];
-let imgs = '';
-if(photos.length > 0) {
-imgs = photos.map(p =>
-`<img src="${p}"
-onerror="this.style.display='none'"
-style="height:120px;border-radius:5px;object-fit:contain;background:#000;pointer-events:none;"
-oncontextmenu="return false"
-ondragstart="return false">`
-).join('');
-} else {
-imgs = '<p style="color:var(--red);padding:20px;text-align:center;">❌ Нет фото в объявлении</p>';
-}
-h += `<div class="mod-card">
-<b>${d.title || 'Без названия'}</b> (${d.price} ₽)<br>
-<small>ID: ${doc.id}</small><br>
-<small>UID автора: ${d.authorId}</small><br>${d.desc || 'Нет описания'}<br>
-<div class="mod-gallery" style="display:flex;gap:5px;overflow-x:auto;margin:10px 0;padding:5px;background:#000;border-radius:5px;">${imgs}</div>
-<button class="btn btn-blue" onclick="approveAd('${doc.id}')">✅ Одобрить</button>
-<button class="btn btn-red" onclick="rejectAdWithReason('${doc.id}')" style="margin-top:5px;">❌ Отклонить</button>
-</div>`;
-});
-document.getElementById('mod-ads').innerHTML = h || 'Нет объявлений на проверке';
-});
-db.collection('reviews_mod').onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-let d = doc.data();
-h += `<div class="mod-card">
-<b>Отзыв для UID: ${d.targetId}</b><br>
-От: ${d.authorName} (UID: ${d.authorId})<br>
-Оценка: ${'★'.repeat(d.rating)}${'☆'.repeat(5-d.rating)} (${d.reason})<br>
-Текст: ${d.text}<br>
-<div style="display:flex; gap:10px; margin-top:10px;">
-<button class="btn btn-green" onclick="adminApproveNewReview('${doc.id}')">✅ Одобрить отзыв</button>
-<button class="btn btn-red" onclick="db.collection('reviews_mod').doc('${doc.id}').delete()">❌ Отклонить</button>
-</div>
-</div>`;
-});
-document.getElementById('mod-reviews-verify').innerHTML = h || 'Нет отзывов на проверке';
-});
-db.collection('reports_user').where('status','==','new').onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-let d = doc.data();
-h += `<div class="mod-card">
-<b style="color:var(--red);">Жалоба на: ${d.reportedName}</b><br>
-<small>UID нарушителя: ${d.reportedId}</small><br>
-<p>Причина: ${d.reason}</p>
-<small>Отправил UID: ${d.reporterId} (${d.reporterName})</small><br>
-<button class="btn" style="background:var(--gray); color:white; margin-top:10px;" onclick="db.collection('reports_user').doc('${doc.id}').update({status:'closed'})">Скрыть жалобу</button>
-</div>`;
-});
-document.getElementById('mod-user-reports').innerHTML = h || 'Нет новых жалоб';
-});
-db.collection('reports_review').where('status','==','new').onSnapshot(snap => {
-let h = '';
-snap.forEach(doc => {
-let d = doc.data();
-let imgs = d.photos && Array.isArray(d.photos) && d.photos.length > 0 ? d.photos.map(p => `<img src="${p}">`).join('') : '';
-h += `<div class="mod-card">
-<b>Жалоба на отзыв (ID: ${d.reviewId})</b><br>
-<small>UID жалующегося: ${d.reporterId}</small><br>
-<small>UID автора отзыва: ${d.reviewAuthorId}</small><br>
-<p>Причина: ${d.reason}</p>
-<div class="mod-gallery">${imgs}</div>
-<button class="btn btn-red" onclick="adminDeleteReview('${d.reviewId}', '${doc.id}')">🗑️ Удалить отзыв</button>
-<button class="btn" onclick="db.collection('reports_review').doc('${doc.id}').update({status:'rejected'})" style="margin-top:5px;">Оставить отзыв</button>
-</div>`;
-});
-document.getElementById('mod-review-reports').innerHTML = h || 'Нет заявок на удаление отзывов';
-});
-}
-async function approveAd(adId) {
-try {
-await db.collection('ads').doc(adId).update({
-status: 'active',
-approvedAt: new Date()
-});
-alert('✅ Объявление одобрено и опубликовано!');
-} catch(e) {
-console.error('Ошибка одобрения:', e);
-alert('Ошибка: ' + e.message);
-}
-}
-async function rejectAdWithReason(adId) {
-const reason = prompt("❌ Укажите причину отклонения:");
-if(!reason || reason.trim() === '') {
-alert("Причина обязательна!");
-return;
-}
-try {
-await db.collection('ads').doc(adId).update({
-status: 'rejected',
-rejectedAt: new Date(),
-rejectReason: reason.trim()
-});
-alert('✅ Объявление отклонено. Пользователь увидит причину в профиле.');
-} catch(e) {
-console.error('Ошибка отклонения:', e);
-alert('Ошибка: ' + e.message);
-}
-}
-async function adminBlockAd() {
-const adId = document.getElementById('admin-block-ad-id').value.trim();
-const reason = document.getElementById('admin-block-ad-reason').value.trim();
-if(!adId) return alert("Введите ID объявления!");
-if(!reason) return alert("Введите причину блокировки!");
-try {
-await db.collection('ads').doc(adId).update({
-status: 'blocked',
-blockedAt: new Date(),
-blockReason: reason,
-blockedBy: ADMIN_ID
-});
-document.getElementById('admin-block-ad-status').innerHTML = `<span style="color:var(--green);">✅ Объявление ${adId} заблокировано</span>`;
-alert('✅ Объявление заблокировано!');
-} catch(e) {
-console.error('Ошибка блокировки:', e);
-alert('Ошибка: ' + e.message);
-}
-}
-async function adminUnblockAd() {
-const adId = document.getElementById('admin-block-ad-id').value.trim();
-if(!adId) return alert("Введите ID объявления!");
-try {
-await db.collection('ads').doc(adId).update({
-status: 'active',
-blockedAt: firebase.firestore.FieldValue.delete(),
-blockReason: firebase.firestore.FieldValue.delete(),
-blockedBy: firebase.firestore.FieldValue.delete()
-});
-document.getElementById('admin-block-ad-status').innerHTML = `<span style="color:var(--green);">✅ Объявление ${adId} разблокировано</span>`;
-alert('✅ Объявление разблокировано!');
-} catch(e) {
-console.error('Ошибка разблокировки:', e);
-alert('Ошибка: ' + e.message);
-}
-}
-function approveAva(id, url) { db.collection('users').doc(id).update({ avatar: url, pendingAva: firebase.firestore.FieldValue.delete() }); }
-function rejectAva(id) { db.collection('users').doc(id).update({ pendingAva: firebase.firestore.FieldValue.delete() }); }
-function approveName(id, newName) { db.collection('users').doc(id).update({ name: newName, pendingName: firebase.firestore.FieldValue.delete() }); }
-function rejectName(id) { db.collection('users').doc(id).update({ pendingName: firebase.firestore.FieldValue.delete() }); }
-async function adminApproveNewReview(modRevId) {
-const doc = await db.collection('reviews_mod').doc(modRevId).get();
-if(!doc.exists) return;
-const d = doc.data();
-await db.collection('reviews').add({
-authorId: d.authorId, authorName: d.authorName,
-targetId: d.targetId, rating: d.rating, text: d.text, reason: d.reason,
-time: d.time
-});
-const targetRef = db.collection('users').doc(d.targetId);
-await db.runTransaction(async (t) => {
-const uDoc = await t.get(targetRef);
-if(uDoc.exists) {
-let uData = uDoc.data();
-let newSum = (uData.ratingSum || 0) + d.rating;
-let newCount = (uData.reviewCount || 0) + 1;
-t.update(targetRef, { ratingSum: newSum, reviewCount: newCount });
-}
-});
-await db.collection('reviews_mod').doc(modRevId).delete();
-alert("Отзыв одобрен!");
-}
-async function adminIssueWarning() {
-let uid = document.getElementById('admin-target-uid').value.trim();
-let reason = document.getElementById('admin-punish-reason').value.trim();
-if(!uid || !reason) return alert("Введите UID и причину!");
-await db.collection('users').doc(uid).update({ warned: true, warnReason: reason });
-alert("Предупреждение выдано!");
-}
-async function adminBanUser() {
-let uid = document.getElementById('admin-target-uid').value.trim();
-let reason = document.getElementById('admin-punish-reason').value.trim();
-if(!uid || !reason) return alert("Введите UID и причину!");
-await db.collection('users').doc(uid).update({
-banned: true, banReason: reason,
-name: "Удален", avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-});
-alert("Пользователь заблокирован!");
-}
-async function adminUnbanUser() {
-let uid = document.getElementById('admin-target-uid').value.trim();
-if(!uid) return alert("Введите UID!");
-await db.collection('users').doc(uid).update({ banned: false, banReason: firebase.firestore.FieldValue.delete(), name: "Восстановлен" });
-alert("Пользователь разбанен!");
-}
-function adminViewUserChats() {
-let uid = document.getElementById('admin-target-uid').value.trim();
-if(!uid) return alert("Введите UID пользователя в поле управления!");
-document.getElementById('admin-watch-uid').innerText = uid;
-document.getElementById('admin-chats-view').style.display = 'block';
-document.getElementById('admin-user-chats-list').innerHTML = "Загрузка...";
-db.collection('chat_list').where('participants', 'array-contains', uid).get().then(async snap => {
-let h = '';
-for(let doc of snap.docs) {
-let d = doc.data();
-let otherId = d.participants.find(id => id !== uid);
-let uDoc = await db.collection('users').doc(otherId).get();
-let uName = uDoc.exists ? uDoc.data().name : "Неизвестный";
-h += `
-<div class="mod-card" onclick="openChatWindow('${doc.id}', 'Шпионаж: ${uName}', '${otherId}', false)">
-<b>Диалог с: ${uName}</b> (UID: ${otherId})<br>
-<small>ID чата: ${doc.id}</small>
-</div>`;
-}
-document.getElementById('admin-user-chats-list').innerHTML = h || '<p>У пользователя нет активных чатов.</p>';
-});
-}
-async function adminDeleteReview(revId, reportId) {
-const revDoc = await db.collection('reviews').doc(revId).get();
-if(revDoc.exists) {
-let r = revDoc.data();
-const targetRef = db.collection('users').doc(r.targetId);
-await db.runTransaction(async (t) => {
-const doc = await t.get(targetRef);
-if(doc.exists) {
-let d = doc.data();
-let newSum = Math.max(0, (d.ratingSum || 0) - r.rating);
-let newCount = Math.max(0, (d.reviewCount || 0) - 1);
-t.update(targetRef, { ratingSum: newSum, reviewCount: newCount });
-}
-});
-await db.collection('reviews').doc(revId).delete();
-}
-await db.collection('reports_review').doc(reportId).update({status: 'resolved'});
-alert("Отзыв удален, рейтинг пересчитан!");
-}
-async function checkTechBreak() {
-if (!user) return;
-if (user.email === ADMIN_ID) {
-document.getElementById('tech-break-overlay').classList.remove('active');
-return;
-}
-try {
-const breakDoc = await db.collection('system').doc('techBreak').get();
-if (!breakDoc.exists) return;
-const breakData = breakDoc.data();
-if (breakData.enabled) {
-document.getElementById('tech-break-overlay').classList.add('active');
-document.getElementById('tech-break-desc').innerText = breakData.description || 'Сайт временно недоступен. Приносим извинения за неудобства.';
-if (breakData.autoDisable && breakData.endTime) {
-const now = new Date();
-const endTime = new Date(breakData.endTime);
-if (now >= endTime) {
-await disableTechBreak();
-}
-}
-} else {
-document.getElementById('tech-break-overlay').classList.remove('active');
-}
-} catch (e) {
-console.error('Ошибка проверки перерыва:', e);
-}
-}
-async function enableTechBreak() {
-document.getElementById('tech-break-settings').style.display = 'block';
-document.getElementById('btn-enable-break').style.display = 'none';
-document.getElementById('btn-disable-break').style.display = 'inline-block';
-try {
-const breakDoc = await db.collection('system').doc('techBreak').get();
-if (breakDoc.exists) {
-const data = breakDoc.data();
-document.getElementById('tech-break-description').value = data.description || '';
-if (data.startTime) document.getElementById('tech-break-start-time').value = data.startTime;
-if (data.endTime) document.getElementById('tech-break-end-time').value = data.endTime;
-if (data.days && data.days.length > 0) {
-const daysSelect = document.getElementById('tech-break-days');
-for(let i = 0; i < daysSelect.options.length; i++) {
-daysSelect.options[i].selected = data.days.includes(daysSelect.options[i].value);
-}
-}
-}
-} catch (e) { console.error('Ошибка загрузки настроек:', e); }
-await updateTechBreakInDB(true);
-}
-async function disableTechBreak() {
-try {
-await updateTechBreakInDB(false);
-document.getElementById('tech-break-settings').style.display = 'none';
-document.getElementById('btn-enable-break').style.display = 'inline-block';
-document.getElementById('btn-disable-break').style.display = 'none';
-document.getElementById('tech-break-overlay').classList.remove('active');
-updateTechBreakStatus();
-} catch (e) { alert('Ошибка: ' + e.message); }
-}
-async function updateTechBreakInDB(enabled) {
-const description = document.getElementById('tech-break-description').value.trim();
-const startTime = document.getElementById('tech-break-start-time').value;
-const endTime = document.getElementById('tech-break-end-time').value;
-const daysSelect = document.getElementById('tech-break-days');
-const selectedDays = Array.from(daysSelect.selectedOptions).map(opt => opt.value);
-let autoDisable = false;
-let endDateTime = null;
-if (endTime && enabled) {
-autoDisable = true;
-const now = new Date();
-const moscowTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
-const [hours, minutes] = endTime.split(':');
-endDateTime = new Date(moscowTime);
-endDateTime.setHours(parseInt(hours), parseInt(minutes), 0);
-if (endDateTime <= moscowTime) endDateTime.setDate(endDateTime.getDate() + 1);
-}
-await db.collection('system').doc('techBreak').set({
-enabled: enabled,
-description: description || 'Сайт временно недоступен. Приносим извинения за неудобства.',
-startTime: startTime || null,
-endTime: endDateTime ? endDateTime.toISOString() : null,
-days: selectedDays,
-autoDisable: autoDisable,
-updatedAt: new Date(),
-updatedBy: user.uid
-}, { merge: true });
-}
-async function saveTechBreakSettings() {
-const description = document.getElementById('tech-break-description').value.trim();
-const startTime = document.getElementById('tech-break-start-time').value;
-const endTime = document.getElementById('tech-break-end-time').value;
-const daysSelect = document.getElementById('tech-break-days');
-const selectedDays = Array.from(daysSelect.selectedOptions).map(opt => opt.value);
-if (!description) { alert('📝 Введите описание перерыва'); return; }
-try {
-const breakDoc = await db.collection('system').doc('techBreak').get();
-const currentEnabled = breakDoc.exists ? breakDoc.data().enabled : false;
-let autoDisable = false;
-let endDateTime = null;
-if (endTime) {
-autoDisable = true;
-const now = new Date();
-const moscowTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
-const [hours, minutes] = endTime.split(':');
-endDateTime = new Date(moscowTime);
-endDateTime.setHours(parseInt(hours), parseInt(minutes), 0);
-if (endDateTime <= moscowTime) endDateTime.setDate(endDateTime.getDate() + 1);
-}
-await db.collection('system').doc('techBreak').set({
-enabled: currentEnabled,
-description: description,
-startTime: startTime || null,
-endTime: endDateTime ? endDateTime.toISOString() : null,
-days: selectedDays,
-autoDisable: autoDisable,
-updatedAt: new Date(),
-updatedBy: user.uid
-}, { merge: true });
-alert('✅ Настройки сохранены!');
-updateTechBreakStatus();
-} catch (e) { alert('Ошибка: ' + e.message); }
-}
-async function updateTechBreakStatus() {
-try {
-const breakDoc = await db.collection('system').doc('techBreak').get();
-const statusText = document.getElementById('tech-break-status-text');
-if (!breakDoc.exists) {
-statusText.innerHTML = '<span style="color: var(--green); font-weight: bold;">🟢 Выключен</span>';
-document.getElementById('btn-enable-break').style.display = 'inline-block';
-document.getElementById('btn-disable-break').style.display = 'none';
-document.getElementById('tech-break-settings').style.display = 'none';
-return;
-}
-const data = breakDoc.data();
-if (data.enabled) {
-statusText.innerHTML = '<span style="color: var(--red); font-weight: bold;">🔴 ВКЛЮЧЕН</span>';
-document.getElementById('btn-enable-break').style.display = 'none';
-document.getElementById('btn-disable-break').style.display = 'inline-block';
-document.getElementById('tech-break-settings').style.display = 'block';
-let details = '<br><small style="color: var(--gray); margin-top: 10px; display: block;">';
-details += '📝 ' + (data.description || 'Нет описания') + '<br>';
-if (data.startTime) details += '⏰ Начало: ' + data.startTime + '<br>';
-if (data.autoDisable && data.endTime) {
-const endDate = new Date(data.endTime);
-details += '⏰ Авто-выключение: ' + endDate.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) + '<br>';
-}
-if (data.days && data.days.length > 0) {
-const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-const selectedDayNames = data.days.map(d => dayNames[parseInt(d)]);
-details += '📅 Дни: ' + selectedDayNames.join(', ') + '<br>';
-} else {
-details += '📅 Дни: Ежедневно<br>';
-}
-details += '</small>';
-statusText.innerHTML += details;
-} else {
-statusText.innerHTML = '<span style="color: var(--green); font-weight: bold;">🟢 Выключен</span>';
-document.getElementById('btn-enable-break').style.display = 'inline-block';
-document.getElementById('btn-disable-break').style.display = 'none';
-document.getElementById('tech-break-settings').style.display = 'none';
-}
-} catch (e) {
-console.error('Ошибка обновления статуса:', e);
-document.getElementById('tech-break-status-text').innerText = 'Ошибка загрузки статуса';
-}
-}
-</script>
+<body>
+
+  <div id="scr-auth" class="auth-box">
+    <h1 style="text-align:center; color:var(--primary); margin:0 0 0.8rem;">🛒 Viosell</h1>
+    <input type="email" id="a-email" placeholder="Email">
+    <input type="password" id="a-pass" placeholder="Пароль (мин. 6)">
+    <button id="btn-login">Войти</button>
+    <button id="btn-reg" class="btn-sec">Зарегистрироваться</button>
+    <div class="divider"><span>или</span></div>
+    <button id="btn-google" class="btn-google">
+      <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/></svg>
+      Войти через Google
+    </button>
+    <div id="a-msg" class="msg hidden"></div>
+  </div>
+
+  <div id="scr-on" class="auth-box hidden">
+    <h2 id="on-tit" style="text-align:center; margin:0 0 0.8rem;">Шаг 1/3: Никнейм</h2>
+    <div id="on-1"><input type="text" id="on-nick" placeholder="Ник (3-20 символов)" maxlength="20"><p id="on-err" class="msg err hidden"></p><button id="on-btn1">Далее</button></div>
+    <div id="on-2" class="hidden"><p style="text-align:center; color:#64748b; margin-bottom:0.4rem;">Нажми на кружок</p><label for="on-file" class="avatar" id="on-prev"><img id="on-img"></label><input type="file" id="on-file" accept="image/*" hidden><p id="on-av-err" class="msg err hidden"></p><button id="on-btn2" disabled>Продолжить</button></div>
+    <div id="on-3" class="hidden"><div class="rules"><ul style="margin:0.4rem 0; padding-left:1rem; font-size:0.8rem;"><li>❌ Нельзя оскорблять людей в чате</li><li>❌ Кидать репорты без причины</li><li>❌ Оскорблять чувства верующих</li><li>❌ Притеснять или унижать людей</li><li>❌ Писать маты и 18+ в объявлениях/фото</li><li>❌ Угрожать или сливать личные данные</li><li>❌ Писать маты/18+ в никнейме</li><li>❌ Пытаться обходить баны</li></ul></div><label class="check"><input type="checkbox" id="on-check"><span>Я согласен и несу ответственность</span></label><button id="on-btn3" disabled>Завершить регистрацию</button></div>
+  </div>
+
+  <div id="scr-app" class="hidden">
+    <header class="header"><div class="logo" id="logo-ref">viosell</div><button class="theme-btn" id="theme-toggle">🌙</button></header>
+    <div class="search-bar"><input type="text" id="search" placeholder="🔍 Поиск..."></div>
+    <div id="tab-home" class="wrap"><div id="feed"></div><div id="no-feed" class="empty">Нет активных объявлений</div></div>
+    <div id="tab-my" class="wrap hidden"><h2 style="padding:0.8rem 0;">📋 Мои объявления</h2><div id="my-feed"></div><div id="no-my" class="empty">У вас пока нет объявлений</div><button class="fab" id="fab-add" style="bottom:75px;">＋</button></div>
+    <div id="tab-chat" class="wrap hidden"><h2 style="padding:0.8rem 0;">💬 Чаты</h2><div id="chat-list" class="chat-list"></div><div id="no-chat" class="empty">Напишите кому-нибудь по объявлению</div></div>
+    <div id="tab-prof" class="wrap hidden">
+      <div class="prof-hdr"><div class="prof-av" id="p-av"></div><h3 class="prof-nick" id="p-nick">Никнейм</h3><p class="prof-rate" id="p-rate">⭐ 0.0 (0 отзывов)</p><div class="stats"><div><b id="p-count">0</b>объявлений</div><div><b id="p-date">-</b>дата регистрации</div></div><p class="prof-uid" id="p-uid">ID: —</p></div>
+      <button id="btn-logout" class="btn-sec">Выйти</button>
+      <p id="adm-link" class="hidden" style="text-align:center; color:var(--primary); margin-top:0.8rem; cursor:pointer;">🔧 Панель модератора</p>
+    </div>
+    <nav class="nav">
+      <div class="nav-it active" data-t="home">🏠<br>Главная</div>
+      <div class="nav-it" data-t="my">📋<br>Объявления</div>
+      <div class="nav-it" data-t="chat">💬<br>Чаты</div>
+      <div class="nav-it" data-t="prof">👤<br>Профиль</div>
+    </nav>
+  </div>
+
+  <div id="ov-list" class="overlay">
+    <button class="back" id="close-list">← Назад</button>
+    <div class="gallery" id="gallery"><div class="gal-nav"><button class="gal-btn" id="gal-prev">‹</button><button class="gal-btn" id="gal-next">›</button></div><div class="gal-dots" id="gal-dots"></div></div>
+    <div class="info"><h2 id="v-tit" style="margin:0 0 0.2rem;"></h2><p class="price" id="v-price"></p><p style="font-size:0.8rem; color:#64748b; margin:0.2rem 0;">ID: <span id="v-id"></span></p><p><b>Категория:</b> <span id="v-cat"></span> | <b>Состояние:</b> <span id="v-cond"></span></p><p id="v-desc"></p><p style="font-size:0.8rem; color:#64748b; margin-top:0.8rem;">👁 <span id="v-views">0</span></p><div class="seller" id="v-seller"><div class="s-av" id="s-av"></div><div><b id="s-nick"></b><p class="status" id="s-stat"></p><p style="margin:0.15rem 0 0; font-size:0.8rem; color:#64748b;">⭐ <span id="s-rate">0</span> • <span id="s-rev">0</span> отзывов</p></div></div><button class="btn-sec" id="btn-chat" style="margin-top:0.8rem;">💬 Написать продавцу</button></div>
+  </div>
+
+  <div id="ov-wiz" class="overlay">
+    <button class="back" id="close-wiz">✕ Закрыть</button>
+    <div id="w1" class="step"><h2>1/6 Название</h2><input id="w-tit" placeholder="Название товара"><button id="w-btn1">Далее</button></div>
+    <div id="w2" class="step hidden"><h2>2/6 Категория</h2><select id="w-cat"><option value="">Выбери...</option><option value="Одежда">Одежда</option><option value="Обувь">Обувь</option><option value="Электроника">Электроника</option><option value="Для дома">Для дома</option><option value="Авто">Авто</option><option value="Другое">Другое</option></select><button class="btn-sec" id="w-back2">Назад</button><button id="w-btn2">Далее</button></div>
+    <div id="w3" class="step hidden"><h2>3/6 Состояние</h2><select id="w-cond"><option value="Новое">✨ Новое</option><option value="Отличное">🟢 Отличное</option><option value="Хорошее">🟡 Хорошее</option><option value="Среднее">🟠 Среднее</option><option value="Плохое">🔴 Плохое</option></select><button class="btn-sec" id="w-back3">Назад</button><button id="w-btn3">Далее</button></div>
+    <div id="w4" class="step hidden"><h2>4/6 Цена</h2><input type="number" id="w-price" placeholder="₽" min="1"><button class="btn-sec" id="w-back4">Назад</button><button id="w-btn4">Далее</button></div>
+    <div id="w5" class="step hidden"><h2>5/6 Фото (до 10)</h2><input type="file" id="w-files" accept="image/*" multiple><div class="photos" id="w-prev"></div><button class="btn-sec" id="w-back5">Назад</button><button id="w-btn5">Далее</button></div>
+    <div id="w6" class="step hidden"><h2>6/6 Описание</h2><textarea id="w-desc" placeholder="Описание..."></textarea><button class="btn-sec" id="w-back6">Назад</button><button id="w-submit">📤 Отправить на модерацию</button></div>
+    <div id="w-load" class="empty hidden">⏳ Загрузка...</div>
+  </div>
+
+  <div id="ov-chat" class="overlay">
+    <button class="back" id="close-chat">← Назад</button>
+    <div class="chat-win">
+      <div class="chat-hdr">
+        <div style="display:flex; align-items:center; gap:0.6rem; cursor:pointer;" id="chat-hdr-click">
+          <div class="s-av" id="c-av"></div>
+          <div><b id="c-nick">Собеседник</b><p class="status" id="c-status">Онлайн</p></div>
+        </div>
+        <div class="lst-prev" id="c-lst"><img id="c-lst-img" src=""><div><b id="c-lst-tit">Товар</b><p style="margin:0.1rem 0 0; font-size:0.8rem; color:var(--primary);" id="c-lst-price">0 ₽</p></div></div>
+      </div>
+      <div class="msgs" id="c-msgs"></div>
+      <div class="inp-row"><input id="c-inp" placeholder="Сообщение..."><button id="c-send">➤</button><button class="btn-sec" id="c-menu-btn" style="width:auto; margin:0;">⋮</button></div>
+      <div class="c-menu" id="c-menu"></div>
+    </div>
+  </div>
+
+  <div id="ov-rev" class="overlay">
+    <button class="back" id="close-rev">← Закрыть</button>
+    <h2 style="text-align:center; margin:0.8rem 0;">⭐ Отзывы</h2>
+    <div id="rev-list"></div>
+    <p id="no-rev" class="empty hidden">Отзывов пока нет</p>
+  </div>
+
+  <div id="ov-revf" class="overlay">
+    <button class="back" id="close-revf">✕ Отмена</button>
+    <h2 style="text-align:center;">Оставить отзыв</h2>
+    <p style="text-align:center; color:#64748b; font-size:0.9rem; margin:0.5rem 0;">По какому объявлению?</p>
+    <select id="rf-lst" style="margin-bottom:0.8rem;"></select>
+    <div style="display:flex; justify-content:center; gap:0.4rem; margin:0.6rem 0; font-size:1.5rem; cursor:pointer;" id="st-pick"><span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span data-v="4">☆</span><span data-v="5">☆</span></div>
+    <p style="text-align:center; color:#64748b; margin:0;">Выбрано: <b id="rf-stars">0</b></p>
+    <select id="rf-st" style="margin-top:0.8rem;"><option>Сделка состоялась</option><option>Не состоялась</option><option>Скам</option><option>Не отвечает</option></select>
+    <textarea id="rf-txt" placeholder="Опишите опыт..." style="margin-top:0.5rem;"></textarea>
+    <input type="file" id="rf-pic" accept="image/*" style="margin-top:0.4rem;">
+    <button id="rf-send">Отправить на модерацию</button>
+  </div>
+
+  <div id="ov-dis" class="overlay">
+    <button class="back" id="close-dis">✕ Отмена</button>
+    <h2 style="text-align:center;" id="dis-tit">Обжаловать</h2>
+    <p style="color:#64748b; font-size:0.9rem; margin:0.5rem 0;" id="dis-desc">Почему?</p>
+    <textarea id="dis-reason" placeholder="Опишите причину..."></textarea>
+    <input type="file" id="dis-pic" accept="image/*" style="margin-top:0.4rem;">
+    <button id="dis-send">Отправить</button>
+  </div>
+
+  <div id="ov-adm" class="overlay">
+    <button class="back" id="close-adm">← Закрыть</button>
+    <h2 style="text-align:center;">🔧 Панель модератора</h2>
+    <div style="display:flex; flex-direction:column; gap:0.4rem; margin:0.8rem 0;" id="adm-cats">
+      <div class="adm-cat active" data-c="listings">📦 Объявления на модерацию</div>
+      <div class="adm-cat" data-c="reviews">⭐ Отзывы</div>
+      <div class="adm-cat" data-c="complaints">⚖️ Жалобы на отзывы</div>
+      <div class="adm-cat" data-c="ban-appeals">📩 Апелляции по банам</div>
+      <div class="adm-cat" data-c="warn-appeals">📩 Апелляции по варнам</div>
+      <div class="adm-cat" data-c="reports">🚨 Репорты</div>
+      <div class="adm-cat" data-c="ban">🚫 Забанить игрока</div>
+      <div class="adm-cat" data-c="unban">✅ Разбанить игрока</div>
+      <div class="adm-cat" data-c="warn">⚠️ Предупреждение</div>
+      <div class="adm-cat" data-c="chats-view">💬 Чаты пользователя</div>
+    </div>
+    <div class="adm-content" id="adm-content"></div>
+  </div>
+
+  <div id="modal-block" class="block-modal hidden">
+    <div class="block-box">
+      <div class="block-icon" id="blk-icon"></div>
+      <h2 class="block-title" id="blk-tit"></h2>
+      <div class="block-reason" id="blk-reas"></div>
+      <button id="blk-appeal" style="margin-bottom:0.5rem;">Подать апелляцию</button>
+      <button id="blk-close" class="btn-sec">Понятно</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
+      authDomain: "exzzy1-84d88.firebaseapp.com",
+      projectId: "exzzy1-84d88",
+      storageBucket: "exzzy1-84d88.firebasestorage.app",
+      messagingSenderId: "892085705947",
+      appId: "1:892085705947:web:bbbd44ebc1cf460bdbc0fe"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
+
+    let user = null, prof = null;
+    let curLst = null, curCh = null, chCnt = 0, chData = null;
+    let galPh = [], galIdx = 0;
+    let wizData = { files: [], data: {} };
+    let stSel = 0;
+
+    const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
+    document.getElementById('theme-toggle').onclick = () => { document.body.classList.toggle('dark'); const d=document.body.classList.contains('dark'); localStorage.setItem('vio-theme', d?'dark':'light'); document.getElementById('theme-toggle').textContent = d?'☀️':'🌙'; };
+    loadTheme();
+
+    function show(id){ ['scr-auth','scr-on','scr-app'].forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+    function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
+    function el(id){ return document.getElementById(id); }
+
+    el('btn-login').onclick = async () => {
+      const e=el('a-email').value.trim(), p=el('a-pass').value;
+      if(!e||!p) return msg('Заполните поля');
+      try { await auth.signInWithEmailAndPassword(e,p); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка входа'); }
+    };
+    el('btn-reg').onclick = async () => {
+      const e=el('a-email').value.trim(), p=el('a-pass').value;
+      if(!e||p.length<6) return msg('Пароль мин. 6 символов');
+      try { await auth.createUserWithEmailAndPassword(e,p); msg('✅ Аккаунт создан!','ok'); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка регистрации'); }
+    };
+    el('btn-google').onclick = async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try { await auth.signInWithPopup(provider); } catch(err){ msg('Google: '+(err.code?.replace('auth/','')||'Разреши всплывающие окна')); }
+    };
+    el('btn-logout').onclick = () => auth.signOut();
+    el('logo-ref').onclick = () => location.reload();
+
+    async function up(file){ 
+      const f=new FormData(); f.append('key',IMGBB); f.append('image',file); 
+      const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:f}); 
+      const d=await r.json(); if(!d.success) throw new Error(d.error?.message); return d.data.url; 
+    }
+
+    el('on-btn1').onclick = () => {
+      const n=el('on-nick').value.trim(), er=el('on-err');
+      if(n.length<3||n.length>20){er.textContent='3-20 символов';er.classList.remove('hidden');return;}
+      const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,'');
+      if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)){er.textContent='❌ Запрещённые слова';er.classList.remove('hidden');return;}
+      er.classList.add('hidden'); prof={nick:n};
+      el('on-1').classList.add('hidden'); el('on-2').classList.remove('hidden'); el('on-tit').textContent='Шаг 2/3: Аватарка';
+    };
+    el('on-file').onchange = (e) => {
+      const f=e.target.files[0]; if(!f)return;
+      el('on-img').src = URL.createObjectURL(f); el('on-prev').classList.add('has-img'); el('on-btn2').disabled=false;
+      el('on-btn2').onclick = async () => { 
+        el('on-btn2').textContent='⏳ Загрузка...'; 
+        try { prof.av = await up(f); el('on-2').classList.add('hidden'); el('on-3').classList.remove('hidden'); el('on-tit').textContent='Шаг 3/3: Правила'; } 
+        catch(err){ el('on-av-err').textContent=err.message; el('on-av-err').classList.remove('hidden'); el('on-btn2').textContent='Продолжить'; } 
+      };
+    };
+    el('on-check').onchange = (e)=>el('on-btn3').disabled=!e.target.checked;
+    el('on-btn3').onclick = async () => { 
+      if(!auth.currentUser)return; 
+      await db.collection('users').doc(auth.currentUser.uid).set({nickname:prof.nick,avatar:prof.av,createdAt:new Date().toISOString(),rating:0,reviewCount:0,modNick:false,modAv:false},{merge:true}); 
+      show('scr-app'); 
+    };
+
+    function tab(t){ ['home','my','chat','prof'].forEach(p=>el(`tab-${p}`).classList.add('hidden')); el(`tab-${t}`).classList.remove('hidden'); document.querySelectorAll('.nav-it').forEach(n=>n.classList.toggle('active',n.dataset.t===t)); loadTab(t); }
+    document.querySelectorAll('.nav-it').forEach(n=>n.onclick=()=>tab(n.dataset.t));
+    el('search').oninput = (e)=>loadFeed(e.target.value);
+
+    async function loadFeed(q=''){
+      const box=el('feed'), emp=el('no-feed'); box.innerHTML='';
+      try {
+        const snap = await db.collection('listings').where('status','==','active').get();
+        let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()}));
+        if(q) items=items.filter(l=>(l.title||'').toLowerCase().includes(q.toLowerCase()));
+        items.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+        if(!items.length){emp.classList.remove('hidden');return;} emp.classList.add('hidden');
+        items.forEach(l=>{
+          const c=document.createElement('div'); c.className='card';
+          c.innerHTML=`<div class="card-img" style="background-image:url('${l.photos?.[0]||''}')"></div><div><h3>${l.title}</h3><p class="price">${l.price?.toLocaleString()} ₽</p><p class="city">📍 ${l.city||'Не указан'}</p><p class="id">ID: ${l.shortId||l.id.slice(0,6)}</p></div><div><span class="badge b-active">Активно</span></div>`;
+          c.onclick=()=>viewLst(l.id); box.appendChild(c);
+        });
+      } catch(e){ console.error(e); }
+    }
+    async function loadMy(){
+      if(!user)return;
+      const box=el('my-feed'), emp=el('no-my'); box.innerHTML='';
+      try {
+        const snap=await db.collection('listings').where('authorId','==',user.uid).get();
+        let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+        if(!items.length){emp.classList.remove('hidden');return;} emp.classList.add('hidden');
+        items.forEach(l=>{
+          const st=l.status||'pending', cls=st==='active'?'b-active':st==='blocked'?'b-block':'b-pend', txt=st==='active'?'Активно':st==='blocked'?'Заблокировано':'На проверке';
+          const reason=l.blockReason?` (${l.blockReason})`:'';
+          const c=document.createElement('div'); c.className='card';
+          c.innerHTML=`<div class="card-img" style="background-image:url('${l.photos?.[0]||''}')"></div><div><h3>${l.title}</h3><p class="price">${l.price?.toLocaleString()} ₽</p><p style="font-size:0.75rem; color:#64748b;">👁 ${l.views||0} • ID: ${l.shortId||l.id.slice(0,6)}</p><span class="badge ${cls}">${txt}${reason}</span></div><div class="actions"><button class="act" onclick="editLst('${l.id}')">✏️</button><button class="act" onclick="delLst('${l.id}')">🗑</button></div>`;
+          c.onclick=(e)=>{if(!e.target.closest('.act'))viewLst(l.id);}; box.appendChild(c);
+        });
+      } catch(e){}
+    }
+    async function loadChatList(){
+      if(!user)return;
+      const box=el('chat-list'), emp=el('no-chat'); box.innerHTML='';
+      try {
+        const supRef=db.collection('chats').doc(`support_${user.uid}`);
+        const supSnap=await supRef.get();
+        if(!supSnap.exists){
+          await supRef.set({users:['admin',user.uid],partner:'Поддержка Viosell',avatar:'',listingId:null,listingTitle:'Поддержка',type:'support',lastMsg:'',lastMsgTime:new Date().toISOString(),muted:[],pinned:false,unread:0});
+        }
+        const supData=(await supRef.get()).data()||{};
+        const s=await db.collection('chats').where('users','array-contains',user.uid).get();
+        let items=[]; s.forEach(d=>{ if(d.id!==`support_${user.uid}`) items.push({id:d.id,...d.data()}); });
+        items.sort((a,b)=>(b.lastMsgTime||'').localeCompare(a.lastMsgTime||''));
+        const pinned=items.filter(x=>x.pinned);
+        const unpinned=items.filter(x=>!x.pinned);
+        items = [{id:`support_${user.uid}`, ...supData, type:'support'}, ...pinned, ...unpinned];
+        if(!items.length){emp.classList.remove('hidden');return;}emp.classList.add('hidden');
+        items.forEach(ch=>{
+          const muted=ch.muted?.includes(user.uid);
+          const pinned=ch.pinned;
+          const unread=ch.unread&&ch.unread[user.uid]>0?`<div class="badge-unread">${ch.unread[user.uid]}</div>`:'';
+          const c=document.createElement('div');c.className=`chat-item ${muted?'muted':''} ${pinned?'pinned':''}`;
+          if(ch.type==='support') c.style.borderLeft='3px solid #3b82f6';
+          c.innerHTML=`<div class="s-av" style="background-image:url('${ch.type==='support'?'':ch.avatar||''}')"></div><div><b>${ch.partner}</b><p style="margin:0.1rem 0 0;color:#64748b;font-size:0.8rem;">${ch.lastMsg||'Новый чат'}</p></div>${unread}`;
+          c.onclick=()=>openCh(ch.id,ch.partner,ch.type==='support'?'':ch.avatar,ch.listingId,ch.listingTitle,ch.type==='support');box.appendChild(c);
+        });
+      } catch(e){console.error(e);}
+    }
+    async function loadProf(){
+      if(!user||!prof)return;
+      el('p-av').style.backgroundImage=`url('${prof.avatar||''}')`;
+      el('p-nick').textContent=prof.nickname||'Пользователь';
+      el('p-rate').textContent=`⭐ ${(prof.rating||0).toFixed(1)} (${prof.reviewCount||0} отзывов)`;
+      el('p-count').textContent=prof.listings||0;
+      el('p-date').textContent=prof.createdAt?new Date(prof.createdAt).toLocaleDateString('ru-RU'):'-';
+      el('p-uid').textContent=`ID: ${user.uid}`;
+      el('adm-link').classList.toggle('hidden', user.email!=='sobakastalina123@gmail.com');
+    }
+    async function loadTab(t){ if(t==='home')loadFeed(); if(t==='my')loadMy(); if(t==='chat')loadChatList(); if(t==='prof')loadProf(); }
+
+    async function viewLst(id){
+      curLst=id; galPh=[]; galIdx=0;
+      try {
+        const snap=await db.collection('listings').doc(id).get();
+        if(!snap.exists){
+          return alert('❌ Объявление не найдено');
+        }
+        const l={id,...snap.data()};
+        if(user && l.authorId!==user.uid){
+          await db.collection('listings').doc(id).update({views:firebase.firestore.FieldValue.increment(1)});
+          if(l.category) await db.collection('users').doc(user.uid).set({interests:firebase.firestore.FieldValue.arrayUnion(l.category)},{merge:true});
+        }
+        galPh = l.photos || [];
+        const gal = el('gallery'); gal.innerHTML = `<div class="gal-nav"><button class="gal-btn" id="gal-prev">‹</button><button class="gal-btn" id="gal-next">›</button></div><div class="gal-dots" id="gal-dots"></div>`;
+        galPh.forEach((url,i)=>{ const img=document.createElement('img'); img.className=`gal-img ${i===0?'active':''}`; img.src=url; gal.appendChild(img); const dot=document.createElement('div'); dot.className=`dot ${i===0?'active':''}`; dot.onclick=()=>showGal(i); el('gal-dots').appendChild(dot); });
+        el('gal-prev').onclick=()=>showGal(galIdx-1); el('gal-next').onclick=()=>showGal(galIdx+1);
+        el('v-tit').textContent=l.title; el('v-price').textContent=`${l.price?.toLocaleString()} ₽`; el('v-id').textContent=l.shortId||l.id;
+        el('v-cat').textContent=l.category||'-'; el('v-cond').textContent=l.condition||'-'; el('v-desc').textContent=l.description||'Без описания'; el('v-views').textContent=l.views||0;
+        if(l.authorId){
+          const s=await db.collection('users').doc(l.authorId).get(); if(s.exists){
+            const d=s.data(); el('s-av').style.backgroundImage=`url('${d.avatar||''}')`; el('s-nick').textContent=d.nickname||'Пользователь'; el('s-rate').textContent=(d.rating||0).toFixed(1); el('s-rev').textContent=d.reviewCount||0; const online=(d.lastOnline&&(Date.now()-new Date(d.lastOnline).getTime())<300000); el('s-stat').textContent=online?'🟢 В сети':'⚫ Не в сети'; el('s-stat').className=`status ${online?'st-online':'st-offline'}`; el('v-seller').dataset.uid=l.authorId; el('v-seller').dataset.name=d.nickname||'Пользователь'; el('v-seller').dataset.av=d.avatar||''; 
+          }
+        }
+        el('ov-list').classList.add('active');
+      } catch(e){ alert('Ошибка: '+e.message); }
+    }
+    function showGal(i){ if(i<0) i=galPh.length-1; if(i>=galPh.length) i=0; galIdx=i; document.querySelectorAll('.gal-img').forEach((el,idx)=>el.classList.toggle('active',idx===i)); document.querySelectorAll('#gal-dots .dot').forEach((el,idx)=>el.classList.toggle('active',idx===i)); }
+    el('close-list').onclick=()=>el('ov-list').classList.remove('active');
+    el('v-seller').onclick=async(e)=>{if(e.target.closest('#btn-chat'))return;viewProf(el('v-seller').dataset.uid);};
+    el('btn-chat').onclick=()=>{ el('ov-list').classList.remove('active'); openCh(null, el('v-seller').dataset.name, el('v-seller').dataset.av, curLst, el('v-tit').textContent); };
+
+    async function viewProf(uid){
+      if(uid==='admin') return;
+      try{
+        const s=await db.collection('users').doc(uid).get();
+        if(!s.exists){
+          return alert('Пользователь не найден');
+        }
+        const u=s.data();
+        const ov=document.createElement('div');
+        ov.className='overlay active';
+        ov.innerHTML=`
+          <button class="back" id="close-prof">← Закрыть</button>
+          <div class="prof-hdr">
+            <div class="prof-av" style="background-image:url('${u.avatar||''}')"></div>
+            <h3>${u.nickname||'Пользователь'}</h3>
+            <p class="prof-rate" id="prof-rev">⭐ ${(u.rating||0).toFixed(1)} (${u.reviewCount||0} отзывов)</p>
+            <div class="stats">
+              <div><b>${u.listings||0}</b>объявлений</div>
+              <div><b>${u.createdAt?new Date(u.createdAt).toLocaleDateString('ru-RU'):'-'}</b>дата</div>
+            </div>
+            <p style="font-size:0.7rem;color:#64748b;margin-top:0.5rem;">ID: ${uid}</p>
+          </div>
+          <button class="btn-sec" style="margin-top:0.5rem;">Закрыть</button>
+        `;
+        document.body.appendChild(ov);
+        document.getElementById('close-prof').onclick=()=>ov.remove();
+        ov.querySelector('button.btn-sec').onclick=()=>ov.remove();
+        const revBtn=document.getElementById('prof-rev');
+        revBtn.onclick=async()=>{
+          revBtn.innerHTML='⏳ Загрузка...';
+          const box=document.createElement('div');
+          box.style.cssText='background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem;max-height:300px;overflow-y:auto;';
+          box.innerHTML='<p class="empty">Загрузка...</p>';
+          ov.appendChild(box);
+          const snaps=await db.collection('reviews').where('targetUserId','==',uid).where('moderated','==',true).get();
+          box.innerHTML='';
+          if(snaps.empty) box.innerHTML='<p class="empty">Нет отзывов</p>';
+          snaps.forEach(d=>{
+            const r=d.data();
+            const isOwner=user.uid===r.targetUserId;
+            const menu=isOwner?`<div class="rev-menu" onclick="openDis('${d.id}','review')">⋮</div>`:'';
+            const stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
+            const c=document.createElement('div');
+            c.className='rev-card';
+            c.innerHTML=`${menu}<div style="display:flex;justify-content:space-between;"><b>${r.authorNick}</b><span class="stars">${stars}</span></div><p class="rev-type">${r.type==='продавец'?'🟢 Продавец':'🔵 Покупатель'} • ${r.status}</p><p><b>Объявление:</b> ${r.listingTitle||'—'}</p><p>${r.text}</p>`;
+            if(r.photo) c.innerHTML+=`<img src="${r.photo}" style="width:100%;max-height:150px;object-fit:cover;border-radius:8px;margin-top:0.4rem;">`;
+            box.appendChild(c);
+          });
+        };
+      }catch(e){alert('Ошибка: '+e.message);}
+    }
+    
+    el('chat-hdr-click').onclick=()=>{ 
+      if(curCh?.isSupport) return;
+      const otherUid = chData?.users?.find(u=>u!==user.uid);
+      if(otherUid) viewProf(otherUid);
+    };
+
+    async function openCh(chatId, partner, av, lstId, lstTit, isSupport=false){
+      curCh={id:chatId||'new',partner,av,lstId,lstTit,isSupport,userId1:user.uid,userId2:''};
+      el('c-nick').textContent=partner;
+      el('c-av').style.backgroundImage=`url('${isSupport?'':av||''}')`;
+      el('c-lst-tit').textContent=lstTit||'Товар';
+      el('c-lst-img').src='';
+      el('c-msgs').innerHTML='';
+      el('ov-chat').classList.add('active');
+      el('c-menu').classList.remove('active');
+      if(isSupport){
+        el('c-lst').style.display='none';
+        el('c-status').textContent='Поддержка';
+        el('c-status').className='status st-online';
+      }else{
+        el('c-lst').style.display='flex';
+        try{
+          if(lstId){
+            const l=await db.collection('listings').doc(lstId).get();
+            if(l.exists){
+              const d=l.data();
+              el('c-lst-img').src=d.photos?.[0]||'';
+              el('c-lst-price').textContent=`${d.price?.toLocaleString()} ₽`;
+              el('c-lst').onclick=()=>viewLst(lstId);
+            }
+          }
+        }catch(e){}
+      }
+      if(chatId){
+        curCh.id=chatId;
+        await db.collection('chats').doc(chatId).update({[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
+        let snap;
+        if(isSupport){
+          snap=await db.collection('support').where('uid','==',user.uid).orderBy('time','asc').get();
+        }else{
+          snap=await db.collection(`chats/${chatId}/msgs`).orderBy('ts','asc').get();
+        }
+        curCh.msgCount=snap.size;
+        if(!isSupport) chData=(await db.collection('chats').doc(chatId).get()).data();
+        if(!isSupport && chData?.users){
+          curCh.userId2 = chData.users.find(u=>u!==user.uid);
+          const other=await db.collection('users').doc(curCh.userId2).get();
+          if(other.exists){
+            const o=other.data();
+            const online=(o.lastOnline&&(Date.now()-new Date(o.lastOnline).getTime())<300000);
+            el('c-status').textContent=online?'🟢 В сети':'⚫ Не в сети';
+            el('c-status').className=`status ${online?'st-online':'st-offline'}`;
+            if(o.banned) { el('c-status').textContent='🔴 Заблокирован'; el('c-status').className='status st-banned'; }
+          }
+        }
+        snap.forEach(d=>{
+          const m=d.data();
+          const isMe=isSupport?(m.uid===user.uid):(m.uid===user.uid);
+          const checks=m.read?.includes(user.uid)?'✅':'✓';
+          const ts=new Date(m.ts?.toDate?.()||m.ts||m.time);
+          const elM=document.createElement('div');
+          elM.className='msg-it';
+          if(isSupport && !isMe){
+            elM.innerHTML=`<p class="m-meta">${m.name||'Пользователь'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
+          }else if(isSupport && isMe){
+            elM.innerHTML=`<p class="m-meta">Вы • ${ts.toLocaleTimeString()}</p><div class="m-bub m-me">${m.text}</div>`;
+          }else{
+            elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
+          }
+          el('c-msgs').appendChild(elM);
+        });
+        el('c-msgs').scrollTop=1e6;
+      }
+      updateChatMenu();
+    }
+    
+    function updateChatMenu(){
+      const m=el('c-menu');
+      if(chData?.type==='support'){
+        m.innerHTML=`<button class="m-btn" onclick="sendReport()">🚨 Жалоба в чате</button>`;
+        return;
+      }
+      const blocked=chData?.blockedBy===user.uid;
+      m.innerHTML=`
+        <button class="m-btn" id="m-notif">🔔 Уведомления: ${chData?.muted?.includes(user.uid)?'Выкл':'Вкл'}</button>
+        <button class="m-btn" id="m-block">${blocked?'Разблокировать':'🚫 Заблокировать'}</button>
+        <button class="m-btn" id="m-pin">📌 ${chData?.pinned?'Открепить':'Закрепить'}</button>
+        <button class="m-btn" id="m-del">🗑 Удалить чат</button>
+        ${curCh.msgCount>=10&&!chData?.reviewedByUser?.[user.uid]?`<button class="m-btn" id="m-rev">⭐ Оставить отзыв</button>`:''}
+      `;
+      el('m-notif')?.addEventListener('click',toggleNotif);
+      el('m-block')?.addEventListener('click',toggleBlock);
+      el('m-pin')?.addEventListener('click',togglePin);
+      el('m-del')?.addEventListener('click',deleteChat);
+      el('m-rev')?.addEventListener('click',()=>openRevForm());
+    }
+    
+    el('c-menu-btn').onclick=e=>{e.stopPropagation();if(chData?.type!=='support')el('c-menu').classList.toggle('active');};
+    
+    el('c-send').onclick = async () => {
+      if(chData?.blockedBy) return alert('Чат заблокирован');
+      const txt=el('c-inp').value.trim();
+      if(!txt||!user)return;
+      el('c-inp').value='';
+      const id=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+      const elM=document.createElement('div');
+      elM.className='msg-it';
+      elM.innerHTML=`<p class="m-meta">ID: ${id.slice(0,6)} • ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub m-me">${txt}</div><p class="m-meta" style="justify-content:flex-end;">✓</p>`;
+      el('c-msgs').appendChild(elM);
+      el('c-msgs').scrollTop=1e6;
+      curCh.msgCount++;
+      try{
+        if(curCh.id==='new'){
+          const sellerId = el('v-seller')?.dataset.uid || curCh.userId2;
+          const ref=await db.collection('chats').add({
+            users:[user.uid,sellerId],
+            partner:curCh.partner,
+            avatar:curCh.av,
+            listingId:curCh.lstId,
+            listingTitle:curCh.lstTit,
+            lastMsg:txt,
+            lastMsgTime:new Date().toISOString(),
+            muted:[],
+            pinned:false,
+            unread:{[user.uid]:0},
+            lastViewed:new Date().toISOString()
+          });
+          curCh.id=ref.id;
+          curCh.partnerUid = sellerId;
+          await db.collection(`chats/${ref.id}/msgs`).add({uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
+          curCh.msgCount=0;
+        }else{
+          if(curCh.isSupport){
+            await db.collection('support').add({
+              uid: user.uid,
+              name: prof.nickname,
+              avatar: prof.avatar,
+              text: txt,
+              time: new Date()
+            });
+            await db.collection('chats').doc(curCh.id).update({
+              lastMsg: txt,
+              lastMsgTime: new Date().toISOString(),
+              [`unread.admin`]: firebase.firestore.FieldValue.increment(1)
+            });
+          }else{
+            await db.collection(`chats/${curCh.id}/msgs`).add({uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
+            await db.collection('chats').doc(curCh.id).update({lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
+          }
+        }
+        if(curCh.msgCount>=10) updateChatMenu();
+      }catch(e){alert('Ошибка отправки: '+e.message);}
+    };
+    
+    el('close-chat').onclick=()=>{el('ov-chat').classList.remove('active');loadChatList();};
+    
+    async function toggleNotif(){
+      const m=chData.muted||[];
+      const idx=m.indexOf(user.uid);
+      if(idx===-1) m.push(user.uid);
+      else m.splice(idx,1);
+      await db.collection('chats').doc(curCh.id).update({muted});
+      chData.muted=m;
+      updateChatMenu();
+    }
+    async function toggleBlock(){
+      if(chData.blockedBy===user.uid){
+        await db.collection('chats').doc(curCh.id).update({blockedBy:null});
+        chData.blockedBy=null;
+        alert('✅ Чат разблокирован');
+      }else{
+        await db.collection('chats').doc(curCh.id).update({blockedBy:user.uid});
+        chData.blockedBy=user.uid;
+        alert('🚫 Чат заблокирован');
+      }
+      updateChatMenu();
+    }
+    async function togglePin(){
+      await db.collection('chats').doc(curCh.id).update({pinned:!chData.pinned});
+      chData.pinned=!chData.pinned;
+      alert(chData.pinned?'📌 Закреплён':'📌 Откреплён');
+      updateChatMenu();
+    }
+    async function deleteChat(){
+      if(!confirm('⚠️ Удалить чат у обоих? Восстановить нельзя.')) return;
+      await db.collection('chats').doc(curCh.id).delete();
+      const msgs=await db.collection(`chats/${curCh.id}/msgs`).get();
+      msgs.forEach(d=>d.ref.delete());
+      el('ov-chat').classList.remove('active');
+      loadChatList();
+    }
+    window.sendReport=()=>{
+      const reason=prompt('Причина репорта:');
+      if(reason){
+        db.collection('support-reports').add({
+          chatId:curCh.id,
+          reason:reason,
+          by:user.uid,
+          byNick:prof.nickname,
+          createdAt:new Date().toISOString(),
+          status:'new'
+        });
+        alert('🚨 Жалоба отправлена');
+      }
+    };
+    window.openRevForm=()=>{
+      el('rf-lst').innerHTML='';
+      (async()=>{
+        const snap=await db.collection('listings').where('authorId','==',curCh.partnerUid).get();
+        snap.forEach(doc=>{
+          const l=doc.data();
+          const o=document.createElement('option');
+          o.value=doc.id;
+          o.textContent=`${l.title} — ${l.price?.toLocaleString()} ₽`;
+          el('rf-lst').appendChild(o);
+        });
+      })();
+      el('ov-revf').classList.add('active');
+    };
+    
+    document.querySelectorAll('#st-pick span').forEach(s=>{
+      s.onclick=()=>{
+        stSel=parseInt(s.dataset.v);
+        document.querySelectorAll('#st-pick span').forEach(x=>x.textContent='☆');
+        for(let i=1;i<=stSel;i++) document.querySelector(`#st-pick span[data-v="${i}"]`).textContent='★';
+        el('rf-stars').textContent=stSel;
+      };
+    });
+    el('rf-send').onclick=async()=>{
+      if(stSel<1) return alert('Выберите рейтинг');
+      const txt=el('rf-txt').value.trim(), status=el('rf-st').value;
+      const file=el('rf-pic').files[0];
+      let pic='';
+      if(file) pic=await up(file);
+      const lstId=el('rf-lst').value;
+      const chat=await db.collection('chats').doc(curCh).get();
+      const d=chat.data(), partnerId=d.users.find(u=>u!==user.uid);
+      const isFirst=user.uid < partnerId;
+      const lst = await db.collection('listings').doc(lstId).get();
+      await db.collection('reviews').add({
+        targetUserId: partnerId,
+        authorId: user.uid,
+        authorNick: prof.nickname,
+        authorAv: prof.avatar,
+        listingId:lstId,
+        listingTitle: lst.exists?lst.data().title:'',
+        rating: stSel,
+        status,
+        text: txt,
+        photo: pic,
+        type: isFirst?'покупатель':'продавец',
+        moderated: false,
+        createdAt: new Date().toISOString()
+      });
+      await db.collection('chats').doc(curCh.id).update({reviewedByUser:{[user.uid]:true}});
+      alert('✅ Отправлен на модерацию');
+      el('ov-revf').classList.remove('active');
+      stSel=0;
+      document.querySelectorAll('#st-pick span').forEach(x=>x.textContent='☆');
+      el('rf-stars').textContent='0';
+    };
+    el('close-revf').onclick=()=>el('ov-revf').classList.remove('active');
+
+    el('p-rate').onclick = async () => {
+      if(!user) return;
+      el('ov-rev').classList.add('active');
+      el('rev-list').innerHTML='';
+      const snap=await db.collection('reviews').where('targetUserId','==',user.uid).where('moderated','==',true).get();
+      if(snap.empty) return el('no-rev').classList.remove('hidden');
+      el('no-rev').classList.add('hidden');
+      snap.forEach(d=>{
+        const r=d.data();
+        const isOwner=user.uid===r.targetUserId;
+        const menu=isOwner?`<div class="rev-menu" onclick="openDis('${d.id}','review')">⋮</div>`:'';
+        const stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
+        const c=document.createElement('div');
+        c.className='rev-card';
+        c.innerHTML=`${menu}<div style="display:flex;justify-content:space-between;"><b>${r.authorNick}</b><span class="stars">${stars}</span></div><p class="rev-type">${r.type==='продавец'?'🟢 Продавец':'🔵 Покупатель'} • ${r.status}</p><p><b>Объявление:</b> ${r.listingTitle||'—'}</p><p>${r.text}</p>`;
+        if(r.photo) c.innerHTML+=`<img src="${r.photo}" style="width:100%;max-height:150px;object-fit:cover;border-radius:8px;margin-top:0.4rem;">`;
+        el('rev-list').appendChild(c);
+      });
+    };
+    el('close-rev').onclick=()=>el('ov-rev').classList.remove('active');
+
+    el('fab-add').onclick=()=>{wizData={files:[],data:{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
+    el('close-wiz').onclick=()=>el('ov-wiz').classList.remove('active');
+    const wNext=(cur,next)=>{ el(cur).classList.add('hidden'); el(next).classList.remove('hidden'); };
+    el('w-btn1').onclick=()=>{ if(el('w-tit').value.trim().length<3)return; wizData.data.tit=el('w-tit').value; wNext('w1','w2'); };
+    el('w-back2').onclick=()=>wNext('w2','w1'); el('w-btn2').onclick=()=>{ wizData.data.cat=el('w-cat').value; wNext('w2','w3'); };
+    el('w-back3').onclick=()=>wNext('w3','w2'); el('w-btn3').onclick=()=>{ wizData.data.cond=el('w-cond').value; wNext('w3','w4'); };
+    el('w-back4').onclick=()=>wNext('w4','w3'); el('w-btn4').onclick=()=>{ const p=parseInt(el('w-price').value); if(!p||p<1)return; wizData.data.price=p; wNext('w4','w5'); };
+    el('w-back5').onclick=()=>wNext('w5','w4'); el('w-btn5').onclick=()=>{ if(wizData.files.length===0)return alert('Добавьте фото'); wNext('w5','w6'); };
+    el('w-back6').onclick=()=>wNext('w6','w5');
+    el('w-files').onchange=(e)=>{ wizData.files=Array.from(e.target.files).slice(0,10); const p=el('w-prev'); p.innerHTML=''; wizData.files.forEach(f=>{ const i=document.createElement('img'); i.src=URL.createObjectURL(f); p.appendChild(i); }); };
+    el('w-submit').onclick=async()=>{ const desc=el('w-desc').value.trim(); if(desc.length<10)return alert('Описание мин. 10 символов'); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w-load').classList.remove('hidden'); try { const urls=await Promise.all(wizData.files.map(f=>up(f))); const shortId = Math.random().toString(36).slice(2,8).toUpperCase(); await db.collection('listings').add({title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:desc, photos:urls, authorId:user.uid, authorNick:prof?.nickname, status:'pending', views:0, createdAt:new Date().toISOString(), shortId}); alert('✅ Отправлено на модерацию'); el('ov-wiz').classList.remove('active'); tab('my'); } catch(e){ alert('Ошибка: '+e.message); el('w-load').classList.add('hidden'); el('w6').classList.remove('hidden'); } };
+    window.editLst = async (id) => { const l=await db.collection('listings').doc(id).get(); if(!l.exists || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [], data: { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await db.collection('listings').doc(id).update({title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
+    window.delLst = async (id) => { if(!confirm('⚠️ Удалить навсегда? Вернуть нельзя.')) return; await db.collection('listings').doc(id).delete(); alert('🗑 Удалено'); loadMy(); loadFeed(); };
+
+    el('p-nick').onclick = async () => { const n=prompt('Новый никнейм:', prof.nickname); if(!n || n===prof.nickname) return; if(n.length<3||n.length>20) return alert('Ник от 3 до 20 символов'); const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,''); if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова'); await db.collection('users').doc(user.uid).set({modNick:true, pendingNick:n},{merge:true}); alert('✅ Отправлен на модерацию.'); };
+    el('p-av').onclick = async () => { const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange = async (e) => { const f=e.target.files[0]; if(!f) return; const u=await up(f); await db.collection('users').doc(user.uid).set({modAv:true, pendingAv:u},{merge:true}); alert('✅ Отправлена на модерацию.'); }; inp.click(); };
+
+    window.openDis=(id,type)=>{
+      el('ov-dis').dataset.id=id;
+      el('ov-dis').dataset.type=type;
+      el('dis-tit').textContent=type==='review'?'Обжаловать отзыв':'Апелляция';
+      el('dis-desc').textContent='Опишите причину...';
+      el('ov-dis').classList.add('active');
+    };
+    el('dis-send').onclick=async()=>{
+      const r=el('dis-reason').value.trim();
+      if(!r) return alert('Заполните');
+      const f=el('dis-pic').files[0];
+      let p='';
+      if(f) p=await up(f);
+      const col=el('ov-dis').dataset.type==='review'?'review-complaints':'appeals';
+      const type=el('ov-dis').dataset.type==='review'?'review':el('ov-dis').dataset.type==='ban'?'ban':'warn';
+      await db.collection(col).add({
+        targetId: el('ov-dis').dataset.id,
+        reason: r,
+        photo: p,
+        by: user.uid,
+        byNick: prof.nickname,
+        type: type,
+        reviewed: false,
+        createdAt: new Date().toISOString()
+      });
+      alert('✅ Отправлено');
+      el('ov-dis').classList.remove('active');
+    };
+    el('close-dis').onclick=()=>el('ov-dis').classList.remove('active');
+
+    el('adm-link').onclick=()=>el('ov-adm').classList.add('active');
+    el('close-adm').onclick=()=>el('ov-adm').classList.remove('active');
+    document.querySelectorAll('.adm-cat').forEach(cat=>{
+      cat.onclick=async()=>{
+        document.querySelectorAll('.adm-cat').forEach(c=>c.classList.remove('active'));
+        cat.classList.add('active');
+        const box=el('adm-content');
+        box.innerHTML='⏳ Загрузка...';
+        const t=cat.dataset.c;
+        try{
+          if(t==='listings'){
+            const snap=await db.collection('listings').where('status','in',['pending','blocked']).get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет объявлений на модерации</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const l=d.data();
+              const reason=l.blockReason?`<p style="font-size:0.75rem;color:#ef4444;">🔒 Причина: ${l.blockReason}</p>`:'';
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>${l.title}</b><p style="font-size:0.8rem; color:#64748b;">ID: ${l.shortId||d.id} • ${l.authorNick} • ${l.status}</p><p><b>Категория:</b> ${l.category} | <b>Состояние:</b> ${l.condition}</p><p><b>Цена:</b> ${l.price?.toLocaleString()} ₽</p><p><b>Описание:</b> ${l.description}</p>${reason}${l.photos?.[0]?`<img src="${l.photos[0]}">`:''}<div class="adm-acts"><button class="btn-ok" onclick="admOk('lst','${d.id}')">✓ Одобрить</button><button class="btn-no" onclick="admNo('lst','${d.id}','blocked')">✕ Заблокировать</button></div>`;
+              box.appendChild(elA);
+            });
+          }
+          else if(t==='reviews'){
+            const snap=await db.collection('reviews').where('moderated','==',false).get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет отзывов на модерации</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const r=d.data();
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>${r.authorNick}</b> → ${r.targetUserId}<p style="font-size:0.8rem; color:#64748b;">⭐${r.rating} • ${r.status} • ${r.type}</p><p><b>Объявление:</b> ${r.listingTitle||'—'}</p><p>${r.text}</p>${r.photo?`<img src="${r.photo}">`:''}<div class="adm-acts"><button class="btn-ok" onclick="admOk('rev','${d.id}')">✓ Одобрить</button><button class="btn-no" onclick="admNo('rev','${d.id}')">✕ Отклонить</button></div>`;
+              box.appendChild(elA);
+            });
+          }
+          else if(t==='complaints'){
+            const snap=await db.collection('review-complaints').where('reviewed','==',false).get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет жалоб</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const c=d.data();
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>Жалоба</b><p style="font-size:0.8rem; color:#64748b;">От: ${c.authorId} • ${new Date(c.createdAt).toLocaleDateString()}</p><p><b>Причина:</b> ${c.reason}</p>${c.photo?`<img src="${c.photo}">`:''}<div class="adm-acts"><button class="btn-ok" onclick="admOk('comp','${d.id}')">✓ Удалить отзыв</button><button class="btn-no" onclick="admNo('comp','${d.id}')">✕ Отклонить</button></div>`;
+              box.appendChild(elA);
+            });
+          }
+          else if(t==='reports'){
+            const snap=await db.collection('support-reports').where('status','==','new').get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет новых репортов</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const r=d.data();
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>🚨 Репорт в чате</b>
+                <p style="font-size:0.8rem; color:#64748b;">От: ${r.byNick} (UID: ${r.by})</p>
+                <p><b>Причина:</b> ${r.reason}</p>
+                <p style="font-size:0.7rem; color:#94a3b8;">Чат: ${r.chatId}</p>
+                <div class="adm-acts">
+                  <button class="btn-ok" onclick="admOk('rep','${d.id}','${r.by}')">⚠️ Выдать варн</button>
+                  <button class="btn-no" onclick="admBan('rep','${d.id}','${r.by}')">🚫 Забанить</button>
+                  <button class="btn-sec" onclick="db.collection('support-reports').doc('${d.id}').update({status:'closed'})">✅ Закрыть</button>
+                </div>`;
+              box.appendChild(elA);
+            });
+          }
+          else if(t==='ban-appeals'){
+            const snap=await db.collection('appeals').where('type','==','ban').where('reviewed','==',false).get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет апелляций по банам</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const a=d.data();
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>${a.byNick}</b><p>${a.reason}</p>${a.photo?`<img src="${a.photo}">`:''}<div class="adm-acts"><button class="btn-ok" onclick="admOk('ban_ap','${d.id}','${a.targetId}')">✅ Разбанить</button><button class="btn-no" onclick="admNo('ban_ap','${d.id}')">❌</button></div>`;
+              box.appendChild(elA);
+            });
+          }
+          else if(t==='warn-appeals'){
+            const snap=await db.collection('appeals').where('type','==','warn').where('reviewed','==',false).get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет апелляций по варнам</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const a=d.data();
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>${a.byNick}</b><p>${a.reason}</p><div class="adm-acts"><button class="btn-ok" onclick="admOk('warn_ap','${d.id}')">✅ Снять варн</button><button class="btn-no" onclick="admNo('warn_ap','${d.id}')">❌</button></div>`;
+              box.appendChild(elA);
+            });
+          }
+          else if(t==='ban'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID и причина бана:</p><input type="text" id="ban-uid" placeholder="UID" class="adm-inp"><input type="text" id="ban-reason" placeholder="Причина" class="adm-inp"><button class="btn-ok" onclick="admBan()">🚫 Забанить</button>`;
+          }
+          else if(t==='unban'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID пользователя:</p><input type="text" id="unban-uid" placeholder="UID" class="adm-inp"><button class="btn-ok" onclick="admUnban()">✅ Разбанить</button>`;
+          }
+          else if(t==='warn'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID и текст:</p><input type="text" id="warn-uid" placeholder="UID" class="adm-inp"><textarea id="warn-txt" placeholder="Текст" class="adm-inp"></textarea><button class="btn-ok" onclick="admWarn()">⚠️ Выдать варн</button>`;
+          }
+          else if(t==='chats-view'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID пользователя:</p><input type="text" id="chat-uid" placeholder="UID" class="adm-inp"><button class="btn-ok" onclick="admChats()">🔍 Найти</button><div id="chat-res"></div>`;
+          }
+          else box.innerHTML='<p class="empty">Категория в разработке</p>';
+        }catch(e){ box.innerHTML='<p class="msg err">Ошибка: '+e.message+'</p>'; }
+      };
+    });
+
+    window.admOk = async (t, id, uid) => {
+      try{
+        if(t==='lst') await db.collection('listings').doc(id).update({status:'active'});
+        else if(t==='rev') await db.collection('reviews').doc(id).update({moderated:true});
+        else if(t==='comp'){
+          const c=await db.collection('review-complaints').doc(id).get();
+          await db.collection('reviews').doc(c.data().reviewId).delete();
+          await db.collection('review-complaints').doc(id).update({reviewed:true});
+          await recalcRating(c.data().targetUserId);
+        }
+        else if(t==='ban_ap'||t==='warn_ap'){
+          const snap=await db.collection('appeals').doc(id).get();
+          await db.collection('appeals').doc(id).update({reviewed:true});
+          if(t==='ban_ap'&&uid) await db.collection('users').doc(uid).update({banned:false,banReason:''});
+          if(t==='warn_ap') await db.collection('users').doc(uid).update({warned:false,warnReason:''});
+        }
+        else if(t==='rep'){
+          await db.collection('support-reports').doc(id).update({status:'closed'});
+          if(uid) await db.collection('users').doc(uid).update({warned:true, warnReason:'Жалоба в чате поддержки'});
+          alert('✅ Варн выдан');
+        }
+        else if(t==='av'){
+          const u=await db.collection('users').doc(id).get();
+          await db.collection('users').doc(id).update({avatar:u.data().pendingAv, modAv:false, pendingAv:null});
+        }
+        else if(t==='nk'){
+          const u=await db.collection('users').doc(id).get();
+          await db.collection('users').doc(id).update({nickname:u.data().pendingNick, modNick:false, pendingNick:null});
+        }
+        alert('✅ Одобрено');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+    
+    window.admBan = async (t, id, uid) => {
+      try{
+        if(t==='rep'){
+          const reason=prompt('Причина бана:')||'Жалоба в чате поддержки';
+          await db.collection('support-reports').doc(id).update({status:'closed'});
+          if(uid) await db.collection('users').doc(uid).update({banned:true, banReason:reason});
+          alert('🚫 Пользователь забанен');
+        }else{
+          const reason=el('ban-reason').value.trim();
+          if(!uid||!reason) return alert('Заполните поля');
+          await db.collection('users').doc(uid).update({banned:true, banReason:reason});
+          alert('🚫 Забанен');
+        }
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+    
+    window.admNo = async (t, id, st='rejected') => {
+      try{
+        if(t==='lst') await db.collection('listings').doc(id).update({status:st});
+        else if(t==='rev') await db.collection('reviews').doc(id).delete();
+        else if(t==='comp'||t==='ban_ap'||t==='warn_ap'||t==='rep') await db.collection(t==='comp'?'review-complaints':'appeals').doc(id).update({reviewed:true});
+        else if(t==='av'||t==='nk') await db.collection('users').doc(id).update({modAv:false,modNick:false,pendingAv:null,pendingNick:null});
+        alert('❌ Отклонено');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+    window.admUnban = async () => {
+      const uid=el('unban-uid').value.trim();
+      if(!uid) return;
+      await db.collection('users').doc(uid).update({banned:false, banReason:''});
+      alert('✅ Разбанен');
+      document.querySelector('.adm-cat.active').click();
+    };
+    window.admWarn = async () => {
+      const uid=el('warn-uid').value.trim(), text=el('warn-txt').value.trim();
+      if(!uid||!text) return alert('Заполните поля');
+      await db.collection('users').doc(uid).update({warned:true, warnReason:text});
+      alert('⚠️ Варн выдан');
+      document.querySelector('.adm-cat.active').click();
+    };
+    window.admChats = async () => {
+      const uid=el('chat-uid').value.trim();
+      if(!uid) return alert('Введите UID');
+      const box=el('chat-res');
+      box.innerHTML='⏳ Загрузка...';
+      try{
+        const snap=await db.collection('chats').where('users','array-contains',uid).get();
+        if(snap.empty){box.innerHTML='<p class="empty">Чатов нет</p>';return;}
+        box.innerHTML='';
+        for(const d of snap.docs){
+          const c=d.data();
+          const msgs=await db.collection(`chats/${d.id}/msgs`).orderBy('ts','asc').get();
+          let msgsHtml='';
+          msgs.forEach(m=>{
+            const md=m.data();
+            const ts=new Date(md.ts?.toDate?.()||md.ts);
+            msgsHtml+=`<div style="padding:0.3rem 0; border-bottom:1px solid var(--border); font-size:0.8rem;">
+              <b>${md.uid===uid?'Вы':c.partner}</b> (${ts.toLocaleTimeString()}): ${md.text}
+            </div>`;
+          });
+          box.innerHTML+=`<div class="adm-it"><b>Чат: ${c.partner}</b><p style="font-size:0.8rem;color:#64748b;">ID: ${d.id}</p>${msgsHtml}</div>`;
+        }
+      }catch(e){ box.innerHTML='<p class="msg err">Ошибка: '+e.message+'</p>'; }
+    };
+    async function recalcRating(uid){
+      try{
+        const snap=await db.collection('reviews').where('targetUserId','==',uid).where('moderated','==',true).get();
+        let total=0, count=0;
+        snap.forEach(d=>{ total+=d.data().rating; count++; });
+        const rating = count>0 ? total/count : 0;
+        await db.collection('users').doc(uid).update({rating, reviewCount:count});
+      }catch(e){console.error('Ошибка пересчёта рейтинга:',e);}
+    }
+
+    async function checkBlock(u){
+      if(!u||!prof) return;
+      if(prof.banned){
+        el('blk-icon').textContent='❌';
+        el('blk-tit').textContent='Вы заблокированы';
+        el('blk-reas').innerHTML=`<b>Причина:</b> ${prof.banReason||'Нарушение правил'}<br><b>Дата:</b> ${new Date().toLocaleDateString()}`;
+        el('blk-appeal').style.display='block';
+        el('blk-close').style.display='block';
+        el('modal-block').classList.remove('hidden');
+        return true;
+      }
+      if(prof.warned){
+        el('blk-icon').textContent='⚠️';
+        el('blk-tit').textContent='Предупреждение';
+        el('blk-reas').textContent=prof.warnReason||'Нарушение правил';
+        el('blk-appeal').style.display='block';
+        el('blk-close').style.display='block';
+        el('modal-block').classList.remove('hidden');
+        return false;
+      }
+      return false;
+    }
+    el('blk-appeal').onclick=()=>{openDis(user.uid,prof.banned?'ban':'warn');el('modal-block').classList.add('hidden');};
+    el('blk-close').onclick=()=>{if(!prof.banned)el('modal-block').classList.add('hidden');};
+
+    auth.onAuthStateChanged(async (u) => {
+      user=u; 
+      if(!u){ el('modal-block').classList.add('hidden'); show('scr-auth'); return; }
+      try { 
+        const s=await db.collection('users').doc(u.uid).get(); 
+        prof=s.exists?s.data():{};
+        await db.collection('users').doc(u.uid).set({lastOnline:new Date().toISOString()},{merge:true});
+        const blocked=await checkBlock(u);
+        if(blocked) return;
+        show(prof.nickname?'scr-app':'scr-on'); 
+        loadTab('home'); 
+      } catch(e){ console.error('Ошибка загрузки профиля:', e); show('scr-on'); }
+    });
+
+    console.log('✅ Viosell запущен. Ожидание авторизации...');
+  </script>
 </body>
 </html>
