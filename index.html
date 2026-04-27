@@ -241,6 +241,7 @@
       <div class="adm-cat" data-c="ban-appeals">📩 Апелляции по банам</div>
       <div class="adm-cat" data-c="warn-appeals">📩 Апелляции по варнам</div>
       <div class="adm-cat" data-c="reports">🚨 Репорты</div>
+      <div class="adm-cat" data-c="support">💬 Поддержка</div>
       <div class="adm-cat" data-c="ban">🚫 Забанить игрока</div>
       <div class="adm-cat" data-c="unban">✅ Разбанить игрока</div>
       <div class="adm-cat" data-c="warn">⚠️ Предупреждение</div>
@@ -530,7 +531,17 @@
         await db.collection('chats').doc(chatId).update({[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
         let snap;
         if(isSupport){
-          snap=await db.collection('support').where('uid','==',user.uid).orderBy('time','asc').get();
+          // 🔧 Упрощенный запрос без orderBy для избежания индекса
+          snap=await db.collection('support').where('uid','==',user.uid).get();
+          // Также загружаем ответы админа этому пользователю
+          const adminReplies=await db.collection('support').where('targetUid','==',user.uid).where('fromAdmin','==',true).get();
+          // Объединяем и сортируем вручную
+          const allMsgs=[...snap.docs,...adminReplies.docs].sort((a,b)=>{
+            const ta=a.data().time?.toDate?.()||a.data().time;
+            const tb=b.data().time?.toDate?.()||b.data().time;
+            return new Date(ta)-new Date(tb);
+          });
+          snap={forEach:cb=>allMsgs.forEach(cb), size:allMsgs.length};
         }else{
           snap=await db.collection(`chats/${chatId}/msgs`).orderBy('ts','asc').get();
         }
@@ -549,12 +560,15 @@
         }
         snap.forEach(d=>{
           const m=d.data();
-          const isMe=isSupport?(m.uid===user.uid):(m.uid===user.uid);
+          const isMe=isSupport?(m.uid===user.uid || (m.fromAdmin && m.targetUid===user.uid)):(m.uid===user.uid);
           const checks=m.read?.includes(user.uid)?'✅':'✓';
           const ts=new Date(m.ts?.toDate?.()||m.ts||m.time);
           const elM=document.createElement('div');
           elM.className='msg-it';
-          if(isSupport && !isMe){
+          if(isSupport && m.fromAdmin){
+            // Ответ админа - показываем без @UID
+            elM.innerHTML=`<p class="m-meta">Поддержка • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
+          }else if(isSupport && !isMe){
             elM.innerHTML=`<p class="m-meta">${m.name||'Пользователь'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
           }else if(isSupport && isMe){
             elM.innerHTML=`<p class="m-meta">Вы • ${ts.toLocaleTimeString()}</p><div class="m-bub m-me">${m.text}</div>`;
@@ -625,6 +639,7 @@
           curCh.msgCount=0;
         }else{
           if(curCh.isSupport){
+            // 🔧 Пользователь отправляет в поддержку
             await db.collection('support').add({
               uid: user.uid,
               name: prof.nickname,
@@ -683,6 +698,8 @@
       el('ov-chat').classList.remove('active');
       loadChatList();
     }
+    
+    // 🔧 Репорт в чате
     window.sendReport=()=>{
       const reason=prompt('Причина репорта:');
       if(reason){
@@ -697,19 +714,36 @@
         alert('🚨 Жалоба отправлена');
       }
     };
+    
+    // 🔧 Исправленная загрузка товаров для отзыва
     window.openRevForm=()=>{
       el('rf-lst').innerHTML='';
+      if(!curCh || !curCh.partnerUid){
+        el('rf-lst').innerHTML='<option value="">Нет доступных объявлений</option>';
+        openModal('modal-revf');
+        return;
+      }
       (async()=>{
-        const snap=await db.collection('listings').where('authorId','==',curCh.partnerUid).get();
-        snap.forEach(doc=>{
-          const l=doc.data();
-          const o=document.createElement('option');
-          o.value=doc.id;
-          o.textContent=`${l.title} — ${l.price?.toLocaleString()} ₽`;
-          el('rf-lst').appendChild(o);
-        });
+        try{
+          const snap=await db.collection('listings').where('authorId','==',curCh.partnerUid).where('status','==','active').get();
+          if(snap.empty){
+            el('rf-lst').innerHTML='<option value="">У пользователя нет активных объявлений</option>';
+          }else{
+            snap.forEach(doc=>{
+              const l=doc.data();
+              const o=document.createElement('option');
+              o.value=doc.id;
+              o.textContent=`${l.title} — ${l.price?.toLocaleString()} ₽`;
+              el('rf-lst').appendChild(o);
+            });
+          }
+          openModal('modal-revf');
+        }catch(e){
+          console.error('Ошибка загрузки объявлений:',e);
+          el('rf-lst').innerHTML='<option value="">Ошибка загрузки</option>';
+          openModal('modal-revf');
+        }
       })();
-      el('ov-revf').classList.add('active');
     };
     
     document.querySelectorAll('#st-pick span').forEach(s=>{
@@ -727,8 +761,11 @@
       let pic='';
       if(file) pic=await up(file);
       const lstId=el('rf-lst').value;
-      const chat=await db.collection('chats').doc(curCh).get();
-      const d=chat.data(), partnerId=d.users.find(u=>u!==user.uid);
+      if(!lstId) return alert('Выберите объявление');
+      const chat=await db.collection('chats').doc(curCh?.id).get();
+      const d=chat.data();
+      if(!d || !d.users) return alert('Ошибка чата');
+      const partnerId=d.users.find(u=>u!==user.uid);
       const isFirst=user.uid < partnerId;
       const lst = await db.collection('listings').doc(lstId).get();
       await db.collection('reviews').add({
@@ -890,6 +927,35 @@
               box.appendChild(elA);
             });
           }
+          // 🔧 НОВАЯ КАТЕГОРИЯ: Поддержка
+          else if(t==='support'){
+            // 🔧 Загружаем все сообщения из поддержки для админа
+            const snap=await db.collection('support').get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет сообщений в поддержке</p>';return;}
+            box.innerHTML='';
+            // Группируем по пользователям
+            const byUser={};
+            snap.forEach(d=>{
+              const m=d.data();
+              const uid=m.fromAdmin?m.targetUid:m.uid;
+              if(!byUser[uid]) byUser[uid]={msgs:[], name:m.name||'Пользователь'};
+              byUser[uid].msgs.push({id:d.id, ...m});
+            });
+            Object.entries(byUser).forEach(([uid, data])=>{
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              let msgsHtml=data.msgs.map(m=>{
+                const ts=new Date(m.time?.toDate?.()||m.time);
+                return `<p style="font-size:0.8rem;margin:0.2rem 0;"><b>${m.fromAdmin?'Админ':data.name}</b> (${ts.toLocaleTimeString()}): ${m.text}</p>`;
+              }).join('');
+              elA.innerHTML=`<b>💬 Чат с: ${data.name}</b><p style="font-size:0.7rem;color:#64748b;">UID: ${uid}</p>${msgsHtml}
+                <div class="adm-acts">
+                  <input type="text" id="reply-${uid}" placeholder="Ответ..." style="width:60%;margin-right:5px;">
+                  <button class="btn-ok" onclick="sendSupportReply('${uid}')">📤 Ответить</button>
+                </div>`;
+              box.appendChild(elA);
+            });
+          }
           else if(t==='ban-appeals'){
             const snap=await db.collection('appeals').where('type','==','ban').where('reviewed','==',false).get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет апелляций по банам</p>';return;}
@@ -930,6 +996,39 @@
         }catch(e){ box.innerHTML='<p class="msg err">Ошибка: '+e.message+'</p>'; }
       };
     });
+
+    // 🔧 Функция отправки ответа из панели поддержки
+    window.sendSupportReply = async (targetUid) => {
+      const txt=el(`reply-${targetUid}`).value.trim();
+      if(!txt) return alert('Введите текст ответа');
+      try{
+        await db.collection('support').add({
+          fromAdmin: true,
+          targetUid: targetUid,
+          text: txt,
+          time: new Date(),
+          adminEmail: user.email
+        });
+        // Обновляем чат пользователя
+        const chatRef=db.collection('chats').doc(`support_${targetUid}`);
+        await chatRef.set({
+          users:['admin',targetUid],
+          partner:'Поддержка Viosell',
+          avatar:'',
+          listingId:null,
+          listingTitle:'Поддержка',
+          type:'support',
+          lastMsg:txt,
+          lastMsgTime:new Date().toISOString(),
+          muted:[],
+          pinned:false,
+          unread:{[targetUid]:firebase.firestore.FieldValue.increment(1)}
+        },{merge:true});
+        el(`reply-${targetUid}`).value='';
+        alert('✅ Ответ отправлен');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
 
     window.admOk = async (t, id, uid) => {
       try{
