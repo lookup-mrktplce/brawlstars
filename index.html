@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viosell</title>
+  <!-- Firebase Compat SDK для надёжности -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
     :root { --primary: #2563eb; --bg: #f8fafc; --card: #fff; --text: #0f172a; --border: #cbd5e1; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 14px; }
     body.dark { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; --shadow: 0 4px 12px rgba(0,0,0,0.4); }
@@ -256,11 +260,8 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, updateDoc, arrayUnion, increment, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+  <script>
+    // ✅ ИНИЦИАЛИЗАЦИЯ FIREBASE COMPAT
     const firebaseConfig = {
       apiKey: "AIzaSyDESE8nQzP2iF0YKVexxqRJ6kWoLjDmHw8",
       authDomain: "exzzy1-84d88.firebaseapp.com",
@@ -269,16 +270,16 @@
       messagingSenderId: "892085705947",
       appId: "1:892085705947:web:bbbd44ebc1cf460bdbc0fe"
     };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
 
+    // ✅ ИСПРАВЛЕНО: валидный синтаксис
     let user = null, prof = null;
     let curLst = null, curCh = null, chCnt = 0, chData = null;
     let galPh = [], galIdx = 0;
-    let wizData = { files: [],  {} };
+    let wizData = { files: [], data: {} };
     let stSel = 0;
 
     const loadTheme = () => { if(localStorage.getItem('vio-theme')==='dark'){document.body.classList.add('dark');document.getElementById('theme-toggle').textContent='☀️';} };
@@ -289,20 +290,22 @@
     function msg(t,ok){ const e=document.getElementById('a-msg'); e.textContent=t; e.className=`msg ${ok?'ok':'err'}`; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),4000); }
     function el(id){ return document.getElementById(id); }
 
+    // 🔐 АВТОРИЗАЦИЯ
     el('btn-login').onclick = async () => {
       const e=el('a-email').value.trim(), p=el('a-pass').value;
       if(!e||!p) return msg('Заполните поля');
-      try { await signInWithEmailAndPassword(auth,e,p); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка входа'); }
+      try { await auth.signInWithEmailAndPassword(e,p); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка входа'); }
     };
     el('btn-reg').onclick = async () => {
       const e=el('a-email').value.trim(), p=el('a-pass').value;
       if(!e||p.length<6) return msg('Пароль мин. 6 символов');
-      try { await createUserWithEmailAndPassword(auth,e,p); msg('✅ Аккаунт создан!','ok'); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка регистрации'); }
+      try { await auth.createUserWithEmailAndPassword(e,p); msg('✅ Аккаунт создан!','ok'); } catch(err){ msg(err.code?.replace('auth/','')||'Ошибка регистрации'); }
     };
     el('btn-google').onclick = async () => {
-      try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(err){ msg('Google: '+(err.code?.replace('auth/','')||'Разреши всплывающие окна')); }
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try { await auth.signInWithPopup(provider); } catch(err){ msg('Google: '+(err.code?.replace('auth/','')||'Разреши всплывающие окна')); }
     };
-    el('btn-logout').onclick = () => signOut(auth);
+    el('btn-logout').onclick = () => auth.signOut();
     el('logo-ref').onclick = () => location.reload();
 
     async function up(file){ 
@@ -331,7 +334,7 @@
     el('on-check').onchange = (e)=>el('on-btn3').disabled=!e.target.checked;
     el('on-btn3').onclick = async () => { 
       if(!auth.currentUser)return; 
-      await setDoc(doc(db,'users',auth.currentUser.uid),{nickname:prof.nick,avatar:prof.av,createdAt:new Date().toISOString(),rating:0,reviewCount:0,modNick:false,modAv:false},{merge:true}); 
+      await db.collection('users').doc(auth.currentUser.uid).set({nickname:prof.nick,avatar:prof.av,createdAt:new Date().toISOString(),rating:0,reviewCount:0,modNick:false,modAv:false},{merge:true}); 
       show('scr-app'); 
     };
 
@@ -342,7 +345,7 @@
     async function loadFeed(q=''){
       const box=el('feed'), emp=el('no-feed'); box.innerHTML='';
       try {
-        const snap = await getDocs(query(collection(db,'listings'), where('status','==','active')));
+        const snap = await db.collection('listings').where('status','==','active').get();
         let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()}));
         if(q) items=items.filter(l=>(l.title||'').toLowerCase().includes(q.toLowerCase()));
         items.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
@@ -358,7 +361,7 @@
       if(!user)return;
       const box=el('my-feed'), emp=el('no-my'); box.innerHTML='';
       try {
-        const snap=await getDocs(query(collection(db,'listings'), where('authorId','==',user.uid)));
+        const snap=await db.collection('listings').where('authorId','==',user.uid).get();
         let items=[]; snap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
         if(!items.length){emp.classList.remove('hidden');return;} emp.classList.add('hidden');
         items.forEach(l=>{
@@ -374,14 +377,13 @@
       if(!user)return;
       const box=el('chat-list'), emp=el('no-chat'); box.innerHTML='';
       try {
-        // 🔧 Чат поддержки через коллекцию support (как в старом проекте)
-        const supRef=doc(db,'chats',`support_${user.uid}`);
-        const supSnap=await getDoc(supRef);
+        const supRef=db.collection('chats').doc(`support_${user.uid}`);
+        const supSnap=await supRef.get();
         if(!supSnap.exists()){
-          await setDoc(supRef,{users:['admin',user.uid],partner:'Поддержка Viosell',avatar:'',listingId:null,listingTitle:'Поддержка',type:'support',lastMsg:'',lastMsgTime:new Date().toISOString(),muted:[],pinned:false,unread:0});
+          await supRef.set({users:['admin',user.uid],partner:'Поддержка Viosell',avatar:'',listingId:null,listingTitle:'Поддержка',type:'support',lastMsg:'',lastMsgTime:new Date().toISOString(),muted:[],pinned:false,unread:0});
         }
-        const supData=(await getDoc(supRef)).data()||{};
-        const s=await getDocs(query(collection(db,'chats'),where('users','array-contains',user.uid)));
+        const supData=(await supRef.get()).data()||{};
+        const s=await db.collection('chats').where('users','array-contains',user.uid).get();
         let items=[]; s.forEach(d=>{ if(d.id!==`support_${user.uid}`) items.push({id:d.id,...d.data()}); });
         items.sort((a,b)=>(b.lastMsgTime||'').localeCompare(a.lastMsgTime||''));
         const pinned=items.filter(x=>x.pinned);
@@ -414,12 +416,12 @@
     async function viewLst(id){
       curLst=id; galPh=[]; galIdx=0;
       try {
-        const snap=await getDoc(doc(db,'listings',id));
+        const snap=await db.collection('listings').doc(id).get();
         if(!snap.exists()) return alert('❌ Объявление не найдено');
         const l={id,...snap.data()};
         if(user && l.authorId!==user.uid){
-          await updateDoc(doc(db,'listings',id),{views:increment(1)});
-          if(l.category) await setDoc(doc(db,'users',user.uid),{interests:arrayUnion(l.category)},{merge:true});
+          await db.collection('listings').doc(id).update({views:firebase.firestore.FieldValue.increment(1)});
+          if(l.category) await db.collection('users').doc(user.uid).set({interests:firebase.firestore.FieldValue.arrayUnion(l.category)},{merge:true});
         }
         galPh = l.photos || [];
         const gal = el('gallery'); gal.innerHTML = `<div class="gal-nav"><button class="gal-btn" id="gal-prev">‹</button><button class="gal-btn" id="gal-next">›</button></div><div class="gal-dots" id="gal-dots"></div>`;
@@ -428,7 +430,7 @@
         el('v-tit').textContent=l.title; el('v-price').textContent=`${l.price?.toLocaleString()} ₽`; el('v-id').textContent=l.shortId||l.id;
         el('v-cat').textContent=l.category||'-'; el('v-cond').textContent=l.condition||'-'; el('v-desc').textContent=l.description||'Без описания'; el('v-views').textContent=l.views||0;
         if(l.authorId){
-          const s=await getDoc(doc(db,'users',l.authorId)); if(s.exists()){ const d=s.data(); el('s-av').style.backgroundImage=`url('${d.avatar||''}')`; el('s-nick').textContent=d.nickname||'Пользователь'; el('s-rate').textContent=(d.rating||0).toFixed(1); el('s-rev').textContent=d.reviewCount||0; const online=(d.lastOnline&&(Date.now()-new Date(d.lastOnline).getTime())<300000); el('s-stat').textContent=online?'🟢 В сети':'⚫ Не в сети'; el('s-stat').className=`status ${online?'st-online':'st-offline'}`; el('v-seller').dataset.uid=l.authorId; el('v-seller').dataset.name=d.nickname||'Пользователь'; el('v-seller').dataset.av=d.avatar||''; }
+          const s=await db.collection('users').doc(l.authorId).get(); if(s.exists()){ const d=s.data(); el('s-av').style.backgroundImage=`url('${d.avatar||''}')`; el('s-nick').textContent=d.nickname||'Пользователь'; el('s-rate').textContent=(d.rating||0).toFixed(1); el('s-rev').textContent=d.reviewCount||0; const online=(d.lastOnline&&(Date.now()-new Date(d.lastOnline).getTime())<300000); el('s-stat').textContent=online?'🟢 В сети':'⚫ Не в сети'; el('s-stat').className=`status ${online?'st-online':'st-offline'}`; el('v-seller').dataset.uid=l.authorId; el('v-seller').dataset.name=d.nickname||'Пользователь'; el('v-seller').dataset.av=d.avatar||''; }
         }
         el('ov-list').classList.add('active');
       } catch(e){ alert('Ошибка: '+e.message); }
@@ -441,7 +443,7 @@
     async function viewProf(uid){
       if(uid==='admin') return;
       try{
-        const s=await getDoc(doc(db,'users',uid));
+        const s=await db.collection('users').doc(uid).get();
         if(!s.exists()) return alert('Пользователь не найден');
         const u=s.data();
         const ov=document.createElement('div');
@@ -470,7 +472,7 @@
           box.style.cssText='background:var(--card);padding:1rem;border-radius:10px;margin-top:1rem;max-height:300px;overflow-y:auto;';
           box.innerHTML='<p class="empty">Загрузка...</p>';
           ov.appendChild(box);
-          const snaps=await getDocs(query(collection(db,'reviews'),where('targetUserId','==',uid),where('moderated','==',true)));
+          const snaps=await db.collection('reviews').where('targetUserId','==',uid).where('moderated','==',true).get();
           box.innerHTML='';
           if(snaps.empty) box.innerHTML='<p class="empty">Нет отзывов</p>';
           snaps.forEach(d=>{
@@ -511,7 +513,7 @@
         el('c-lst').style.display='flex';
         try{
           if(lstId){
-            const l=await getDoc(doc(db,'listings',lstId));
+            const l=await db.collection('listings').doc(lstId).get();
             if(l.exists()){
               const d=l.data();
               el('c-lst-img').src=d.photos?.[0]||'';
@@ -523,19 +525,18 @@
       }
       if(chatId){
         curCh.id=chatId;
-        await updateDoc(doc(db,'chats',chatId),{[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
-        // 🔧 Для поддержки используем отдельную коллекцию 'support'
+        await db.collection('chats').doc(chatId).update({[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
         let snap;
         if(isSupport){
-          snap=await getDocs(query(collection(db,'support'),where('uid','==',user.uid).orderBy('time','asc')));
+          snap=await db.collection('support').where('uid','==',user.uid).orderBy('time','asc').get();
         }else{
-          snap=await getDocs(query(collection(db,`chats/${chatId}/msgs`),orderBy('ts','asc')));
+          snap=await db.collection(`chats/${chatId}/msgs`).orderBy('ts','asc').get();
         }
         curCh.msgCount=snap.size;
-        if(!isSupport) chData=(await getDoc(doc(db,'chats',chatId))).data();
+        if(!isSupport) chData=(await db.collection('chats').doc(chatId).get()).data();
         if(!isSupport && chData?.users){
           curCh.userId2 = chData.users.find(u=>u!==user.uid);
-          const other=await getDoc(doc(db,'users',curCh.userId2));
+          const other=await db.collection('users').doc(curCh.userId2).get();
           if(other.exists()){
             const o=other.data();
             const online=(o.lastOnline&&(Date.now()-new Date(o.lastOnline).getTime())<300000);
@@ -551,7 +552,6 @@
           const ts=new Date(m.ts?.toDate?.()||m.ts||m.time);
           const elM=document.createElement('div');
           elM.className='msg-it';
-          // 🔧 Для поддержки показываем ник и время
           if(isSupport && !isMe){
             elM.innerHTML=`<p class="m-meta">${m.name||'Пользователь'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
           }else if(isSupport && isMe){
@@ -604,7 +604,7 @@
       try{
         if(curCh.id==='new'){
           const sellerId = el('v-seller')?.dataset.uid || curCh.userId2;
-          const ref=await addDoc(collection(db,'chats'),{
+          const ref=await db.collection('chats').add({
             users:[user.uid,sellerId],
             partner:curCh.partner,
             avatar:curCh.av,
@@ -619,27 +619,25 @@
           });
           curCh.id=ref.id;
           curCh.partnerUid = sellerId;
-          await addDoc(collection(db,`chats/${ref.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
+          await db.collection(`chats/${ref.id}/msgs`).add({uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
           curCh.msgCount=0;
         }else{
-          // 🔧 Для поддержки: используем коллекцию 'support' как в старом проекте
           if(curCh.isSupport){
-            await addDoc(collection(db,'support'),{
+            await db.collection('support').add({
               uid: user.uid,
               name: prof.nickname,
               avatar: prof.avatar,
               text: txt,
               time: new Date()
             });
-            // Обновляем последнее сообщение в чате
-            await updateDoc(doc(db,'chats',curCh.id),{
+            await db.collection('chats').doc(curCh.id).update({
               lastMsg: txt,
               lastMsgTime: new Date().toISOString(),
-              [`unread.admin`]: increment(1)
+              [`unread.admin`]: firebase.firestore.FieldValue.increment(1)
             });
           }else{
-            await addDoc(collection(db,`chats/${curCh.id}/msgs`),{uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
-            await updateDoc(doc(db,'chats',curCh.id),{lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
+            await db.collection(`chats/${curCh.id}/msgs`).add({uid:user.uid,text:txt,ts:new Date(),read:[user.uid]});
+            await db.collection('chats').doc(curCh.id).update({lastMsg:txt,lastMsgTime:new Date().toISOString(),[`unread.${user.uid}`]:(chData?.unread?.[user.uid]||0)});
           }
         }
         if(curCh.msgCount>=10) updateChatMenu();
@@ -653,46 +651,47 @@
       const idx=m.indexOf(user.uid);
       if(idx===-1) m.push(user.uid);
       else m.splice(idx,1);
-      await updateDoc(doc(db,'chats',curCh.id),{muted});
+      await db.collection('chats').doc(curCh.id).update({muted});
       chData.muted=m;
       updateChatMenu();
     }
     async function toggleBlock(){
       if(chData.blockedBy===user.uid){
-        await updateDoc(doc(db,'chats',curCh.id),{blockedBy:null});
+        await db.collection('chats').doc(curCh.id).update({blockedBy:null});
         chData.blockedBy=null;
         alert('✅ Чат разблокирован');
       }else{
-        await updateDoc(doc(db,'chats',curCh.id),{blockedBy:user.uid});
+        await db.collection('chats').doc(curCh.id).update({blockedBy:user.uid});
         chData.blockedBy=user.uid;
         alert('🚫 Чат заблокирован');
       }
       updateChatMenu();
     }
     async function togglePin(){
-      await updateDoc(doc(db,'chats',curCh.id),{pinned:!chData.pinned});
+      await db.collection('chats').doc(curCh.id).update({pinned:!chData.pinned});
       chData.pinned=!chData.pinned;
       alert(chData.pinned?'📌 Закреплён':'📌 Откреплён');
       updateChatMenu();
     }
     async function deleteChat(){
       if(!confirm('⚠️ Удалить чат у обоих? Восстановить нельзя.')) return;
-      await deleteDoc(doc(db,'chats',curCh.id));
-      await getDocs(query(collection(db,`chats/${curCh.id}/msgs`))).then(snap=>snap.forEach(d=>deleteDoc(d.ref)));
+      await db.collection('chats').doc(curCh.id).delete();
+      const msgs=await db.collection(`chats/${curCh.id}/msgs`).get();
+      msgs.forEach(d=>d.ref.delete());
       el('ov-chat').classList.remove('active');
       loadChatList();
     }
     window.sendReport=()=>{
       const reason=prompt('Причина репорта:');
       if(reason){
-        addDoc(collection(db,'support-reports'),{chatId:curCh.id,reason,by:user.uid,byNick:prof.nickname,createdAt:new Date().toISOString()});
+        db.collection('support-reports').add({chatId:curCh.id,reason,by:user.uid,byNick:prof.nickname,createdAt:new Date().toISOString()});
         alert('🚨 Жалоба отправлена');
       }
     };
     window.openRevForm=()=>{
       el('rf-lst').innerHTML='';
       (async()=>{
-        const snap=await getDocs(query(collection(db,'listings'),where('authorId','==',curCh.partnerUid)));
+        const snap=await db.collection('listings').where('authorId','==',curCh.partnerUid).get();
         snap.forEach(doc=>{
           const l=doc.data();
           const o=document.createElement('option');
@@ -719,11 +718,11 @@
       let pic='';
       if(file) pic=await up(file);
       const lstId=el('rf-lst').value;
-      const chat=await getDoc(doc(db,'chats',curCh));
+      const chat=await db.collection('chats').doc(curCh).get();
       const d=chat.data(), partnerId=d.users.find(u=>u!==user.uid);
       const isFirst=user.uid < partnerId;
-      const lst = await getDoc(doc(db,'listings',lstId));
-      await addDoc(collection(db,'reviews'),{
+      const lst = await db.collection('listings').doc(lstId).get();
+      await db.collection('reviews').add({
         targetUserId: partnerId,
         authorId: user.uid,
         authorNick: prof.nickname,
@@ -738,7 +737,7 @@
         moderated: false,
         createdAt: new Date().toISOString()
       });
-      await updateDoc(doc(db,'chats',curCh.id),{reviewedByUser:{[user.uid]:true}});
+      await db.collection('chats').doc(curCh.id).update({reviewedByUser:{[user.uid]:true}});
       alert('✅ Отправлен на модерацию');
       el('ov-revf').classList.remove('active');
       stSel=0;
@@ -751,7 +750,7 @@
       if(!user) return;
       el('ov-rev').classList.add('active');
       el('rev-list').innerHTML='';
-      const snap=await getDocs(query(collection(db,'reviews'), where('targetUserId','==',user.uid), where('moderated','==',true)));
+      const snap=await db.collection('reviews').where('targetUserId','==',user.uid).where('moderated','==',true).get();
       if(snap.empty) return el('no-rev').classList.remove('hidden');
       el('no-rev').classList.add('hidden');
       snap.forEach(d=>{
@@ -768,7 +767,7 @@
     };
     el('close-rev').onclick=()=>el('ov-rev').classList.remove('active');
 
-    el('fab-add').onclick=()=>{wizData={files:[],{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
+    el('fab-add').onclick=()=>{wizData={files:[],data:{}};document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden'));el('w1').classList.remove('hidden');el('ov-wiz').classList.add('active');};
     el('close-wiz').onclick=()=>el('ov-wiz').classList.remove('active');
     const wNext=(cur,next)=>{ el(cur).classList.add('hidden'); el(next).classList.remove('hidden'); };
     el('w-btn1').onclick=()=>{ if(el('w-tit').value.trim().length<3)return; wizData.data.tit=el('w-tit').value; wNext('w1','w2'); };
@@ -778,12 +777,12 @@
     el('w-back5').onclick=()=>wNext('w5','w4'); el('w-btn5').onclick=()=>{ if(wizData.files.length===0)return alert('Добавьте фото'); wNext('w5','w6'); };
     el('w-back6').onclick=()=>wNext('w6','w5');
     el('w-files').onchange=(e)=>{ wizData.files=Array.from(e.target.files).slice(0,10); const p=el('w-prev'); p.innerHTML=''; wizData.files.forEach(f=>{ const i=document.createElement('img'); i.src=URL.createObjectURL(f); p.appendChild(i); }); };
-    el('w-submit').onclick=async()=>{ const desc=el('w-desc').value.trim(); if(desc.length<10)return alert('Описание мин. 10 символов'); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w-load').classList.remove('hidden'); try { const urls=await Promise.all(wizData.files.map(f=>up(f))); const shortId = Math.random().toString(36).slice(2,8).toUpperCase(); await addDoc(collection(db,'listings'),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:desc, photos:urls, authorId:user.uid, authorNick:prof?.nickname, status:'pending', views:0, createdAt:new Date().toISOString(), shortId}); alert('✅ Отправлено на модерацию'); el('ov-wiz').classList.remove('active'); tab('my'); } catch(e){ alert('Ошибка: '+e.message); el('w-load').classList.add('hidden'); el('w6').classList.remove('hidden'); } };
-    window.editLst = async (id) => { const l=await getDoc(doc(db,'listings',id)); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [],  { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await updateDoc(doc(db,'listings',id),{title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
-    window.delLst = async (id) => { if(!confirm('⚠️ Удалить навсегда? Вернуть нельзя.')) return; await deleteDoc(doc(db,'listings',id)); alert('🗑 Удалено'); loadMy(); loadFeed(); };
+    el('w-submit').onclick=async()=>{ const desc=el('w-desc').value.trim(); if(desc.length<10)return alert('Описание мин. 10 символов'); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w-load').classList.remove('hidden'); try { const urls=await Promise.all(wizData.files.map(f=>up(f))); const shortId = Math.random().toString(36).slice(2,8).toUpperCase(); await db.collection('listings').add({title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:desc, photos:urls, authorId:user.uid, authorNick:prof?.nickname, status:'pending', views:0, createdAt:new Date().toISOString(), shortId}); alert('✅ Отправлено на модерацию'); el('ov-wiz').classList.remove('active'); tab('my'); } catch(e){ alert('Ошибка: '+e.message); el('w-load').classList.add('hidden'); el('w6').classList.remove('hidden'); } };
+    window.editLst = async (id) => { const l=await db.collection('listings').doc(id).get(); if(!l.exists() || l.data().authorId!==user.uid) return alert('❌ Нельзя редактировать'); const d=l.data(); wizData = { files: [], data: { tit:d.title, cat:d.category, cond:d.condition, price:d.price, desc:d.description } }; el('w-tit').value=d.title; el('w-cat').value=d.category||''; el('w-cond').value=d.condition||'Новое'; el('w-price').value=d.price||''; el('w-desc').value=d.description||''; el('w-prev').innerHTML = (d.photos||[]).map(url=>`<img src="${url}">`).join(''); document.querySelectorAll('#ov-wiz .step').forEach(s=>s.classList.add('hidden')); el('w6').classList.remove('hidden'); el('ov-wiz').classList.add('active'); el('w-submit').onclick=async()=>{ await db.collection('listings').doc(id).update({title:wizData.data.tit, category:wizData.data.cat, condition:wizData.data.cond, price:wizData.data.price, description:el('w-desc').value.trim(),status:'pending',updatedAt:new Date().toISOString()}); alert('✅ Изменения отправлены на модерацию'); el('ov-wiz').classList.remove('active'); loadMy(); }; };
+    window.delLst = async (id) => { if(!confirm('⚠️ Удалить навсегда? Вернуть нельзя.')) return; await db.collection('listings').doc(id).delete(); alert('🗑 Удалено'); loadMy(); loadFeed(); };
 
-    el('p-nick').onclick = async () => { const n=prompt('Новый никнейм:', prof.nickname); if(!n || n===prof.nickname) return; if(n.length<3||n.length>20) return alert('Ник от 3 до 20 символов'); const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,''); if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова'); await setDoc(doc(db,'users',user.uid),{modNick:true, pendingNick:n},{merge:true}); alert('✅ Отправлен на модерацию.'); };
-    el('p-av').onclick = async () => { const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange = async (e) => { const f=e.target.files[0]; if(!f) return; const u=await up(f); await setDoc(doc(db,'users',user.uid),{modAv:true, pendingAv:u},{merge:true}); alert('✅ Отправлена на модерацию.'); }; inp.click(); };
+    el('p-nick').onclick = async () => { const n=prompt('Новый никнейм:', prof.nickname); if(!n || n===prof.nickname) return; if(n.length<3||n.length>20) return alert('Ник от 3 до 20 символов'); const t=n.toLowerCase().replace(/[^а-яa-z0-9]/g,''); if(/хуй|пизд|еб|бля|порн|секс|сваст|убью|сынху|ху@|п0рно/.test(t)) return alert('❌ Запрещённые слова'); await db.collection('users').doc(user.uid).set({modNick:true, pendingNick:n},{merge:true}); alert('✅ Отправлен на модерацию.'); };
+    el('p-av').onclick = async () => { const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange = async (e) => { const f=e.target.files[0]; if(!f) return; const u=await up(f); await db.collection('users').doc(user.uid).set({modAv:true, pendingAv:u},{merge:true}); alert('✅ Отправлена на модерацию.'); }; inp.click(); };
 
     window.openDis=(id,type)=>{
       el('ov-dis').dataset.id=id;
@@ -800,7 +799,7 @@
       if(f) p=await up(f);
       const col=el('ov-dis').dataset.type==='review'?'review-complaints':'appeals';
       const type=el('ov-dis').dataset.type==='review'?'review':el('ov-dis').dataset.type==='ban'?'ban':'warn';
-      await addDoc(collection(db,col),{
+      await db.collection(col).add({
         targetId: el('ov-dis').dataset.id,
         reason: r,
         photo: p,
@@ -810,7 +809,7 @@
         reviewed: false,
         createdAt: new Date().toISOString()
       });
-      alert('✅ Отправлено'); // 🔧 Добавлено подтверждение
+      alert('✅ Отправлено');
       el('ov-dis').classList.remove('active');
     };
     el('close-dis').onclick=()=>el('ov-dis').classList.remove('active');
@@ -826,7 +825,7 @@
         const t=cat.dataset.c;
         try{
           if(t==='listings'){
-            const snap=await getDocs(query(collection(db,'listings'), where('status','in',['pending','blocked'])));
+            const snap=await db.collection('listings').where('status','in',['pending','blocked']).get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет объявлений на модерации</p>';return;}
             box.innerHTML='';
             snap.forEach(d=>{
@@ -839,7 +838,7 @@
             });
           }
           else if(t==='reviews'){
-            const snap=await getDocs(query(collection(db,'reviews'), where('moderated','==',false)));
+            const snap=await db.collection('reviews').where('moderated','==',false).get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет отзывов на модерации</p>';return;}
             box.innerHTML='';
             snap.forEach(d=>{
@@ -851,7 +850,7 @@
             });
           }
           else if(t==='complaints'){
-            const snap=await getDocs(query(collection(db,'review-complaints'), where('reviewed','==',false)));
+            const snap=await db.collection('review-complaints').where('reviewed','==',false).get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет жалоб</p>';return;}
             box.innerHTML='';
             snap.forEach(d=>{
@@ -863,7 +862,7 @@
             });
           }
           else if(t==='ban-appeals'){
-            const snap=await getDocs(query(collection(db,'appeals'), where('type','==','ban'), where('reviewed','==',false)));
+            const snap=await db.collection('appeals').where('type','==','ban').where('reviewed','==',false).get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет апелляций по банам</p>';return;}
             box.innerHTML='';
             snap.forEach(d=>{
@@ -875,7 +874,7 @@
             });
           }
           else if(t==='warn-appeals'){
-            const snap=await getDocs(query(collection(db,'appeals'), where('type','==','warn'), where('reviewed','==',false)));
+            const snap=await db.collection('appeals').where('type','==','warn').where('reviewed','==',false).get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет апелляций по варнам</p>';return;}
             box.innerHTML='';
             snap.forEach(d=>{
@@ -905,28 +904,28 @@
 
     window.admOk = async (t, id, uid) => {
       try{
-        if(t==='lst') await updateDoc(doc(db,'listings',id),{status:'active'});
-        else if(t==='rev') await updateDoc(doc(db,'reviews',id),{moderated:true});
+        if(t==='lst') await db.collection('listings').doc(id).update({status:'active'});
+        else if(t==='rev') await db.collection('reviews').doc(id).update({moderated:true});
         else if(t==='comp'){
-          const c=await getDoc(doc(db,'review-complaints',id));
-          await deleteDoc(doc(db,'reviews',c.data().reviewId));
-          await updateDoc(doc(db,'review-complaints',id),{reviewed:true});
+          const c=await db.collection('review-complaints').doc(id).get();
+          await db.collection('reviews').doc(c.data().reviewId).delete();
+          await db.collection('review-complaints').doc(id).update({reviewed:true});
           await recalcRating(c.data().targetUserId);
         }
         else if(t==='ban_ap'||t==='warn_ap'){
-          const snap=await getDoc(doc(db,'appeals',id));
-          await updateDoc(doc(db,'appeals',id),{reviewed:true});
-          if(t==='ban_ap'&&uid) await updateDoc(doc(db,'users',uid),{banned:false,banReason:''});
-          if(t==='warn_ap') await updateDoc(doc(db,'users',uid),{warned:false,warnReason:''});
+          const snap=await db.collection('appeals').doc(id).get();
+          await db.collection('appeals').doc(id).update({reviewed:true});
+          if(t==='ban_ap'&&uid) await db.collection('users').doc(uid).update({banned:false,banReason:''});
+          if(t==='warn_ap') await db.collection('users').doc(uid).update({warned:false,warnReason:''});
         }
-        else if(t==='rep') await updateDoc(doc(db,'reports',id),{reviewed:true});
+        else if(t==='rep') await db.collection('reports').doc(id).update({reviewed:true});
         else if(t==='av'){
-          const u=await getDoc(doc(db,'users',id));
-          await updateDoc(doc(db,'users',id),{avatar:u.data().pendingAv, modAv:false, pendingAv:null});
+          const u=await db.collection('users').doc(id).get();
+          await db.collection('users').doc(id).update({avatar:u.data().pendingAv, modAv:false, pendingAv:null});
         }
         else if(t==='nk'){
-          const u=await getDoc(doc(db,'users',id));
-          await updateDoc(doc(db,'users',id),{nickname:u.data().pendingNick, modNick:false, pendingNick:null});
+          const u=await db.collection('users').doc(id).get();
+          await db.collection('users').doc(id).update({nickname:u.data().pendingNick, modNick:false, pendingNick:null});
         }
         alert('✅ Одобрено');
         document.querySelector('.adm-cat.active').click();
@@ -934,10 +933,10 @@
     };
     window.admNo = async (t, id, st='rejected') => {
       try{
-        if(t==='lst') await updateDoc(doc(db,'listings',id),{status:st});
-        else if(t==='rev') await deleteDoc(doc(db,'reviews',id));
-        else if(t==='comp'||t==='ban_ap'||t==='warn_ap'||t==='rep') await updateDoc(doc(db,t==='comp'?'review-complaints':'appeals',id),{reviewed:true});
-        else if(t==='av'||t==='nk') await updateDoc(doc(db,'users',id),{modAv:false,modNick:false,pendingAv:null,pendingNick:null});
+        if(t==='lst') await db.collection('listings').doc(id).update({status:st});
+        else if(t==='rev') await db.collection('reviews').doc(id).delete();
+        else if(t==='comp'||t==='ban_ap'||t==='warn_ap'||t==='rep') await db.collection(t==='comp'?'review-complaints':'appeals').doc(id).update({reviewed:true});
+        else if(t==='av'||t==='nk') await db.collection('users').doc(id).update({modAv:false,modNick:false,pendingAv:null,pendingNick:null});
         alert('❌ Отклонено');
         document.querySelector('.adm-cat.active').click();
       }catch(e){ alert('Ошибка: '+e.message); }
@@ -945,21 +944,21 @@
     window.admBan = async () => {
       const uid=el('ban-uid').value.trim(), reason=el('ban-reason').value.trim();
       if(!uid||!reason) return alert('Заполните поля');
-      await updateDoc(doc(db,'users',uid),{banned:true, banReason:reason});
+      await db.collection('users').doc(uid).update({banned:true, banReason:reason});
       alert('🚫 Забанен');
       document.querySelector('.adm-cat.active').click();
     };
     window.admUnban = async () => {
       const uid=el('unban-uid').value.trim();
       if(!uid) return;
-      await updateDoc(doc(db,'users',uid),{banned:false, banReason:''});
+      await db.collection('users').doc(uid).update({banned:false, banReason:''});
       alert('✅ Разбанен');
       document.querySelector('.adm-cat.active').click();
     };
     window.admWarn = async () => {
       const uid=el('warn-uid').value.trim(), text=el('warn-txt').value.trim();
       if(!uid||!text) return alert('Заполните поля');
-      await updateDoc(doc(db,'users',uid),{warned:true, warnReason:text});
+      await db.collection('users').doc(uid).update({warned:true, warnReason:text});
       alert('⚠️ Варн выдан');
       document.querySelector('.adm-cat.active').click();
     };
@@ -969,12 +968,12 @@
       const box=el('chat-res');
       box.innerHTML='⏳ Загрузка...';
       try{
-        const snap=await getDocs(query(collection(db,'chats'), where('users','array-contains',uid)));
+        const snap=await db.collection('chats').where('users','array-contains',uid).get();
         if(snap.empty){box.innerHTML='<p class="empty">Чатов нет</p>';return;}
         box.innerHTML='';
         for(const d of snap.docs){
           const c=d.data();
-          const msgs=await getDocs(query(collection(db,`chats/${d.id}/msgs`), orderBy('ts','asc')));
+          const msgs=await db.collection(`chats/${d.id}/msgs`).orderBy('ts','asc').get();
           let msgsHtml='';
           msgs.forEach(m=>{
             const md=m.data();
@@ -989,11 +988,11 @@
     };
     async function recalcRating(uid){
       try{
-        const snap=await getDocs(query(collection(db,'reviews'), where('targetUserId','==',uid), where('moderated','==',true)));
+        const snap=await db.collection('reviews').where('targetUserId','==',uid).where('moderated','==',true).get();
         let total=0, count=0;
         snap.forEach(d=>{ total+=d.data().rating; count++; });
         const rating = count>0 ? total/count : 0;
-        await updateDoc(doc(db,'users',uid), {rating, reviewCount:count});
+        await db.collection('users').doc(uid).update({rating, reviewCount:count});
       }catch(e){console.error('Ошибка пересчёта рейтинга:',e);}
     }
 
@@ -1022,13 +1021,14 @@
     el('blk-appeal').onclick=()=>{openDis(user.uid,prof.banned?'ban':'warn');el('modal-block').classList.add('hidden');};
     el('blk-close').onclick=()=>{if(!prof.banned)el('modal-block').classList.add('hidden');};
 
-    onAuthStateChanged(auth, async (u) => {
+    // 🔐 АВТО-ВХОД
+    auth.onAuthStateChanged(async (u) => {
       user=u; 
       if(!u){ el('modal-block').classList.add('hidden'); show('scr-auth'); return; }
       try { 
-        const s=await getDoc(doc(db,'users',u.uid)); 
-        prof=s.exists()?s.data():{};
-        await updateDoc(doc(db,'users',u.uid),{lastOnline:new Date().toISOString()},{merge:true});
+        const s=await db.collection('users').doc(u.uid).get(); 
+        prof=s.exists?s.data():{};
+        await db.collection('users').doc(u.uid).set({lastOnline:new Date().toISOString()},{merge:true});
         const blocked=await checkBlock(u);
         if(blocked) return;
         show(prof.nickname?'scr-app':'scr-on'); 
