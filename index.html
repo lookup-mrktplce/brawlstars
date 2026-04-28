@@ -508,9 +508,12 @@
       el('c-msgs').innerHTML='';
       el('ov-chat').classList.add('active');
       el('c-menu').classList.remove('active');
+      
+      // 🔧 ИСПРАВЛЕНИЕ 1: Статусы вместо "Поддержка"
       if(isSupport){
         el('c-lst').style.display='none';
-        el('c-status').textContent='Поддержка';
+        // Показываем что это поддержка, но статус "В сети" (админ всегда онлайн)
+        el('c-status').textContent='🟢 В сети';
         el('c-status').className='status st-online';
       }else{
         el('c-lst').style.display='flex';
@@ -526,16 +529,14 @@
           }
         }catch(e){}
       }
+      
       if(chatId){
         curCh.id=chatId;
         await db.collection('chats').doc(chatId).update({[`unread.${user.uid}`]:0,lastViewed:new Date().toISOString()});
         let snap;
         if(isSupport){
-          // 🔧 Упрощенный запрос без orderBy для избежания индекса
           snap=await db.collection('support').where('uid','==',user.uid).get();
-          // Также загружаем ответы админа этому пользователю
           const adminReplies=await db.collection('support').where('targetUid','==',user.uid).where('fromAdmin','==',true).get();
-          // Объединяем и сортируем вручную
           const allMsgs=[...snap.docs,...adminReplies.docs].sort((a,b)=>{
             const ta=a.data().time?.toDate?.()||a.data().time;
             const tb=b.data().time?.toDate?.()||b.data().time;
@@ -547,17 +548,36 @@
         }
         curCh.msgCount=snap.size;
         if(!isSupport) chData=(await db.collection('chats').doc(chatId).get()).data();
+        
+        // 🔧 ИСПРАВЛЕНИЕ 1: Реальные статусы пользователей
         if(!isSupport && chData?.users){
           curCh.userId2 = chData.users.find(u=>u!==user.uid);
           const other=await db.collection('users').doc(curCh.userId2).get();
           if(other.exists){
             const o=other.data();
-            const online=(o.lastOnline&&(Date.now()-new Date(o.lastOnline).getTime())<300000);
-            el('c-status').textContent=online?'🟢 В сети':'⚫ Не в сети';
-            el('c-status').className=`status ${online?'st-online':'st-offline'}`;
-            if(o.banned) { el('c-status').textContent='🔴 Заблокирован'; el('c-status').className='status st-banned'; }
+            // 🔧 НОВАЯ ЛОГИКА СТАТУСОВ:
+            if(o.banned){
+              el('c-status').textContent='🔴 Заблокирован';
+              el('c-status').className='status st-banned';
+            }else{
+              const online=(o.lastOnline && (Date.now() - new Date(o.lastOnline).getTime()) < 300000);
+              if(online){
+                el('c-status').textContent='🟢 В сети';
+                el('c-status').className='status st-online';
+              }else if(o.lastOnline){
+                const lastSeen=new Date(o.lastOnline);
+                const timeStr=lastSeen.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+                const dateStr=lastSeen.toLocaleDateString('ru-RU');
+                el('c-status').textContent=`⚫ Был ${timeStr} ${dateStr}`;
+                el('c-status').className='status st-offline';
+              }else{
+                el('c-status').textContent='⚫ Не в сети';
+                el('c-status').className='status st-offline';
+              }
+            }
           }
         }
+        
         snap.forEach(d=>{
           const m=d.data();
           const isMe=isSupport?(m.uid===user.uid || (m.fromAdmin && m.targetUid===user.uid)):(m.uid===user.uid);
@@ -565,8 +585,9 @@
           const ts=new Date(m.ts?.toDate?.()||m.ts||m.time);
           const elM=document.createElement('div');
           elM.className='msg-it';
+          
           if(isSupport && m.fromAdmin){
-            // Ответ админа - показываем без @UID
+            // 🔧 ИСПРАВЛЕНИЕ 2: Показываем только текст, без @UID
             elM.innerHTML=`<p class="m-meta">Поддержка • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
           }else if(isSupport && !isMe){
             elM.innerHTML=`<p class="m-meta">${m.name||'Пользователь'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
@@ -639,7 +660,6 @@
           curCh.msgCount=0;
         }else{
           if(curCh.isSupport){
-            // 🔧 Пользователь отправляет в поддержку
             await db.collection('support').add({
               uid: user.uid,
               name: prof.nickname,
@@ -699,7 +719,6 @@
       loadChatList();
     }
     
-    // 🔧 Репорт в чате
     window.sendReport=()=>{
       const reason=prompt('Причина репорта:');
       if(reason){
@@ -715,7 +734,6 @@
       }
     };
     
-    // 🔧 Исправленная загрузка товаров для отзыва
     window.openRevForm=()=>{
       el('rf-lst').innerHTML='';
       if(!curCh || !curCh.partnerUid){
@@ -927,13 +945,10 @@
               box.appendChild(elA);
             });
           }
-          // 🔧 НОВАЯ КАТЕГОРИЯ: Поддержка
           else if(t==='support'){
-            // 🔧 Загружаем все сообщения из поддержки для админа
             const snap=await db.collection('support').get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет сообщений в поддержке</p>';return;}
             box.innerHTML='';
-            // Группируем по пользователям
             const byUser={};
             snap.forEach(d=>{
               const m=d.data();
@@ -997,19 +1012,20 @@
       };
     });
 
-    // 🔧 Функция отправки ответа из панели поддержки
+    // 🔧 ИСПРАВЛЕНИЕ 2: Очистка @UID перед отправкой
     window.sendSupportReply = async (targetUid) => {
-      const txt=el(`reply-${targetUid}`).value.trim();
+      let txt=el(`reply-${targetUid}`).value.trim();
       if(!txt) return alert('Введите текст ответа');
+      // Убираем @UID если админ случайно ввёл
+      txt = txt.replace(/^@\S+\s+/, '');
       try{
         await db.collection('support').add({
           fromAdmin: true,
           targetUid: targetUid,
-          text: txt,
+          text: txt,  // Только чистый текст
           time: new Date(),
           adminEmail: user.email
         });
-        // Обновляем чат пользователя
         const chatRef=db.collection('chats').doc(`support_${targetUid}`);
         await chatRef.set({
           users:['admin',targetUid],
