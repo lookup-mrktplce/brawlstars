@@ -241,6 +241,8 @@
       <div class="adm-cat" data-c="ban-appeals">📩 Апелляции по банам</div>
       <div class="adm-cat" data-c="warn-appeals">📩 Апелляции по варнам</div>
       <div class="adm-cat" data-c="reports">🚨 Репорты</div>
+      <div class="adm-cat" data-c="msg-reports">📋 Репорты сообщений</div>
+      <div class="adm-cat" data-c="block-ads">🚫 Блокировка объявлений</div>
       <div class="adm-cat" data-c="support">💬 Поддержка</div>
       <div class="adm-cat" data-c="ban">🚫 Забанить игрока</div>
       <div class="adm-cat" data-c="unban">✅ Разбанить игрока</div>
@@ -273,6 +275,7 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     const IMGBB = "d3e0d626da4b69b9cadd392fe36efeac";
+    const ADMIN_EMAIL = "sobakastalina123@gmail.com";
 
     let user = null, prof = null;
     let curLst = null, curCh = null, chCnt = 0, chData = null;
@@ -406,7 +409,7 @@
       el('p-count').textContent=prof.listings||0;
       el('p-date').textContent=prof.createdAt?new Date(prof.createdAt).toLocaleDateString('ru-RU'):'-';
       el('p-uid').textContent=`ID: ${user.uid}`;
-      el('adm-link').classList.toggle('hidden', user.email!=='sobakastalina123@gmail.com');
+      el('adm-link').classList.toggle('hidden', user.email!==ADMIN_EMAIL);
     }
     async function loadTab(t){ if(t==='home')loadFeed(); if(t==='my')loadMy(); if(t==='chat')loadChatList(); if(t==='prof')loadProf(); }
 
@@ -458,7 +461,7 @@
             <h3>${u.nickname||'Пользователь'}</h3>
             <p class="prof-rate" id="prof-rev">⭐ ${(u.rating||0).toFixed(1)} (${u.reviewCount||0} отзывов)</p>
             <div class="stats">
-              <div><b>${u.listings||0}</b>объявлений</div>
+              <div><b id="prof-ads-count">0</b>объявлений</div>
               <div><b>${u.createdAt?new Date(u.createdAt).toLocaleDateString('ru-RU'):'-'}</b>дата</div>
             </div>
             <p style="font-size:0.7rem;color:#64748b;margin-top:0.5rem;">ID: ${uid}</p>
@@ -468,6 +471,11 @@
         document.body.appendChild(ov);
         document.getElementById('close-prof').onclick=()=>ov.remove();
         ov.querySelector('button.btn-sec').onclick=()=>ov.remove();
+        
+        // 🔧 ИСПРАВЛЕНИЕ: Показ активных объявлений пользователя
+        const adsSnap=await db.collection('listings').where('authorId','==',uid).where('status','==','active').get();
+        document.getElementById('prof-ads-count').textContent=adsSnap.size;
+        
         const revBtn=document.getElementById('prof-rev');
         revBtn.onclick=async()=>{
           revBtn.innerHTML='⏳ Загрузка...';
@@ -509,10 +517,8 @@
       el('ov-chat').classList.add('active');
       el('c-menu').classList.remove('active');
       
-      // 🔧 ИСПРАВЛЕНИЕ 1: Статусы вместо "Поддержка"
       if(isSupport){
         el('c-lst').style.display='none';
-        // Показываем что это поддержка, но статус "В сети" (админ всегда онлайн)
         el('c-status').textContent='🟢 В сети';
         el('c-status').className='status st-online';
       }else{
@@ -549,13 +555,11 @@
         curCh.msgCount=snap.size;
         if(!isSupport) chData=(await db.collection('chats').doc(chatId).get()).data();
         
-        // 🔧 ИСПРАВЛЕНИЕ 1: Реальные статусы пользователей
         if(!isSupport && chData?.users){
           curCh.userId2 = chData.users.find(u=>u!==user.uid);
           const other=await db.collection('users').doc(curCh.userId2).get();
           if(other.exists){
             const o=other.data();
-            // 🔧 НОВАЯ ЛОГИКА СТАТУСОВ:
             if(o.banned){
               el('c-status').textContent='🔴 Заблокирован';
               el('c-status').className='status st-banned';
@@ -586,15 +590,22 @@
           const elM=document.createElement('div');
           elM.className='msg-it';
           
+          // 🔧 ИСПРАВЛЕНИЕ: Показ реального ника и авы админа в поддержке
           if(isSupport && m.fromAdmin){
-            // 🔧 ИСПРАВЛЕНИЕ 2: Показываем только текст, без @UID
-            elM.innerHTML=`<p class="m-meta">Поддержка • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
+            // Загружаем данные админа
+            db.collection('users').doc('admin').get().then(adminDoc=>{
+              const adminData=adminDoc.exists?adminDoc.data():{name:'Админ',avatar:''};
+              elM.innerHTML=`<p class="m-meta">${adminData.name} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
+              if(adminData.avatar) elM.querySelector('.m-bub').style.backgroundImage=`url('${adminData.avatar}')`;
+            });
           }else if(isSupport && !isMe){
             elM.innerHTML=`<p class="m-meta">${m.name||'Пользователь'} • ${ts.toLocaleTimeString()}</p><div class="m-bub m-them">${m.text}</div>`;
           }else if(isSupport && isMe){
             elM.innerHTML=`<p class="m-meta">Вы • ${ts.toLocaleTimeString()}</p><div class="m-bub m-me">${m.text}</div>`;
           }else{
-            elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
+            // 🔧 НОВОЕ: Кнопка репорта на сообщение
+            const reportBtn=user.email===ADMIN_EMAIL?'':`<span style="cursor:pointer;color:#ff9500;margin-left:5px;" onclick="reportMessage('${d.id}','${m.text}')">⚠️</span>`;
+            elM.innerHTML=`<p class="m-meta">ID: ${d.id.slice(0,6)} • ${ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${reportBtn}</p><div class="m-bub ${isMe?'m-me':'m-them'}">${m.text}</div>${isMe?`<p class="m-meta" style="justify-content:flex-end;">${checks}</p>`:''}`;
           }
           el('c-msgs').appendChild(elM);
         });
@@ -602,6 +613,23 @@
       }
       updateChatMenu();
     }
+    
+    // 🔧 НОВАЯ ФУНКЦИЯ: Репорт сообщения
+    window.reportMessage = (msgId, msgText) => {
+      const reason=prompt(`Жалоба на сообщение:\n"${msgText.substring(0,50)}..."\n\nПричина:`);
+      if(reason && reason.trim()){
+        db.collection('message-reports').add({
+          msgId: msgId,
+          chatId: curCh.id,
+          reporterId: user.uid,
+          reporterName: prof?.nickname||'Аноним',
+          targetUid: curCh.userId2,
+          reason: reason.trim(),
+          time: new Date(),
+          status: 'new'
+        }).then(()=>alert('🚨 Жалоба отправлена!'));
+      }
+    };
     
     function updateChatMenu(){
       const m=el('c-menu');
@@ -945,6 +973,34 @@
               box.appendChild(elA);
             });
           }
+          // 🔧 НОВОЕ: Репорты сообщений
+          else if(t==='msg-reports'){
+            const snap=await db.collection('message-reports').where('status','==','new').get();
+            if(snap.empty){box.innerHTML='<p class="empty">Нет репортов сообщений</p>';return;}
+            box.innerHTML='';
+            snap.forEach(d=>{
+              const r=d.data();
+              const elA=document.createElement('div');
+              elA.className='adm-it';
+              elA.innerHTML=`<b>📋 Репорт сообщения</b>
+                <p style="font-size:0.8rem; color:#64748b;">От: ${r.reporterName} (UID: ${r.reporterId})</p>
+                <p><b>Причина:</b> ${r.reason}</p>
+                <p style="font-size:0.7rem; color:#94a3b8;">Цель: ${r.targetUid}</p>
+                <div class="adm-acts">
+                  <button class="btn-ok" onclick="admOk('msg-rep','${d.id}','${r.targetUid}')">⚠️ Выдать варн</button>
+                  <button class="btn-no" onclick="admNo('msg-rep','${d.id}')">❌ Отклонить</button>
+                </div>`;
+              box.appendChild(elA);
+            });
+          }
+          // 🔧 НОВОЕ: Блокировка объявлений по ID
+          else if(t==='block-ads'){
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID объявления и причина блокировки:</p>
+              <input type="text" id="block-ad-id" placeholder="ID объявления" class="adm-inp">
+              <textarea id="block-ad-reason" placeholder="Причина блокировки (обязательно)" class="adm-inp" rows="2"></textarea>
+              <button class="btn btn-red" onclick="blockAdByAdmin()">🔒 Заблокировать объявление</button>
+              <p id="block-ad-status" style="margin-top:10px;font-size:14px;"></p>`;
+          }
           else if(t==='support'){
             const snap=await db.collection('support').get();
             if(snap.empty){box.innerHTML='<p class="empty">Нет сообщений в поддержке</p>';return;}
@@ -996,33 +1052,81 @@
             });
           }
           else if(t==='ban'){
-            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID и причина бана:</p><input type="text" id="ban-uid" placeholder="UID" class="adm-inp"><input type="text" id="ban-reason" placeholder="Причина" class="adm-inp"><button class="btn-ok" onclick="admBan()">🚫 Забанить</button>`;
+            // 🔧 ИСПРАВЛЕНИЕ: Правильные ID инпутов
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID и причина бана:</p><input type="text" id="ban-uid-input" placeholder="UID" class="adm-inp"><input type="text" id="ban-reason-input" placeholder="Причина" class="adm-inp"><button class="btn-ok" onclick="admBanUser()">🚫 Забанить</button>`;
           }
           else if(t==='unban'){
-            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID пользователя:</p><input type="text" id="unban-uid" placeholder="UID" class="adm-inp"><button class="btn-ok" onclick="admUnban()">✅ Разбанить</button>`;
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID пользователя:</p><input type="text" id="unban-uid-input" placeholder="UID" class="adm-inp"><button class="btn-ok" onclick="admUnbanUser()">✅ Разбанить</button>`;
           }
           else if(t==='warn'){
-            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID и текст:</p><input type="text" id="warn-uid" placeholder="UID" class="adm-inp"><textarea id="warn-txt" placeholder="Текст" class="adm-inp"></textarea><button class="btn-ok" onclick="admWarn()">⚠️ Выдать варн</button>`;
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID и текст:</p><input type="text" id="warn-uid-input" placeholder="UID" class="adm-inp"><textarea id="warn-txt-input" placeholder="Текст" class="adm-inp"></textarea><button class="btn-ok" onclick="admWarnUser()">⚠️ Выдать варн</button>`;
           }
           else if(t==='chats-view'){
-            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID пользователя:</p><input type="text" id="chat-uid" placeholder="UID" class="adm-inp"><button class="btn-ok" onclick="admChats()">🔍 Найти</button><div id="chat-res"></div>`;
+            box.innerHTML=`<p style="margin-bottom:0.5rem;">ID пользователя:</p><input type="text" id="chat-uid-input" placeholder="UID" class="adm-inp"><button class="btn-ok" onclick="admChats()">🔍 Найти</button><div id="chat-res"></div>`;
           }
           else box.innerHTML='<p class="empty">Категория в разработке</p>';
         }catch(e){ box.innerHTML='<p class="msg err">Ошибка: '+e.message+'</p>'; }
       };
     });
 
-    // 🔧 ИСПРАВЛЕНИЕ 2: Очистка @UID перед отправкой
+    // 🔧 ИСПРАВЛЕНИЕ: Функции с правильными ID инпутов
+    window.admBanUser = async () => {
+      const uid=el('ban-uid-input').value.trim();
+      const reason=el('ban-reason-input').value.trim();
+      if(!uid||!reason) return alert('Заполните оба поля!');
+      try{
+        await db.collection('users').doc(uid).update({banned:true, banReason:reason});
+        alert('🚫 Пользователь забанен');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+    window.admUnbanUser = async () => {
+      const uid=el('unban-uid-input').value.trim();
+      if(!uid) return alert('Введите UID!');
+      try{
+        await db.collection('users').doc(uid).update({banned:false, banReason:firebase.firestore.FieldValue.delete()});
+        alert('✅ Пользователь разбанен');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+    window.admWarnUser = async () => {
+      const uid=el('warn-uid-input').value.trim();
+      const text=el('warn-txt-input').value.trim();
+      if(!uid||!text) return alert('Заполните оба поля!');
+      try{
+        await db.collection('users').doc(uid).update({warned:true, warnReason:text});
+        alert('⚠️ Варн выдан');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+    
+    // 🔧 НОВАЯ ФУНКЦИЯ: Блокировка объявления админом
+    window.blockAdByAdmin = async () => {
+      const adId=el('block-ad-id').value.trim();
+      const reason=el('block-ad-reason').value.trim();
+      if(!adId||!reason) return alert('Заполните оба поля!');
+      try{
+        await db.collection('listings').doc(adId).update({
+          status: 'blocked',
+          blockedAt: new Date(),
+          blockReason: reason,
+          blockedBy: ADMIN_EMAIL
+        });
+        el('block-ad-status').innerHTML='<span style="color:var(--green)">✅ Объявление заблокировано</span>';
+        alert('🚫 Объявление заблокировано!');
+        document.querySelector('.adm-cat.active').click();
+      }catch(e){ alert('Ошибка: '+e.message); }
+    };
+
     window.sendSupportReply = async (targetUid) => {
       let txt=el(`reply-${targetUid}`).value.trim();
       if(!txt) return alert('Введите текст ответа');
-      // Убираем @UID если админ случайно ввёл
       txt = txt.replace(/^@\S+\s+/, '');
       try{
         await db.collection('support').add({
           fromAdmin: true,
           targetUid: targetUid,
-          text: txt,  // Только чистый текст
+          text: txt,
           time: new Date(),
           adminEmail: user.email
         });
@@ -1067,6 +1171,12 @@
           if(uid) await db.collection('users').doc(uid).update({warned:true, warnReason:'Жалоба в чате поддержки'});
           alert('✅ Варн выдан');
         }
+        else if(t==='msg-rep'){
+          // 🔧 Репорт сообщения: одобрен = варн пользователю
+          await db.collection('message-reports').doc(id).update({status:'resolved'});
+          if(uid) await db.collection('users').doc(uid).update({warned:true, warnReason:'Нарушение правил в чате (по жалобе)'});
+          alert('✅ Варн выдан, репорт закрыт');
+        }
         else if(t==='av'){
           const u=await db.collection('users').doc(id).get();
           await db.collection('users').doc(id).update({avatar:u.data().pendingAv, modAv:false, pendingAv:null});
@@ -1076,6 +1186,7 @@
           await db.collection('users').doc(id).update({nickname:u.data().pendingNick, modNick:false, pendingNick:null});
         }
         alert('✅ Одобрено');
+        // 🔧 ИСПРАВЛЕНИЕ: Обновляем список после действия
         document.querySelector('.adm-cat.active').click();
       }catch(e){ alert('Ошибка: '+e.message); }
     };
@@ -1101,28 +1212,16 @@
       try{
         if(t==='lst') await db.collection('listings').doc(id).update({status:st});
         else if(t==='rev') await db.collection('reviews').doc(id).delete();
-        else if(t==='comp'||t==='ban_ap'||t==='warn_ap'||t==='rep') await db.collection(t==='comp'?'review-complaints':'appeals').doc(id).update({reviewed:true});
+        else if(t==='comp'||t==='ban_ap'||t==='warn_ap'||t==='rep'||t==='msg-rep') await db.collection(t==='comp'?'review-complaints':'appeals').doc(id).update({reviewed:true});
         else if(t==='av'||t==='nk') await db.collection('users').doc(id).update({modAv:false,modNick:false,pendingAv:null,pendingNick:null});
         alert('❌ Отклонено');
+        // 🔧 ИСПРАВЛЕНИЕ: Обновляем список после действия
         document.querySelector('.adm-cat.active').click();
       }catch(e){ alert('Ошибка: '+e.message); }
     };
-    window.admUnban = async () => {
-      const uid=el('unban-uid').value.trim();
-      if(!uid) return;
-      await db.collection('users').doc(uid).update({banned:false, banReason:''});
-      alert('✅ Разбанен');
-      document.querySelector('.adm-cat.active').click();
-    };
-    window.admWarn = async () => {
-      const uid=el('warn-uid').value.trim(), text=el('warn-txt').value.trim();
-      if(!uid||!text) return alert('Заполните поля');
-      await db.collection('users').doc(uid).update({warned:true, warnReason:text});
-      alert('⚠️ Варн выдан');
-      document.querySelector('.adm-cat.active').click();
-    };
+    
     window.admChats = async () => {
-      const uid=el('chat-uid').value.trim();
+      const uid=el('chat-uid-input').value.trim();
       if(!uid) return alert('Введите UID');
       const box=el('chat-res');
       box.innerHTML='⏳ Загрузка...';
